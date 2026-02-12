@@ -99,48 +99,50 @@ export default function SiteHeader() {
   }
 
   return (
-    <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
-      <div className="shell-container header-inner">
-        <Link href="/" className="brand" aria-label="Li Rilko Imports">
-          <span className="brand-symbol">LR</span>
-          <span className="brand-text">
-            <strong>LI RILKO</strong>
-            <small>IMPORTS</small>
-          </span>
-        </Link>
-
-        <nav className="header-nav" aria-label="Navegação principal">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link key={item.href} href={item.href} className={isActive ? "is-active" : ""}>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="header-actions">
-          <button
-            type="button"
-            className="menu-trigger"
-            aria-label="Abrir menu"
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-menu-drawer"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            <IconMenu className="icon" />
-          </button>
-
-          <Link href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
-            <IconCart className="icon" />
-            <span className="header-cart-text">
-              <small>{count} item(ns)</small>
-              <strong>{formatCurrency(total)}</strong>
+    <>
+      <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
+        <div className="shell-container header-inner">
+          <Link href="/" className="brand" aria-label="Li Rilko Imports">
+            <span className="brand-symbol">LR</span>
+            <span className="brand-text">
+              <strong>LI RILKO</strong>
+              <small>IMPORTS</small>
             </span>
           </Link>
+
+          <nav className="header-nav" aria-label="Navegação principal">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link key={item.href} href={item.href} className={isActive ? "is-active" : ""}>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="header-actions">
+            <button
+              type="button"
+              className="menu-trigger"
+              aria-label="Abrir menu"
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu-drawer"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <IconMenu className="icon" />
+            </button>
+
+            <Link href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
+              <IconCart className="icon" />
+              <span className="header-cart-text">
+                <small>{count} item(ns)</small>
+                <strong>{formatCurrency(total)}</strong>
+              </span>
+            </Link>
+          </div>
         </div>
-      </div>
+      </header>
 
       <button
         type="button"
@@ -205,6 +207,6 @@ export default function SiteHeader() {
           })}
         </div>
       </aside>
-    </header>
+    </>
   );
 }

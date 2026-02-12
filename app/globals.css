@@ -77,7 +77,6 @@ input:focus-visible {
   height: 1em;
   display: block;
   flex-shrink: 0;
-  overflow: visible;
 }
 
 .btn .icon,
@@ -375,6 +374,10 @@ input:focus-visible {
   transform: translateX(-104%);
   transition: transform 0.28s ease;
   z-index: 109;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+  isolation: isolate;
 }
 
 .mobile-menu-drawer.is-open {
@@ -382,11 +385,11 @@ input:focus-visible {
 }
 
 .mobile-menu-header {
-  min-height: 72px;
+  min-height: calc(72px + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1rem;
+  padding: env(safe-area-inset-top) 1rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
@@ -434,8 +437,10 @@ input:focus-visible {
 
 .mobile-menu-categories {
   padding: 0.78rem 1rem 1.3rem;
-  max-height: calc(100vh - 150px);
+  max-height: calc(100vh - 150px - env(safe-area-inset-top));
+  max-height: calc(100dvh - 150px - env(safe-area-inset-top));
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-menu-categories > p {
