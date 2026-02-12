@@ -41,22 +41,6 @@ export function IconSearch({ className = "icon" }) {
   );
 }
 
-export function IconChat({ className = "icon" }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M20 14.6a6.5 6.5 0 0 1-.9 3.2L20 22l-4.2-1A8.4 8.4 0 0 1 12 22c-5 0-9-3.6-9-8s4-8 9-8 9 3.6 9 8Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M8.6 13.3h6.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M8.6 10.3h4.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function IconWhatsApp({ className = "icon" }) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="none" aria-hidden>

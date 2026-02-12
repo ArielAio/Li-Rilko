@@ -1,16 +1,17 @@
 "use client";
 
 import { IconWhatsApp } from "@/components/icons";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import { contactChannels } from "@/lib/catalog-data";
 import { buildWhatsAppLink } from "@/lib/store-utils";
 
 export default function ContactPage() {
+  const { contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
   const { showToast } = useToast();
 
-  const whatsappLink = buildWhatsAppLink(items);
+  const whatsappLink = buildWhatsAppLink(items, siteSettings);
 
   function handleStartContact() {
     showToast({
@@ -48,9 +49,15 @@ export default function ContactPage() {
             <h3>Outros canais</h3>
             <ul>
               {contactChannels.map((channel) => (
-                <li key={channel.title}>
+                <li key={channel.id || channel.title}>
                   <strong>{channel.title}</strong>
-                  <span>{channel.value}</span>
+                  {channel.href && channel.href !== "#" ? (
+                    <a href={channel.href} target="_blank" rel="noreferrer">
+                      {channel.value}
+                    </a>
+                  ) : (
+                    <span>{channel.value}</span>
+                  )}
                 </li>
               ))}
             </ul>

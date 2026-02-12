@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { productMap } from "@/lib/catalog-data";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCatalog } from "@/components/providers/catalog-provider";
 
 const CART_STORAGE_KEY = "li-rilko-cart-v1";
 
 const CartContext = createContext(null);
 
-function sanitizeCart(rawCart) {
+function sanitizeCart(rawCart, productMap) {
   if (!rawCart || typeof rawCart !== "object") {
     return {};
   }
@@ -28,10 +28,18 @@ function sanitizeCart(rawCart) {
 }
 
 export function CartProvider({ children }) {
+  const { productMap, isHydrated: isCatalogHydrated } = useCatalog();
   const [cartMap, setCartMap] = useState({});
   const [isHydrated, setIsHydrated] = useState(false);
+  const hasLoadedFromStorageRef = useRef(false);
 
   useEffect(() => {
+    if (!isCatalogHydrated || hasLoadedFromStorageRef.current) {
+      return;
+    }
+
+    hasLoadedFromStorageRef.current = true;
+
     try {
       const serialized = window.localStorage.getItem(CART_STORAGE_KEY);
       if (!serialized) {
@@ -40,13 +48,21 @@ export function CartProvider({ children }) {
       }
 
       const parsed = JSON.parse(serialized);
-      setCartMap(sanitizeCart(parsed));
+      setCartMap(sanitizeCart(parsed, productMap));
     } catch {
       setCartMap({});
     } finally {
       setIsHydrated(true);
     }
-  }, []);
+  }, [isCatalogHydrated, productMap]);
+
+  useEffect(() => {
+    if (!isHydrated || !isCatalogHydrated) {
+      return;
+    }
+
+    setCartMap((prev) => sanitizeCart(prev, productMap));
+  }, [isHydrated, isCatalogHydrated, productMap]);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -73,14 +89,15 @@ export function CartProvider({ children }) {
         };
       })
       .filter(Boolean);
-  }, [cartMap]);
+  }, [cartMap, productMap]);
 
   const count = useMemo(() => items.reduce((acc, item) => acc + item.qty, 0), [items]);
   const total = useMemo(() => items.reduce((acc, item) => acc + item.subtotal, 0), [items]);
 
   function addItem(productId, amount = 1) {
-    if (!productMap.has(productId)) {
-      return;
+    const product = productMap.get(productId);
+    if (!product || product.isAvailable === false || product.isVisible === false) {
+      return false;
     }
 
     setCartMap((prev) => {
@@ -95,6 +112,8 @@ export function CartProvider({ children }) {
         [productId]: qty,
       };
     });
+
+    return true;
   }
 
   function decreaseItem(productId, amount = 1) {

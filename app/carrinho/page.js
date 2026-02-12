@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { IconTrash, IconWhatsApp } from "@/components/icons";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
 
 export default function CartPage() {
+  const { siteSettings } = useCatalog();
   const { items, total, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
 
-  const message = buildWhatsAppMessage(items);
-  const whatsappLink = buildWhatsAppLink(items);
+  const message = buildWhatsAppMessage(items, siteSettings);
+  const whatsappLink = buildWhatsAppLink(items, siteSettings);
 
   function handleDecrease(item) {
     if (item.qty <= 1) {
@@ -33,7 +35,16 @@ export default function CartPage() {
   }
 
   function handleIncrease(item) {
-    addItem(item.id, 1);
+    const added = addItem(item.id, 1);
+    if (!added) {
+      showToast({
+        type: "warning",
+        title: "Produto indisponível",
+        message: `${item.name} não está disponível para aumentar quantidade agora.`,
+      });
+      return;
+    }
+
     showToast({
       type: "info",
       title: "Quantidade aumentada",

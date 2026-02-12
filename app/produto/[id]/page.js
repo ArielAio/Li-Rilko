@@ -1,31 +1,29 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import ProductDetailActions from "@/components/product-detail-actions";
-import { productMap } from "@/lib/catalog-data";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { formatCurrency } from "@/lib/store-utils";
 
-export async function generateMetadata({ params }) {
-  const { id } = await params;
-  const product = productMap.get(id);
+export default function ProductPage() {
+  const params = useParams();
+  const { publicProductMap } = useCatalog();
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const product = publicProductMap.get(id);
 
   if (!product) {
-    return {
-      title: "Produto não encontrado | Li Rilko Imports",
-    };
-  }
-
-  return {
-    title: `${product.name} | Li Rilko Imports`,
-    description: product.shortDescription,
-  };
-}
-
-export default async function ProductPage({ params }) {
-  const { id } = await params;
-  const product = productMap.get(id);
-
-  if (!product) {
-    notFound();
+    return (
+      <section className="section">
+        <div className="shell-container not-found-card">
+          <h1>Produto não encontrado</h1>
+          <p>Esse item não está disponível no momento ou foi removido da vitrine.</p>
+          <Link href="/catalogo" className="btn btn-primary">
+            Voltar para o catálogo
+          </Link>
+        </div>
+      </section>
+    );
   }
 
   const gallery = (product.images && product.images.length > 0 ? product.images : [product.image]).filter(Boolean);
@@ -67,7 +65,7 @@ export default async function ProductPage({ params }) {
           </article>
 
           <article className="detail-content-card reveal delay-1">
-            <p className="product-badge">{product.badge}</p>
+            <p className="product-badge">{product.isAvailable === false ? "Indisponível no momento" : product.badge}</p>
             <h2>{product.name}</h2>
             <p className="detail-category">
               {product.category} • {product.sub}
@@ -75,7 +73,11 @@ export default async function ProductPage({ params }) {
             <p className="detail-description">{product.shortDescription}</p>
 
             <div className="price-block">
-              <small>Preço anterior: {formatCurrency(product.oldPrice)}</small>
+              {Number(product.oldPrice) > Number(product.price) ? (
+                <small>Preço anterior: {formatCurrency(product.oldPrice)}</small>
+              ) : (
+                <small>Preço atualizado</small>
+              )}
               <strong>{formatCurrency(product.price)}</strong>
             </div>
 

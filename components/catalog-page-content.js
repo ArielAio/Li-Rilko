@@ -4,24 +4,26 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconSearch } from "@/components/icons";
 import ProductCard from "@/components/product-card";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import { categories, products } from "@/lib/catalog-data";
 import { productMatches } from "@/lib/store-utils";
 
 export default function CatalogPageContent({ initialCategory = "Todos", initialSub = "" }) {
+  const { categories, publicProducts } = useCatalog();
   const [searchTerm, setSearchTerm] = useState(initialSub);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const { showToast } = useToast();
   const noResultNotifiedRef = useRef(false);
 
   useEffect(() => {
-    setSelectedCategory(initialCategory);
+    const categoryExists = categories.some((category) => category.name === initialCategory);
+    setSelectedCategory(categoryExists ? initialCategory : "Todos");
     setSearchTerm(initialSub);
-  }, [initialCategory, initialSub]);
+  }, [categories, initialCategory, initialSub]);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => productMatches(product, searchTerm, selectedCategory));
-  }, [searchTerm, selectedCategory]);
+    return publicProducts.filter((product) => productMatches(product, searchTerm, selectedCategory));
+  }, [publicProducts, searchTerm, selectedCategory]);
 
   useEffect(() => {
     const hasFilters = selectedCategory !== "Todos" || searchTerm.trim().length > 0;

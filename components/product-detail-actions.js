@@ -11,6 +11,7 @@ export default function ProductDetailActions({ product }) {
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
   const { showToast } = useToast();
+  const isAvailable = product.isAvailable !== false;
 
   function decreaseQty() {
     setQty((prev) => Math.max(1, prev - 1));
@@ -21,7 +22,16 @@ export default function ProductDetailActions({ product }) {
   }
 
   function handleAdd() {
-    addItem(product.id, qty);
+    const added = addItem(product.id, qty);
+    if (!added) {
+      showToast({
+        type: "warning",
+        title: "Produto indisponível",
+        message: `${product.name} está temporariamente indisponível.`,
+      });
+      return;
+    }
+
     showToast({
       type: "success",
       title: "Item adicionado",
@@ -37,19 +47,19 @@ export default function ProductDetailActions({ product }) {
       </div>
 
       <div className="detail-qty" role="group" aria-label="Quantidade">
-        <button type="button" onClick={decreaseQty} aria-label="Diminuir quantidade">
+        <button type="button" onClick={decreaseQty} aria-label="Diminuir quantidade" disabled={!isAvailable}>
           −
         </button>
         <strong>{qty}</strong>
-        <button type="button" onClick={increaseQty} aria-label="Aumentar quantidade">
+        <button type="button" onClick={increaseQty} aria-label="Aumentar quantidade" disabled={!isAvailable}>
           +
         </button>
       </div>
 
       <div className="detail-buttons">
-        <button type="button" className="btn btn-primary" onClick={handleAdd}>
+        <button type="button" className="btn btn-primary" onClick={handleAdd} disabled={!isAvailable}>
           <IconCartPlus className="icon" />
-          Adicionar ao carrinho
+          {isAvailable ? "Adicionar ao carrinho" : "Indisponível no momento"}
         </button>
         <Link className="btn btn-surface" href="/carrinho">
           Ir para o carrinho

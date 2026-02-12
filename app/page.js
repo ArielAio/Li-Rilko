@@ -1,6 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import ProductCard from "@/components/product-card";
-import { categories, homeHighlights, products } from "@/lib/catalog-data";
+import { useCatalog } from "@/components/providers/catalog-provider";
 
 const flowSteps = [
   {
@@ -44,6 +46,8 @@ const faqItems = [
 ];
 
 export default function HomePage() {
+  const { categories, homeHighlights, publicProducts } = useCatalog();
+
   return (
     <>
       <section className="section hero-section">
@@ -130,7 +134,7 @@ export default function HomePage() {
             <h2>Produtos com maior saída para acelerar sua decisão de compra.</h2>
           </div>
           <div className="product-grid">
-            {products.slice(0, 8).map((product, index) => (
+            {publicProducts.slice(0, 8).map((product, index) => (
               <div key={product.id} className={`reveal delay-${(index % 4) + 1}`}>
                 <ProductCard product={product} highlight={index < 4} />
               </div>

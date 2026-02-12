@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { IconWhatsApp } from "@/components/icons";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import { siteSettings } from "@/lib/catalog-data";
 import { buildFloatingWhatsAppLink } from "@/lib/store-utils";
 
 export default function WhatsAppFloatWidget() {
   const [isCardVisible, setIsCardVisible] = useState(true);
+  const { siteSettings } = useCatalog();
   const { count } = useCart();
   const { showToast } = useToast();
 
-  const link = buildFloatingWhatsAppLink();
+  const link = buildFloatingWhatsAppLink(siteSettings);
 
   function handleClick() {
     showToast({

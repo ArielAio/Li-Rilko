@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconCart, IconChevronDown, IconClose, IconMenu } from "@/components/icons";
+import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
-import { categories } from "@/lib/catalog-data";
 import { formatCurrency } from "@/lib/store-utils";
 
 const navItems = [
@@ -26,6 +26,8 @@ function slugify(value) {
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
+  const { categories } = useCatalog();
   const { count, total } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
@@ -133,13 +135,15 @@ export default function SiteHeader() {
               <IconMenu className="icon" />
             </button>
 
-            <Link href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
-              <IconCart className="icon" />
-              <span className="header-cart-text">
-                <small>{count} item(ns)</small>
-                <strong>{formatCurrency(total)}</strong>
-              </span>
-            </Link>
+            {!isAdminRoute && (
+              <Link href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
+                <IconCart className="icon" />
+                <span className="header-cart-text">
+                  <small>{count} item(ns)</small>
+                  <strong>{formatCurrency(total)}</strong>
+                </span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
