@@ -10,6 +10,33 @@ const TOAST_ICONS = {
   warning: "!",
 };
 
+const TOAST_DURATION_DEFAULT = 3200;
+const TOAST_DURATION_MIN = 1600;
+const TOAST_DURATION_MAX = 10000;
+const TOAST_LIMIT = 4;
+
+function clampToastDuration(duration) {
+  const parsed = Number(duration);
+  if (!Number.isFinite(parsed)) {
+    return TOAST_DURATION_DEFAULT;
+  }
+  return Math.min(TOAST_DURATION_MAX, Math.max(TOAST_DURATION_MIN, Math.round(parsed)));
+}
+
+function resolveToastTitle(type, title) {
+  if (title) {
+    return title;
+  }
+
+  if (type === "success") {
+    return "Tudo certo";
+  }
+  if (type === "warning") {
+    return "Atenção";
+  }
+  return "Informação";
+}
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const timeoutMapRef = useRef(new Map());
@@ -46,23 +73,27 @@ export function ToastProvider({ children }) {
   );
 
   const showToast = useCallback(
-    ({ type = "info", title, message }) => {
+    ({ type = "info", title, message, duration }) => {
       const toastId =
         typeof crypto !== "undefined" && crypto.randomUUID
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+      const normalizedType = type === "success" || type === "warning" ? type : "info";
+      const toastDuration = clampToastDuration(duration);
+
       const toast = {
         id: toastId,
-        type,
-        title,
-        message,
+        type: normalizedType,
+        title: resolveToastTitle(normalizedType, title),
+        message: String(message || ""),
+        duration: toastDuration,
         closing: false,
       };
 
       setToasts((prev) => {
         const next = [...prev, toast];
-        if (next.length <= 6) {
+        if (next.length <= TOAST_LIMIT) {
           return next;
         }
 
@@ -76,7 +107,7 @@ export function ToastProvider({ children }) {
         return next.slice(1);
       });
 
-      const timeout = window.setTimeout(() => dismissToast(toastId), 3200);
+      const timeout = window.setTimeout(() => dismissToast(toastId), toastDuration);
       timeoutMapRef.current.set(toastId, timeout);
     },
     [dismissToast],
@@ -100,6 +131,7 @@ export function ToastProvider({ children }) {
             className={`toast toast-${toast.type} ${toast.closing ? "is-closing" : ""}`}
             style={{
               "--toast-index": index,
+              "--toast-duration": `${toast.duration}ms`,
               zIndex: 30 - index,
             }}
           >
@@ -113,6 +145,7 @@ export function ToastProvider({ children }) {
             <button type="button" className="toast-close" onClick={() => dismissToast(toast.id)} aria-label="Fechar aviso">
               ×
             </button>
+            <span className="toast-progress" aria-hidden />
           </article>
         ))}
       </div>
