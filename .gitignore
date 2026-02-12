@@ -1,0 +1,8 @@
+node_modules
+.next
+.codex_analysis
+out
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
