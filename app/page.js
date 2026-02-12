@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import ProductCard from "@/components/product-card";
 import { useCatalog } from "@/components/providers/catalog-provider";
+import TransitionLink from "@/components/transition-link";
 
 const flowSteps = [
   {
@@ -60,12 +60,12 @@ export default function HomePage() {
               loja.
             </p>
             <div className="hero-actions">
-              <Link className="btn btn-primary" href="/catalogo">
+              <TransitionLink className="btn btn-primary" href="/catalogo">
                 Ver catálogo
-              </Link>
-              <Link className="btn btn-dark" href="/contato">
+              </TransitionLink>
+              <TransitionLink className="btn btn-dark" href="/contato">
                 Falar no WhatsApp
-              </Link>
+              </TransitionLink>
             </div>
 
             <div className="hero-metrics">
@@ -91,9 +91,9 @@ export default function HomePage() {
                 <li key={step}>{step}</li>
               ))}
             </ul>
-            <Link className="btn btn-surface" href="/carrinho">
+            <TransitionLink className="btn btn-surface" href="/carrinho">
               Revisar carrinho
-            </Link>
+            </TransitionLink>
           </aside>
         </div>
       </section>
@@ -141,9 +141,9 @@ export default function HomePage() {
             ))}
           </div>
           <div className="section-cta-row">
-            <Link className="btn btn-primary" href="/catalogo">
+            <TransitionLink className="btn btn-primary" href="/catalogo">
               Ver catálogo completo
-            </Link>
+            </TransitionLink>
           </div>
         </div>
       </section>
@@ -207,12 +207,12 @@ export default function HomePage() {
             <h2>Abra o WhatsApp e conclua seu pedido com atendimento direto da loja.</h2>
           </div>
           <div className="bottom-cta-actions">
-            <Link className="btn btn-primary" href="/contato">
+            <TransitionLink className="btn btn-primary" href="/contato">
               Finalizar no WhatsApp
-            </Link>
-            <Link className="btn btn-surface" href="/catalogo">
+            </TransitionLink>
+            <TransitionLink className="btn btn-surface" href="/catalogo">
               Ver produtos
-            </Link>
+            </TransitionLink>
           </div>
         </div>
       </section>

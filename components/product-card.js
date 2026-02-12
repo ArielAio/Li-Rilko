@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { IconArrowRight, IconCartPlus } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import TransitionLink from "@/components/transition-link";
 import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductCard({ product, highlight = false }) {
@@ -33,21 +33,27 @@ export default function ProductCard({ product, highlight = false }) {
   return (
     <article className={`product-card ${highlight ? "is-highlight" : ""}`}>
       <div className="product-media">
-        <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+          style={{ viewTransitionName: `product-media-${product.id}` }}
+        />
         <span>{product.sub}</span>
       </div>
       <div className="product-body">
         <p className="product-badge">{isAvailable ? product.badge : "Indisponível no momento"}</p>
-        <h3>{product.name}</h3>
+        <h3 style={{ viewTransitionName: `product-title-${product.id}` }}>{product.name}</h3>
         <p className="product-short-description">{product.shortDescription}</p>
         {shouldShowOldPrice ? <p className="old-price">{formatCurrency(product.oldPrice)}</p> : null}
         <p className="product-price">{formatCurrency(product.price)}</p>
 
         <div className="product-actions">
-          <Link className="link-detail" href={`/produto/${product.id}`}>
+          <TransitionLink className="link-detail" href={`/produto/${product.id}`}>
             Ver detalhes
             <IconArrowRight className="icon" />
-          </Link>
+          </TransitionLink>
           <button type="button" className="product-button" onClick={handleAddToCart} disabled={!isAvailable}>
             <IconCartPlus className="icon" />
             {isAvailable ? "Adicionar" : "Indisponível"}

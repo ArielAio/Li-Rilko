@@ -12,6 +12,36 @@
   --success-strong: #1ea959;
   --shadow-sm: 0 10px 20px rgba(9, 11, 18, 0.07);
   --shadow-lg: 0 24px 40px rgba(9, 11, 18, 0.13);
+
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --type-display-lg: clamp(1.8rem, 3.8vw, 3rem);
+  --type-display-md: clamp(1.56rem, 3.2vw, 2.45rem);
+  --type-headline-lg: clamp(1.35rem, 2.5vw, 2rem);
+  --type-headline-md: clamp(1.2rem, 2.4vw, 1.7rem);
+  --type-title-lg: 1.2rem;
+  --type-title-md: 1.06rem;
+  --type-title-sm: 0.96rem;
+  --type-body-lg: 0.94rem;
+  --type-body-md: 0.88rem;
+  --type-body-sm: 0.8rem;
+  --type-label-lg: 0.84rem;
+  --type-label-md: 0.76rem;
+
+  --line-height-tight: 1.08;
+  --line-height-snug: 1.2;
+  --line-height-body: 1.55;
+
+  --motion-duration-short: 170ms;
+  --motion-duration-medium: 240ms;
+  --motion-duration-long: 320ms;
+  --motion-duration-xlong: 420ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
 }
 
 * {
@@ -34,6 +64,8 @@ img {
 body {
   font-family: var(--font-body), sans-serif;
   color: var(--text);
+  font-size: var(--type-body-lg);
+  line-height: var(--line-height-body);
   background:
     radial-gradient(circle at 0 0, rgba(227, 25, 55, 0.06), transparent 32%),
     radial-gradient(circle at 100% 18%, rgba(9, 11, 18, 0.05), transparent 36%),
@@ -42,6 +74,18 @@ body {
 
 body.menu-open {
   overflow: hidden;
+}
+
+@supports (view-transition-name: none) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-duration-medium);
+    animation-timing-function: var(--motion-easing-standard);
+  }
 }
 
 a {
@@ -138,10 +182,13 @@ input:focus-visible {
   justify-content: center;
   gap: 0.42rem;
   line-height: 1;
-  font-size: 0.9rem;
-  font-weight: 800;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform var(--motion-duration-short) var(--motion-easing-standard),
+    filter var(--motion-duration-short) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .btn .icon {
@@ -209,7 +256,10 @@ input:focus-visible {
   background: rgba(9, 11, 18, 0.58);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  transition: background 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+  transition:
+    background var(--motion-duration-medium) var(--motion-easing-standard),
+    border-color var(--motion-duration-medium) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-medium) var(--motion-easing-standard);
 }
 
 .site-header.is-scrolled {
@@ -274,9 +324,9 @@ input:focus-visible {
 
 .header-nav a {
   color: rgba(255, 255, 255, 0.84);
-  font-size: 0.9rem;
-  font-weight: 700;
-  transition: color 0.2s ease;
+  font-size: var(--type-body-lg);
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .header-nav a:hover,
@@ -317,7 +367,10 @@ input:focus-visible {
   border-radius: 999px;
   padding: 0.52rem 0.86rem;
   white-space: nowrap;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transition:
+    transform var(--motion-duration-short) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-short) var(--motion-easing-standard),
+    filter var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .header-cart:hover {
@@ -343,12 +396,12 @@ input:focus-visible {
 }
 
 .header-cart-text strong {
-  font-size: 0.82rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-body-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .header-cart.pulse {
-  animation: cta-pulse 0.34s ease;
+  animation: cta-pulse var(--motion-duration-long) var(--motion-easing-emphasized-decelerate);
 }
 
 .mobile-menu-backdrop,
@@ -363,7 +416,7 @@ input:focus-visible {
   background: rgba(4, 7, 14, 0.62);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.24s ease;
+  transition: opacity var(--motion-duration-medium) var(--motion-easing-standard);
   z-index: 108;
 }
 
@@ -385,16 +438,16 @@ input:focus-visible {
   border-right: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 20px 44px rgba(3, 7, 16, 0.45);
   transform: translateX(-104%);
-  transition: transform 0.28s ease;
+  transition: transform var(--motion-duration-long) var(--motion-easing-emphasized-decelerate);
   z-index: 109;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  will-change: transform;
   isolation: isolate;
 }
 
 .mobile-menu-drawer.is-open {
   transform: translateX(0);
+  will-change: transform;
 }
 
 .mobile-menu-header {
@@ -407,8 +460,8 @@ input:focus-visible {
 }
 
 .mobile-menu-header strong {
-  font-family: var(--font-display), sans-serif;
-  font-size: 1.08rem;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .mobile-menu-close {
@@ -490,7 +543,7 @@ input:focus-visible {
 .mobile-category-trigger .icon {
   width: 16px;
   height: 16px;
-  transition: transform 0.2s ease;
+  transition: transform var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .mobile-category.is-open .mobile-category-trigger .icon {
@@ -546,14 +599,14 @@ input:focus-visible {
 
 .hero-main h1 {
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(1.75rem, 3.8vw, 3rem);
-  line-height: 1.08;
+  font-size: var(--type-display-lg);
+  line-height: var(--line-height-tight);
   margin-bottom: 0.86rem;
   max-width: 20ch;
 }
 
 .hero-main p {
-  line-height: 1.62;
+  line-height: var(--line-height-body);
   color: rgba(255, 255, 255, 0.88);
   max-width: 60ch;
 }
@@ -581,15 +634,15 @@ input:focus-visible {
 
 .hero-metrics strong {
   display: block;
-  font-size: 0.94rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .hero-metrics span {
   display: block;
   margin-top: 0.24rem;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 0.76rem;
+  font-size: var(--type-label-md);
   line-height: 1.35;
 }
 
@@ -600,8 +653,8 @@ input:focus-visible {
 }
 
 .hero-side h2 {
+  font-size: var(--type-title-lg);
   font-family: var(--font-display), sans-serif;
-  font-size: 1.3rem;
   margin-bottom: 0.65rem;
 }
 
@@ -617,7 +670,7 @@ input:focus-visible {
   border-radius: 10px;
   background: var(--surface-alt);
   color: #4d5668;
-  font-size: 0.84rem;
+  font-size: var(--type-body-md);
   padding: 0.56rem 0.65rem;
 }
 
@@ -638,8 +691,8 @@ input:focus-visible {
 .trust-grid p {
   text-align: center;
   color: #535c6c;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .section-head {
@@ -647,7 +700,7 @@ input:focus-visible {
 }
 
 .section-head h2 {
-  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-size: var(--type-headline-lg);
   line-height: 1.18;
   font-family: var(--font-display), sans-serif;
   max-width: 25ch;
@@ -671,7 +724,10 @@ input:focus-visible {
   background: #fff;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  transition:
+    transform var(--motion-duration-medium) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-medium) var(--motion-easing-standard),
+    border-color var(--motion-duration-medium) var(--motion-easing-standard);
 }
 
 .product-card:hover {
@@ -699,7 +755,7 @@ input:focus-visible {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.28s ease;
+  transition: transform var(--motion-duration-long) var(--motion-easing-emphasized-decelerate);
 }
 
 .product-card:hover .product-media img {
@@ -712,8 +768,8 @@ input:focus-visible {
   bottom: 0.55rem;
   z-index: 1;
   color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: var(--type-label-md);
+  font-weight: var(--font-weight-semibold);
   border-radius: 999px;
   padding: 0.26rem 0.52rem;
   background: rgba(9, 11, 18, 0.62);
@@ -738,28 +794,29 @@ input:focus-visible {
 
 .product-body h3 {
   min-height: 36px;
-  font-size: 0.9rem;
+  font-size: var(--type-title-sm);
   line-height: 1.32;
+  font-weight: var(--font-weight-semibold);
 }
 
 .product-short-description {
   margin-top: 0.35rem;
   min-height: 36px;
   color: #626c7f;
-  font-size: 0.78rem;
+  font-size: var(--type-body-sm);
   line-height: 1.35;
 }
 
 .old-price {
   margin-top: 0.26rem;
   text-decoration: line-through;
-  font-size: 0.76rem;
+  font-size: var(--type-label-md);
   color: #818b9e;
 }
 
 .product-price {
   margin-top: 0.18rem;
-  font-size: 1.04rem;
+  font-size: var(--type-title-md);
   font-family: var(--font-display), sans-serif;
 }
 
@@ -774,13 +831,16 @@ input:focus-visible {
   flex: 1;
   min-height: 36px;
   border-radius: 9px;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: var(--type-body-sm);
+  font-weight: var(--font-weight-bold);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform var(--motion-duration-short) var(--motion-easing-standard),
+    filter var(--motion-duration-short) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .link-detail .icon,
@@ -844,7 +904,7 @@ input:focus-visible {
 .category-card h3,
 .flow-card h3,
 .highlight-card h3 {
-  font-size: 1rem;
+  font-size: var(--type-title-md);
   font-family: var(--font-display), sans-serif;
   margin-bottom: 0.38rem;
 }
@@ -859,7 +919,7 @@ input:focus-visible {
   position: relative;
   padding-left: 0.7rem;
   color: #5b6475;
-  font-size: 0.85rem;
+  font-size: var(--type-body-md);
 }
 
 .category-card li::before {
@@ -880,7 +940,7 @@ input:focus-visible {
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 0.84rem;
+  font-size: var(--type-label-lg);
   font-family: var(--font-display), sans-serif;
   margin-bottom: 0.54rem;
   background: linear-gradient(135deg, var(--brand-strong), var(--brand));
@@ -889,7 +949,7 @@ input:focus-visible {
 .flow-card p,
 .highlight-card p {
   color: #5c6678;
-  font-size: 0.9rem;
+  font-size: var(--type-body-lg);
   line-height: 1.5;
 }
 
@@ -906,7 +966,7 @@ input:focus-visible {
 }
 
 .bottom-cta h2 {
-  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  font-size: var(--type-headline-md);
   line-height: 1.2;
   font-family: var(--font-display), sans-serif;
   max-width: 28ch;
@@ -922,8 +982,8 @@ input:focus-visible {
 }
 
 .page-hero-small h1 {
-  font-size: clamp(1.56rem, 3.4vw, 2.45rem);
-  line-height: 1.08;
+  font-size: var(--type-display-md);
+  line-height: var(--line-height-tight);
   font-family: var(--font-display), sans-serif;
   max-width: 18ch;
 }
@@ -931,7 +991,7 @@ input:focus-visible {
 .page-hero-small p {
   margin-top: 0.52rem;
   color: #596275;
-  line-height: 1.58;
+  line-height: var(--line-height-body);
   max-width: 70ch;
 }
 
@@ -941,7 +1001,7 @@ input:focus-visible {
   align-items: center;
   gap: 0.35rem;
   color: #6a7385;
-  font-size: 0.84rem;
+  font-size: var(--type-body-md);
   flex-wrap: wrap;
 }
 
@@ -1014,11 +1074,14 @@ input:focus-visible {
   border-radius: 999px;
   background: #fff;
   color: #31394b;
-  font-size: 0.8rem;
-  font-weight: 800;
+  font-size: var(--type-body-sm);
+  font-weight: var(--font-weight-bold);
   padding: 0.44rem 0.84rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background var(--motion-duration-short) var(--motion-easing-standard),
+    color var(--motion-duration-short) var(--motion-easing-standard),
+    border-color var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .chip.active {
@@ -1035,17 +1098,21 @@ input:focus-visible {
   gap: 0.8rem;
 }
 
+.catalog-results-stage {
+  animation: fade-through-in var(--motion-duration-medium) var(--motion-easing-emphasized-decelerate) both;
+}
+
 .catalog-headline-row h2 {
   font-family: var(--font-display), sans-serif;
-  font-size: 1.4rem;
+  font-size: var(--type-headline-md);
 }
 
 .text-button {
   border: 0;
   background: transparent;
   color: #5a6478;
-  font-size: 0.82rem;
-  font-weight: 800;
+  font-size: var(--type-body-sm);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 
@@ -1064,13 +1131,13 @@ input:focus-visible {
 .empty-block strong {
   display: block;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.06rem;
+  font-size: var(--type-title-md);
 }
 
 .empty-block p {
   margin-top: 0.34rem;
   color: #677083;
-  line-height: 1.5;
+  line-height: var(--line-height-body);
 }
 
 .empty-block .btn {
@@ -1155,7 +1222,7 @@ input:focus-visible {
 
 .detail-content-card h2 {
   margin-top: 0.5rem;
-  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  font-size: var(--type-headline-lg);
   line-height: 1.15;
   font-family: var(--font-display), sans-serif;
 }
@@ -1163,13 +1230,13 @@ input:focus-visible {
 .detail-category {
   margin-top: 0.25rem;
   color: #667083;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
 }
 
 .detail-description {
   margin-top: 0.72rem;
   color: #555f73;
-  line-height: 1.55;
+  line-height: var(--line-height-body);
 }
 
 .price-block {
@@ -1182,7 +1249,7 @@ input:focus-visible {
 
 .price-block small {
   display: block;
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm);
   color: #788194;
 }
 
@@ -1190,7 +1257,7 @@ input:focus-visible {
   display: block;
   margin-top: 0.22rem;
   color: var(--brand);
-  font-size: 1.32rem;
+  font-size: var(--type-headline-md);
   font-family: var(--font-display), sans-serif;
 }
 
@@ -1205,7 +1272,7 @@ input:focus-visible {
   position: relative;
   padding-left: 0.72rem;
   color: #596274;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
 }
 
 .detail-highlights li::before {
@@ -1229,13 +1296,13 @@ input:focus-visible {
 
 .detail-price small {
   color: #6f7889;
-  font-size: 0.78rem;
+  font-size: var(--type-body-sm);
 }
 
 .detail-price strong {
   display: block;
   margin-top: 0.16rem;
-  font-size: 1.22rem;
+  font-size: var(--type-title-lg);
   font-family: var(--font-display), sans-serif;
 }
 
@@ -1267,7 +1334,10 @@ input:focus-visible {
   color: #364055;
   line-height: 1;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color var(--motion-duration-short) var(--motion-easing-standard),
+    background var(--motion-duration-short) var(--motion-easing-standard),
+    transform var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .detail-qty button:hover,
@@ -1317,7 +1387,7 @@ input:focus-visible {
 .checkout-card h2,
 .contact-main-card h2,
 .contact-side-card h3 {
-  font-size: 1.2rem;
+  font-size: var(--type-title-lg);
   font-family: var(--font-display), sans-serif;
 }
 
@@ -1345,15 +1415,16 @@ input:focus-visible {
 
 .cart-item-content strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: var(--type-title-sm);
   line-height: 1.28;
+  font-weight: var(--font-weight-semibold);
 }
 
 .cart-item-content small {
   display: block;
   margin-top: 0.18rem;
   color: #6a7385;
-  font-size: 0.78rem;
+  font-size: var(--type-body-sm);
 }
 
 .cart-item-actions {
@@ -1366,7 +1437,7 @@ input:focus-visible {
 .item-subtotal {
   min-width: 90px;
   text-align: right;
-  font-size: 0.96rem;
+  font-size: var(--type-title-sm);
   font-family: var(--font-display), sans-serif;
   margin-left: auto;
   font-variant-numeric: tabular-nums;
@@ -1382,7 +1453,10 @@ input:focus-visible {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color var(--motion-duration-short) var(--motion-easing-standard),
+    background var(--motion-duration-short) var(--motion-easing-standard),
+    transform var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .icon-button:hover {
@@ -1407,13 +1481,13 @@ input:focus-visible {
 
 .cart-total-row strong {
   color: var(--brand);
-  font-size: 1.2rem;
+  font-size: var(--type-title-lg);
   font-family: var(--font-display), sans-serif;
 }
 
 .checkout-help {
   color: #626b7e;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
   line-height: 1.45;
   margin-bottom: 0.6rem;
 }
@@ -1424,7 +1498,7 @@ input:focus-visible {
   background: var(--surface-alt);
   padding: 0.82rem;
   color: #313a4b;
-  font-size: 0.9rem;
+  font-size: var(--type-body-lg);
   line-height: 1.52;
   white-space: pre-line;
   margin-bottom: 0.7rem;
@@ -1439,7 +1513,7 @@ input:focus-visible {
 .contact-main-card p {
   margin: 0.5rem 0 0.85rem;
   color: #586274;
-  line-height: 1.55;
+  line-height: var(--line-height-body);
 }
 
 .contact-side-card ul {
@@ -1458,7 +1532,8 @@ input:focus-visible {
 
 .contact-side-card li strong {
   display: block;
-  font-size: 0.86rem;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .contact-side-card li span {
@@ -1491,6 +1566,7 @@ input:focus-visible {
 .not-found-card h1 {
   font-family: var(--font-display), sans-serif;
   font-size: clamp(1.5rem, 3vw, 2.2rem);
+  line-height: var(--line-height-tight);
 }
 
 .not-found-card p {
@@ -1517,6 +1593,7 @@ body.modal-open {
   background: #fff;
   box-shadow: var(--shadow-sm);
   padding: 1rem;
+  font-family: var(--font-body), sans-serif;
 }
 
 .admin-login-card {
@@ -1525,7 +1602,7 @@ body.modal-open {
 }
 
 .admin-login-card h1 {
-  font-size: clamp(1.45rem, 2.8vw, 2rem);
+  font-size: var(--type-headline-lg);
   line-height: 1.1;
   font-family: var(--font-display), sans-serif;
 }
@@ -1542,12 +1619,12 @@ body.modal-open {
   border-radius: 10px;
   background: #fff6ec;
   color: #7a4a10;
-  font-size: 0.84rem;
+  font-size: var(--type-body-md);
   padding: 0.6rem 0.7rem;
 }
 
 .admin-warning code {
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm);
 }
 
 .admin-form {
@@ -1563,8 +1640,8 @@ body.modal-open {
 
 .admin-field span {
   color: #2c3445;
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-field input {
@@ -1573,7 +1650,7 @@ body.modal-open {
   border-radius: 10px;
   color: #172034;
   background: #fff;
-  font-size: 0.93rem;
+  font-size: var(--type-body-lg);
   padding: 0.78rem 0.8rem;
 }
 
@@ -1587,8 +1664,8 @@ body.modal-open {
   border-radius: 9px;
   color: #8f1129;
   background: rgba(227, 25, 55, 0.1);
-  font-size: 0.84rem;
-  font-weight: 700;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
   padding: 0.52rem 0.62rem;
 }
 
@@ -1598,8 +1675,8 @@ body.modal-open {
 }
 
 .admin-card h2 {
-  font-size: 1.18rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-lg);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-card > p {
@@ -1624,15 +1701,15 @@ body.modal-open {
 
 .admin-overview-grid strong {
   display: block;
-  font-size: 1.04rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-overview-grid span {
   display: block;
   margin-top: 0.2rem;
   color: #5b6578;
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm);
 }
 
 .admin-module-grid {
@@ -1652,13 +1729,13 @@ body.modal-open {
 }
 
 .admin-module-card h3 {
-  font-size: 0.98rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-module-card p {
   color: #566071;
-  font-size: 0.85rem;
+  font-size: var(--type-body-md);
   line-height: 1.42;
 }
 
@@ -1676,14 +1753,14 @@ body.modal-open {
 }
 
 .admin-manager-toolbar h3 {
-  font-size: 1.08rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-manager-toolbar p {
   margin-top: 0.25rem;
   color: #5a6376;
-  font-size: 0.86rem;
+  font-size: var(--type-body-md);
 }
 
 .admin-manager-toolbar-actions {
@@ -1719,8 +1796,8 @@ body.modal-open {
 
 .admin-manager-title-row h4,
 .admin-list-header h4 {
-  font-size: 0.95rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-manager-footer-actions {
@@ -1739,14 +1816,14 @@ body.modal-open {
 }
 
 .admin-manager-placeholder h4 {
-  font-size: 1rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-manager-placeholder p {
   color: #5f697c;
   max-width: 42ch;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
 }
 
 .admin-compact-list {
@@ -1763,14 +1840,14 @@ body.modal-open {
 
 .admin-compact-item strong {
   display: block;
-  font-size: 0.94rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-compact-item p {
   margin-top: 0.24rem;
   color: #5b6577;
-  font-size: 0.84rem;
+  font-size: var(--type-body-md);
   line-height: 1.42;
 }
 
@@ -1818,8 +1895,8 @@ body.modal-open {
   align-items: center;
   gap: 0.4rem;
   color: #2e3748;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-list-header {
@@ -1832,8 +1909,8 @@ body.modal-open {
 }
 
 .admin-list-header h3 {
-  font-size: 1rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-list-header input {
@@ -1842,7 +1919,7 @@ body.modal-open {
   border-radius: 10px;
   background: #fff;
   color: #1b2234;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
   padding: 0.66rem 0.72rem;
 }
 
@@ -1875,21 +1952,21 @@ body.modal-open {
 
 .admin-product-item strong {
   display: block;
-  font-size: 0.94rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-product-item p {
   margin-top: 0.2rem;
   color: #576072;
-  font-size: 0.84rem;
+  font-size: var(--type-body-md);
 }
 
 .admin-product-item small {
   display: block;
   margin-top: 0.14rem;
   color: #687286;
-  font-size: 0.78rem;
+  font-size: var(--type-body-sm);
 }
 
 .admin-product-actions {
@@ -1901,7 +1978,7 @@ body.modal-open {
 .admin-product-actions .btn {
   min-height: 34px;
   padding: 0.58rem 0.72rem;
-  font-size: 0.76rem;
+  font-size: var(--type-label-md);
 }
 
 .admin-channel-block,
@@ -1971,8 +2048,8 @@ body.modal-open {
 }
 
 .admin-modal-header h2 {
-  font-size: 1.04rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .admin-modal-close {
@@ -2007,7 +2084,7 @@ body.modal-open {
   justify-content: space-between;
   gap: 0.5rem;
   flex-wrap: wrap;
-  font-size: 0.88rem;
+  font-size: var(--type-body-md);
 }
 
 .footer-inner div {
@@ -2031,7 +2108,9 @@ body.modal-open {
   border-radius: 14px;
   padding: 0.76rem 0.86rem;
   box-shadow: 0 17px 26px rgba(37, 211, 102, 0.34);
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition:
+    transform var(--motion-duration-short) var(--motion-easing-standard),
+    filter var(--motion-duration-short) var(--motion-easing-standard);
 }
 
 .mobile-cart-bar:hover {
@@ -2069,7 +2148,7 @@ body.modal-open {
   background: #fff;
   box-shadow: var(--shadow-lg);
   padding: 0.72rem;
-  animation: toast-in 0.24s ease both;
+  animation: toast-slide-in var(--motion-duration-medium) var(--motion-easing-emphasized-decelerate) both;
 }
 
 .whatsapp-widget-close {
@@ -2090,14 +2169,14 @@ body.modal-open {
 
 .whatsapp-widget-card strong {
   display: block;
-  font-size: 0.9rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-title-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .whatsapp-widget-card p {
   margin-top: 0.3rem;
   color: #5f697c;
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm);
   line-height: 1.42;
 }
 
@@ -2106,8 +2185,8 @@ body.modal-open {
   min-height: 35px;
   border-radius: 9px;
   color: #fff;
-  font-size: 0.8rem;
-  font-weight: 800;
+  font-size: var(--type-body-sm);
+  font-weight: var(--font-weight-bold);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2125,7 +2204,10 @@ body.modal-open {
   background: linear-gradient(135deg, var(--success-strong), var(--success));
   box-shadow: 0 18px 28px rgba(37, 211, 102, 0.35);
   border: 2px solid rgba(255, 255, 255, 0.84);
-  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  transition:
+    transform var(--motion-duration-medium) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-medium) var(--motion-easing-standard),
+    filter var(--motion-duration-medium) var(--motion-easing-standard);
 }
 
 .whatsapp-widget-fab:hover {
@@ -2170,7 +2252,7 @@ body.modal-open {
   transform-origin: top right;
   will-change: transform, opacity;
   overflow: hidden;
-  animation: toast-slide-in 0.24s ease both;
+  animation: toast-slide-in var(--motion-duration-medium) var(--motion-easing-emphasized-decelerate) both;
 }
 
 .toast::before {
@@ -2196,7 +2278,7 @@ body.modal-open {
 }
 
 .toast.is-closing {
-  animation: toast-slide-out 0.18s ease both;
+  animation: toast-slide-out var(--motion-duration-short) var(--motion-easing-emphasized-accelerate) both;
 }
 
 .toast-icon {
@@ -2224,13 +2306,13 @@ body.modal-open {
 
 .toast-content strong {
   display: block;
-  font-size: 0.86rem;
-  font-family: var(--font-display), sans-serif;
+  font-size: var(--type-body-md);
+  font-weight: var(--font-weight-semibold);
 }
 
 .toast-content p {
   margin-top: 0.16rem;
-  font-size: 0.8rem;
+  font-size: var(--type-body-sm);
   line-height: 1.38;
   color: rgba(245, 248, 255, 0.86);
 }
@@ -2263,23 +2345,23 @@ body.modal-open {
 }
 
 .reveal {
-  animation: reveal-up 0.68s ease both;
+  animation: reveal-up var(--motion-duration-long) var(--motion-easing-emphasized-decelerate) both;
 }
 
 .delay-1 {
-  animation-delay: 0.08s;
+  animation-delay: 0.04s;
 }
 
 .delay-2 {
-  animation-delay: 0.14s;
+  animation-delay: 0.08s;
 }
 
 .delay-3 {
-  animation-delay: 0.2s;
+  animation-delay: 0.12s;
 }
 
 .delay-4 {
-  animation-delay: 0.26s;
+  animation-delay: 0.16s;
 }
 
 @keyframes reveal-up {
@@ -2290,28 +2372,6 @@ body.modal-open {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(14px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes toast-out {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(12px) scale(0.98);
   }
 }
 
@@ -2343,6 +2403,17 @@ body.modal-open {
   }
   to {
     transform: scaleX(0);
+  }
+}
+
+@keyframes fade-through-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -2625,9 +2696,27 @@ body.modal-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .reveal,
+  .delay-1,
+  .delay-2,
+  .delay-3,
+  .delay-4,
   .toast,
   .toast.is-closing,
-  .toast-progress {
+  .toast-progress,
+  .header-cart.pulse {
     animation: none !important;
   }
 }

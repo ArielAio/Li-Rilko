@@ -1,4 +1,4 @@
-import Link from "next/link";
+import TransitionLink from "@/components/transition-link";
 
 export default function SiteFooter() {
   return (
@@ -6,11 +6,11 @@ export default function SiteFooter() {
       <div className="shell-container footer-inner">
         <p>LI RILKO IMPORTS</p>
         <div>
-          <Link href="/catalogo">Catálogo</Link>
+          <TransitionLink href="/catalogo">Catálogo</TransitionLink>
           <span>•</span>
-          <Link href="/carrinho">Carrinho</Link>
+          <TransitionLink href="/carrinho">Carrinho</TransitionLink>
           <span>•</span>
-          <Link href="/contato">Contato</Link>
+          <TransitionLink href="/contato">Contato</TransitionLink>
         </div>
       </div>
     </footer>

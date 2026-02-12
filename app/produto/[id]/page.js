@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import ProductDetailActions from "@/components/product-detail-actions";
 import { useCatalog } from "@/components/providers/catalog-provider";
+import TransitionLink from "@/components/transition-link";
 import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductPage() {
@@ -18,9 +18,9 @@ export default function ProductPage() {
         <div className="shell-container not-found-card">
           <h1>Produto não encontrado</h1>
           <p>Esse item não está disponível no momento ou foi removido da vitrine.</p>
-          <Link href="/catalogo" className="btn btn-primary">
+          <TransitionLink href="/catalogo" className="btn btn-primary">
             Voltar para o catálogo
-          </Link>
+          </TransitionLink>
         </div>
       </section>
     );
@@ -36,9 +36,9 @@ export default function ProductPage() {
           <h1>{product.name}</h1>
           <p>{product.shortDescription}</p>
           <div className="breadcrumb-row">
-            <Link href="/">Início</Link>
+            <TransitionLink href="/">Início</TransitionLink>
             <span>/</span>
-            <Link href="/catalogo">Catálogo</Link>
+            <TransitionLink href="/catalogo">Catálogo</TransitionLink>
             <span>/</span>
             <strong>{product.name}</strong>
           </div>
@@ -50,7 +50,12 @@ export default function ProductPage() {
           <article className="detail-media-card reveal">
             <div className="detail-media-main">
               {gallery[0] ? (
-                <img src={gallery[0]} alt={product.name} loading="eager" />
+                <img
+                  src={gallery[0]}
+                  alt={product.name}
+                  loading="eager"
+                  style={{ viewTransitionName: `product-media-${product.id}` }}
+                />
               ) : (
                 <span>{product.sub}</span>
               )}
@@ -66,7 +71,7 @@ export default function ProductPage() {
 
           <article className="detail-content-card reveal delay-1">
             <p className="product-badge">{product.isAvailable === false ? "Indisponível no momento" : product.badge}</p>
-            <h2>{product.name}</h2>
+            <h2 style={{ viewTransitionName: `product-title-${product.id}` }}>{product.name}</h2>
             <p className="detail-category">
               {product.category} • {product.sub}
             </p>

@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { IconTrash, IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import TransitionLink from "@/components/transition-link";
 import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
 
 export default function CartPage() {
@@ -27,11 +27,6 @@ export default function CartPage() {
     }
 
     decreaseItem(item.id, 1);
-    showToast({
-      type: "info",
-      title: "Quantidade reduzida",
-      message: `${item.name} teve a quantidade atualizada.`,
-    });
   }
 
   function handleIncrease(item) {
@@ -44,12 +39,6 @@ export default function CartPage() {
       });
       return;
     }
-
-    showToast({
-      type: "info",
-      title: "Quantidade aumentada",
-      message: `${item.name} teve a quantidade atualizada.`,
-    });
   }
 
   function handleRemove(item) {
@@ -114,9 +103,9 @@ export default function CartPage() {
               <div className="empty-block">
                 <strong>Seu carrinho está vazio.</strong>
                 <p>Volte para o catálogo e adicione os produtos que te interessam.</p>
-                <Link className="btn btn-primary" href="/catalogo">
+                <TransitionLink className="btn btn-primary" href="/catalogo">
                   Ir para catálogo
-                </Link>
+                </TransitionLink>
               </div>
             ) : (
               <ul className="cart-list">

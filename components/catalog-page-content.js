@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconSearch } from "@/components/icons";
 import ProductCard from "@/components/product-card";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import TransitionLink from "@/components/transition-link";
 import { productMatches } from "@/lib/store-utils";
 
 export default function CatalogPageContent({ initialCategory = "Todos", initialSub = "" }) {
@@ -24,6 +24,11 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
   const filteredProducts = useMemo(() => {
     return publicProducts.filter((product) => productMatches(product, searchTerm, selectedCategory));
   }, [publicProducts, searchTerm, selectedCategory]);
+
+  const transitionStageKey = useMemo(
+    () => `${selectedCategory}::${searchTerm.trim().toLowerCase()}`,
+    [searchTerm, selectedCategory],
+  );
 
   useEffect(() => {
     const hasFilters = selectedCategory !== "Todos" || searchTerm.trim().length > 0;
@@ -80,9 +85,9 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
                 />
               </div>
             </div>
-            <Link className="btn btn-whatsapp" href="/carrinho">
+            <TransitionLink className="btn btn-whatsapp" href="/carrinho">
               Ir para o carrinho
-            </Link>
+            </TransitionLink>
           </div>
 
           <div className="chip-row">
@@ -112,23 +117,25 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
             </button>
           </div>
 
-          {filteredProducts.length === 0 ? (
-            <article className="empty-block">
-              <strong>Nenhum produto para os filtros atuais.</strong>
-              <p>Tente outro termo de busca ou volte para a vitrine completa.</p>
-              <button type="button" className="btn btn-primary" onClick={clearFilters}>
-                Mostrar todos os produtos
-              </button>
-            </article>
-          ) : (
-            <div className="product-grid">
-              {filteredProducts.map((product, index) => (
-                <div key={product.id} className={`reveal delay-${(index % 4) + 1}`}>
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          )}
+          <div key={transitionStageKey} className="catalog-results-stage">
+            {filteredProducts.length === 0 ? (
+              <article className="empty-block">
+                <strong>Nenhum produto para os filtros atuais.</strong>
+                <p>Tente outro termo de busca ou volte para a vitrine completa.</p>
+                <button type="button" className="btn btn-primary" onClick={clearFilters}>
+                  Mostrar todos os produtos
+                </button>
+              </article>
+            ) : (
+              <div className="product-grid">
+                {filteredProducts.map((product, index) => (
+                  <div key={product.id} className={`reveal delay-${(index % 4) + 1}`}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </>

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconCart } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
+import TransitionLink from "@/components/transition-link";
 import { formatCurrency } from "@/lib/store-utils";
 
 export default function MobileCartBar() {
@@ -15,12 +15,12 @@ export default function MobileCartBar() {
   }
 
   return (
-    <Link href="/carrinho" className="mobile-cart-bar" aria-label={`Abrir carrinho com ${count} itens`}>
+    <TransitionLink href="/carrinho" className="mobile-cart-bar" aria-label={`Abrir carrinho com ${count} itens`}>
       <IconCart className="icon" />
       <span>
         {count} item(ns) • {formatCurrency(total)}
       </span>
       <strong>Ver carrinho</strong>
-    </Link>
+    </TransitionLink>
   );
 }

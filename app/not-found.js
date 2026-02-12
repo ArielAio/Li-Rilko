@@ -1,4 +1,4 @@
-import Link from "next/link";
+import TransitionLink from "@/components/transition-link";
 
 export default function NotFound() {
   return (
@@ -7,9 +7,9 @@ export default function NotFound() {
         <p className="kicker">Página não encontrada</p>
         <h1>Não encontramos o conteúdo que você procurou.</h1>
         <p>Volte para o catálogo para continuar a navegação.</p>
-        <Link className="btn btn-primary" href="/catalogo">
+        <TransitionLink className="btn btn-primary" href="/catalogo">
           Ir para catálogo
-        </Link>
+        </TransitionLink>
       </div>
     </section>
   );

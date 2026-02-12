@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconCart, IconChevronDown, IconClose, IconMenu } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
+import TransitionLink from "@/components/transition-link";
 import { formatCurrency } from "@/lib/store-utils";
 
 const navItems = [
@@ -104,21 +104,21 @@ export default function SiteHeader() {
     <>
       <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <div className="shell-container header-inner">
-          <Link href="/" className="brand" aria-label="Li Rilko Imports">
+          <TransitionLink href="/" className="brand" aria-label="Li Rilko Imports">
             <span className="brand-symbol">LR</span>
             <span className="brand-text">
               <strong>LI RILKO</strong>
               <small>IMPORTS</small>
             </span>
-          </Link>
+          </TransitionLink>
 
           <nav className="header-nav" aria-label="Navegação principal">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.href} href={item.href} className={isActive ? "is-active" : ""}>
+                <TransitionLink key={item.href} href={item.href} className={isActive ? "is-active" : ""}>
                   {item.label}
-                </Link>
+                </TransitionLink>
               );
             })}
           </nav>
@@ -136,13 +136,13 @@ export default function SiteHeader() {
             </button>
 
             {!isAdminRoute && (
-              <Link href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
+              <TransitionLink href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
                 <IconCart className="icon" />
                 <span className="header-cart-text">
                   <small>{count} item(ns)</small>
                   <strong>{formatCurrency(total)}</strong>
                 </span>
-              </Link>
+              </TransitionLink>
             )}
           </div>
         </div>
@@ -171,9 +171,14 @@ export default function SiteHeader() {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link key={item.href} href={item.href} className={isActive ? "is-active" : ""} onClick={() => setIsMenuOpen(false)}>
+              <TransitionLink
+                key={item.href}
+                href={item.href}
+                className={isActive ? "is-active" : ""}
+                onClick={() => setIsMenuOpen(false)}
+              >
                 {item.label}
-              </Link>
+              </TransitionLink>
             );
           })}
         </nav>
@@ -197,13 +202,13 @@ export default function SiteHeader() {
                   <IconChevronDown className="icon" />
                 </button>
                 <div id={triggerId} className="mobile-submenu">
-                  <Link href={buildCatalogLink(category.name)} onClick={() => setIsMenuOpen(false)}>
+                  <TransitionLink href={buildCatalogLink(category.name)} onClick={() => setIsMenuOpen(false)}>
                     Ver todos
-                  </Link>
+                  </TransitionLink>
                   {category.subs.map((sub) => (
-                    <Link key={sub} href={buildCatalogLink(category.name, sub)} onClick={() => setIsMenuOpen(false)}>
+                    <TransitionLink key={sub} href={buildCatalogLink(category.name, sub)} onClick={() => setIsMenuOpen(false)}>
                       {sub}
-                    </Link>
+                    </TransitionLink>
                   ))}
                 </div>
               </article>

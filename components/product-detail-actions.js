@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { IconCartPlus } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import TransitionLink from "@/components/transition-link";
 import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductDetailActions({ product }) {
@@ -61,9 +61,9 @@ export default function ProductDetailActions({ product }) {
           <IconCartPlus className="icon" />
           {isAvailable ? "Adicionar ao carrinho" : "Indisponível no momento"}
         </button>
-        <Link className="btn btn-surface" href="/carrinho">
+        <TransitionLink className="btn btn-surface" href="/carrinho">
           Ir para o carrinho
-        </Link>
+        </TransitionLink>
       </div>
     </div>
   );
