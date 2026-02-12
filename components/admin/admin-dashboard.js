@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { adminLogoutAction } from "@/app/admin/actions";
 import AdminModal from "@/components/admin/admin-modal";
@@ -9,6 +8,7 @@ import AdminContactsManager from "@/components/admin/managers/admin-contacts-man
 import AdminProductsManager from "@/components/admin/managers/admin-products-manager";
 import AdminWhatsAppManager from "@/components/admin/managers/admin-whatsapp-manager";
 import { useCatalog } from "@/components/providers/catalog-provider";
+import TransitionLink from "@/components/transition-link";
 
 const PANELS = {
   products: "products",
@@ -127,9 +127,9 @@ export default function AdminDashboard() {
               </article>
             </div>
             <div className="admin-actions">
-              <Link className="btn btn-surface" href="/catalogo">
+              <TransitionLink className="btn btn-surface" href="/catalogo">
                 Ver site público
-              </Link>
+              </TransitionLink>
               <form action={adminLogoutAction} className="admin-logout-form">
                 <button type="submit" className="btn btn-primary">
                   Sair do painel

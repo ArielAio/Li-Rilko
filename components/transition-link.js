@@ -2,13 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePageTransition } from "@/components/providers/page-transition-provider";
 
 function isModifiedEvent(event) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
-}
-
-function supportsViewTransitions() {
-  return typeof document !== "undefined" && typeof document.startViewTransition === "function";
 }
 
 function normalizeHref(href) {
@@ -45,6 +42,7 @@ function normalizeHref(href) {
 
 export default function TransitionLink({ href, onClick, replace = false, scroll = true, target, ...props }) {
   const router = useRouter();
+  const { startNavigation } = usePageTransition();
 
   function handleClick(event) {
     if (typeof onClick === "function") {
@@ -52,10 +50,6 @@ export default function TransitionLink({ href, onClick, replace = false, scroll 
     }
 
     if (event.defaultPrevented) {
-      return;
-    }
-
-    if (!supportsViewTransitions()) {
       return;
     }
 
@@ -72,18 +66,33 @@ export default function TransitionLink({ href, onClick, replace = false, scroll 
       return;
     }
 
-    event.preventDefault();
+    const handledByTransition = startNavigation({
+      href: hrefValue,
+      replace,
+      scroll,
+    });
 
-    const navigate = () => {
-      if (replace) {
-        router.replace(hrefValue, { scroll });
-      } else {
-        router.push(hrefValue, { scroll });
-      }
-    };
-
-    document.startViewTransition(navigate);
+    if (handledByTransition) {
+      event.preventDefault();
+    }
   }
 
-  return <Link href={href} onClick={handleClick} replace={replace} scroll={scroll} target={target} {...props} />;
+  function handleMouseEnter() {
+    const hrefValue = normalizeHref(href);
+    if (hrefValue) {
+      router.prefetch(hrefValue);
+    }
+  }
+
+  return (
+    <Link
+      href={href}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      replace={replace}
+      scroll={scroll}
+      target={target}
+      {...props}
+    />
+  );
 }

@@ -76,9 +76,235 @@ body.menu-open {
   overflow: hidden;
 }
 
+body.is-page-transitioning {
+  cursor: progress;
+}
+
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: hidden;
+  contain: paint;
+  isolation: isolate;
+}
+
+.page-transition-overlay.is-active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.page-transition-layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250vmax;
+  height: 250vmax;
+  transform: translate3d(-162%, -162%, 0) rotate(-11deg) scale(1.04);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.page-transition-layer.layer-back {
+  background: linear-gradient(146deg, #070910 0%, #101828 56%, #17233b 100%);
+  border-radius: 34% 66% 28% 72% / 30% 32% 68% 70%;
+}
+
+.page-transition-layer.layer-mid {
+  background: linear-gradient(146deg, #700f21 0%, #aa112b 50%, #c91636 100%);
+  border-radius: 37% 63% 23% 77% / 34% 36% 64% 66%;
+}
+
+.page-transition-layer.layer-front {
+  background: linear-gradient(146deg, #bf1231 0%, #e31937 52%, #ff4362 100%);
+  border-radius: 40% 60% 20% 80% / 38% 40% 60% 62%;
+}
+
+.page-transition-overlay.is-entering .layer-back {
+  animation: page-wave-enter-back 1020ms var(--motion-easing-standard) both;
+}
+
+.page-transition-overlay.is-entering .layer-mid {
+  animation: page-wave-enter-mid 1100ms var(--motion-easing-standard) 70ms both;
+}
+
+.page-transition-overlay.is-entering .layer-front {
+  animation: page-wave-enter-front 1180ms var(--motion-easing-standard) 90ms both;
+}
+
+.page-transition-overlay.is-exiting .layer-back {
+  transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  animation: page-wave-exit-back 1180ms var(--motion-easing-standard) 70ms both;
+}
+
+.page-transition-overlay.is-exiting .layer-mid {
+  transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  animation: page-wave-exit-mid 980ms var(--motion-easing-standard) 45ms both;
+}
+
+.page-transition-overlay.is-exiting .layer-front {
+  transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  animation: page-wave-exit-front 840ms var(--motion-easing-standard) 20ms both;
+}
+
+.page-transition-brand {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  color: #ffffff;
+  opacity: 0;
+  transform: translate3d(-14px, 14px, 0) scale(0.97);
+  will-change: transform, opacity;
+}
+
+.page-transition-overlay.is-entering .page-transition-brand {
+  animation: page-brand-in 480ms var(--motion-easing-standard) 340ms both;
+}
+
+.page-transition-overlay.is-exiting .page-transition-brand {
+  animation: page-brand-out 360ms var(--motion-easing-standard) 40ms both;
+}
+
+.page-transition-badge {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.98rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(4px);
+}
+
+.page-transition-wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.16rem;
+  line-height: 1;
+}
+
+.page-transition-wordmark strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.18rem;
+  letter-spacing: 0.14em;
+}
+
+.page-transition-wordmark small {
+  font-size: 0.66rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.28em;
+  opacity: 0.86;
+}
+
+@keyframes page-wave-enter-back {
+  0% {
+    transform: translate3d(-164%, -164%, 0) rotate(-11deg) scale(1.05);
+  }
+
+  84% {
+    transform: translate3d(-52.5%, -52.5%, 0) rotate(-11deg) scale(1.008);
+  }
+
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+}
+
+@keyframes page-wave-enter-mid {
+  0% {
+    transform: translate3d(-166%, -166%, 0) rotate(-11deg) scale(1.05);
+  }
+
+  85% {
+    transform: translate3d(-52.5%, -52.5%, 0) rotate(-11deg) scale(1.009);
+  }
+
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+}
+
+@keyframes page-wave-enter-front {
+  0% {
+    transform: translate3d(-168%, -168%, 0) rotate(-11deg) scale(1.055);
+  }
+
+  86% {
+    transform: translate3d(-52.8%, -52.8%, 0) rotate(-11deg) scale(1.01);
+  }
+
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+}
+
+@keyframes page-wave-exit-front {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+
+  100% {
+    transform: translate3d(74%, 74%, 0) rotate(-11deg) scale(1.03);
+  }
+}
+
+@keyframes page-wave-exit-mid {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+
+  100% {
+    transform: translate3d(76%, 76%, 0) rotate(-11deg) scale(1.03);
+  }
+}
+
+@keyframes page-wave-exit-back {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
+  }
+
+  100% {
+    transform: translate3d(78%, 78%, 0) rotate(-11deg) scale(1.03);
+  }
+}
+
+@keyframes page-brand-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(-14px, 14px, 0) scale(0.97);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes page-brand-out {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(12px, -12px, 0) scale(0.98);
+  }
+}
+
 @supports (view-transition-name: none) {
   @view-transition {
-    navigation: auto;
+    navigation: none;
   }
 
   ::view-transition-old(root),
