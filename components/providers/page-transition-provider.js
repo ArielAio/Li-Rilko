@@ -11,11 +11,18 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import PageTransitionOverlay from "@/components/page-transition-overlay";
+import {
+  PAGE_TRANSITION_CONFIG,
+  getEnterDurationMs,
+  getExitDurationMs,
+  getTransitionCssVars,
+} from "@/lib/page-transition-config";
 
-const COVER_DURATION_MS = 1020;
-const COVER_HOLD_MS = 240;
-const EXIT_DURATION_MS = 1100;
-const NAVIGATION_TIMEOUT_MS = 5000;
+const COVER_DURATION_MS = getEnterDurationMs();
+const COVER_HOLD_MS = PAGE_TRANSITION_CONFIG.coverHoldMs;
+const EXIT_DURATION_MS = getExitDurationMs();
+const NAVIGATION_TIMEOUT_MS = PAGE_TRANSITION_CONFIG.navigationTimeoutMs;
+const TRANSITION_CSS_VARS = getTransitionCssVars();
 
 const PageTransitionContext = createContext(null);
 
@@ -271,7 +278,7 @@ export default function PageTransitionProvider({ children }) {
   return (
     <PageTransitionContext.Provider value={value}>
       {children}
-      <PageTransitionOverlay phase={phase} />
+      <PageTransitionOverlay phase={phase} styleVars={TRANSITION_CSS_VARS} />
     </PageTransitionContext.Provider>
   );
 }

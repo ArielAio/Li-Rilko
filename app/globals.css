@@ -42,6 +42,7 @@
   --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
   --motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --motion-easing-wave-soft: cubic-bezier(0.35, 0.03, 0.2, 1);
 }
 
 * {
@@ -123,30 +124,55 @@ body.is-page-transitioning {
 }
 
 .page-transition-overlay.is-entering .layer-back {
-  animation: page-wave-enter-back 1020ms var(--motion-easing-standard) both;
+  animation: page-wave-enter-back var(--pt-enter-back-duration, 1020ms) var(--motion-easing-wave-soft) both;
 }
 
 .page-transition-overlay.is-entering .layer-mid {
-  animation: page-wave-enter-mid 1100ms var(--motion-easing-standard) 70ms both;
+  animation:
+    page-wave-enter-mid
+    var(--pt-enter-mid-duration, 1100ms)
+    var(--motion-easing-wave-soft)
+    var(--pt-enter-mid-delay, 70ms)
+    both;
 }
 
 .page-transition-overlay.is-entering .layer-front {
-  animation: page-wave-enter-front 1180ms var(--motion-easing-standard) 90ms both;
+  animation:
+    page-wave-enter-front
+    var(--pt-enter-front-duration, 1180ms)
+    var(--motion-easing-wave-soft)
+    var(--pt-enter-front-delay, 90ms)
+    both;
 }
 
 .page-transition-overlay.is-exiting .layer-back {
   transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
-  animation: page-wave-exit-back 1180ms var(--motion-easing-standard) 70ms both;
+  animation:
+    page-wave-exit-back
+    var(--pt-exit-back-duration, 1180ms)
+    var(--motion-easing-wave-soft)
+    var(--pt-exit-back-delay, 70ms)
+    both;
 }
 
 .page-transition-overlay.is-exiting .layer-mid {
   transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
-  animation: page-wave-exit-mid 980ms var(--motion-easing-standard) 45ms both;
+  animation:
+    page-wave-exit-mid
+    var(--pt-exit-mid-duration, 980ms)
+    var(--motion-easing-wave-soft)
+    var(--pt-exit-mid-delay, 45ms)
+    both;
 }
 
 .page-transition-overlay.is-exiting .layer-front {
   transform: translate3d(-50%, -50%, 0) rotate(-11deg) scale(1);
-  animation: page-wave-exit-front 840ms var(--motion-easing-standard) 20ms both;
+  animation:
+    page-wave-exit-front
+    var(--pt-exit-front-duration, 840ms)
+    var(--motion-easing-wave-soft)
+    var(--pt-exit-front-delay, 20ms)
+    both;
 }
 
 .page-transition-brand {
@@ -163,11 +189,21 @@ body.is-page-transitioning {
 }
 
 .page-transition-overlay.is-entering .page-transition-brand {
-  animation: page-brand-in 480ms var(--motion-easing-standard) 340ms both;
+  animation:
+    page-brand-in
+    var(--pt-brand-enter-duration, 480ms)
+    var(--motion-easing-standard)
+    var(--pt-brand-enter-delay, 340ms)
+    both;
 }
 
 .page-transition-overlay.is-exiting .page-transition-brand {
-  animation: page-brand-out 360ms var(--motion-easing-standard) 40ms both;
+  animation:
+    page-brand-out
+    var(--pt-brand-exit-duration, 360ms)
+    var(--motion-easing-standard)
+    var(--pt-brand-exit-delay, 40ms)
+    both;
 }
 
 .page-transition-badge {
@@ -211,7 +247,7 @@ body.is-page-transitioning {
     transform: translate3d(-164%, -164%, 0) rotate(-11deg) scale(1.05);
   }
 
-  84% {
+  92% {
     transform: translate3d(-52.5%, -52.5%, 0) rotate(-11deg) scale(1.008);
   }
 
@@ -225,7 +261,7 @@ body.is-page-transitioning {
     transform: translate3d(-166%, -166%, 0) rotate(-11deg) scale(1.05);
   }
 
-  85% {
+  93% {
     transform: translate3d(-52.5%, -52.5%, 0) rotate(-11deg) scale(1.009);
   }
 
@@ -239,7 +275,7 @@ body.is-page-transitioning {
     transform: translate3d(-168%, -168%, 0) rotate(-11deg) scale(1.055);
   }
 
-  86% {
+  94% {
     transform: translate3d(-52.8%, -52.8%, 0) rotate(-11deg) scale(1.01);
   }
 
