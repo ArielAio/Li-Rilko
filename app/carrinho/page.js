@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { IconChat, IconTrash } from "@/components/icons";
+import { IconTrash, IconWhatsApp } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
@@ -158,7 +158,7 @@ export default function CartPage() {
               rel="noreferrer"
               onClick={handleCheckoutClick}
             >
-              <IconChat className="icon" />
+              <IconWhatsApp className="icon" />
               Finalizar no WhatsApp
             </a>
           </article>

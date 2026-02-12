@@ -1,6 +1,6 @@
 "use client";
 
-import { IconChat } from "@/components/icons";
+import { IconWhatsApp } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import { contactChannels } from "@/lib/catalog-data";
@@ -39,7 +39,7 @@ export default function ContactPage() {
               segue automaticamente na mensagem.
             </p>
             <a className="btn btn-whatsapp" href={whatsappLink} target="_blank" rel="noreferrer" onClick={handleStartContact}>
-              <IconChat className="icon" />
+              <IconWhatsApp className="icon" />
               Iniciar conversa no WhatsApp
             </a>
           </article>

@@ -26,6 +26,11 @@ body {
   overflow-x: hidden;
 }
 
+img {
+  max-width: 100%;
+  height: auto;
+}
+
 body {
   font-family: var(--font-body), sans-serif;
   color: var(--text);
@@ -49,10 +54,37 @@ input {
   font: inherit;
 }
 
+.btn:focus-visible,
+.menu-trigger:focus-visible,
+.header-cart:focus-visible,
+.mobile-menu-close:focus-visible,
+.mobile-category-trigger:focus-visible,
+.chip:focus-visible,
+.text-button:focus-visible,
+.icon-button:focus-visible,
+.link-detail:focus-visible,
+.product-button:focus-visible,
+.whatsapp-widget-link:focus-visible,
+.whatsapp-widget-fab:focus-visible,
+.toast-close:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(227, 25, 55, 0.24);
+  outline-offset: 2px;
+}
+
 .icon {
   width: 1em;
   height: 1em;
+  display: block;
   flex-shrink: 0;
+  overflow: visible;
+}
+
+.btn .icon,
+.header-cart .icon,
+.mobile-cart-bar .icon,
+.whatsapp-widget-fab .icon {
+  transform: translateZ(0);
 }
 
 .shell-container {
@@ -100,15 +132,22 @@ input {
 .btn {
   border: 0;
   border-radius: 12px;
+  min-height: 42px;
   padding: 0.76rem 1.1rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.42rem;
+  line-height: 1;
   font-size: 0.9rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn .icon {
+  width: 15px;
+  height: 15px;
 }
 
 .btn:hover {
@@ -116,9 +155,14 @@ input {
   filter: brightness(1.03);
 }
 
+.btn:active {
+  transform: translateY(0);
+}
+
 .btn-primary {
   color: #fff;
   background: linear-gradient(135deg, var(--brand-strong), var(--brand));
+  box-shadow: 0 8px 16px rgba(227, 25, 55, 0.2);
 }
 
 .btn-dark {
@@ -136,6 +180,11 @@ input {
 .btn-whatsapp {
   color: #fff;
   background: linear-gradient(135deg, var(--success-strong), var(--success));
+}
+
+.btn-whatsapp .icon {
+  width: 18px;
+  height: 18px;
 }
 
 .site-header {
@@ -256,6 +305,12 @@ input {
   border-radius: 999px;
   padding: 0.52rem 0.86rem;
   white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.header-cart:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(227, 25, 55, 0.28);
 }
 
 .header-cart .icon {
@@ -707,6 +762,13 @@ input {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.link-detail .icon,
+.product-button .icon {
+  width: 13px;
+  height: 13px;
 }
 
 .link-detail {
@@ -719,6 +781,12 @@ input {
   border: 0;
   color: #fff;
   background: linear-gradient(135deg, var(--brand-strong), var(--brand));
+}
+
+.link-detail:hover,
+.product-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.02);
 }
 
 .category-grid,
@@ -884,6 +952,11 @@ input {
   color: #6c7383;
 }
 
+.search-icon .icon {
+  width: 17px;
+  height: 17px;
+}
+
 .search-input-wrap input {
   width: 100%;
   border: 0;
@@ -895,6 +968,11 @@ input {
 
 .search-input-wrap input:focus {
   outline: none;
+}
+
+.search-input-wrap:focus-within {
+  border-color: #bac4d8;
+  box-shadow: 0 0 0 3px rgba(227, 25, 55, 0.1);
 }
 
 .chip-row {
@@ -1140,6 +1218,16 @@ input {
   gap: 0.42rem;
 }
 
+.qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.24rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
 .detail-qty button,
 .qty-controls button {
   width: 26px;
@@ -1152,13 +1240,22 @@ input {
   color: #364055;
   line-height: 1;
   cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.detail-qty button:hover,
+.qty-controls button:hover {
+  border-color: #bcc5d8;
+  background: #f8f9fd;
+  transform: translateY(-1px);
 }
 
 .detail-qty strong,
 .qty-controls strong {
-  min-width: 18px;
+  min-width: 24px;
   text-align: center;
   font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .detail-buttons {
@@ -1227,6 +1324,7 @@ input {
 .cart-item-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.55rem;
 }
 
@@ -1235,6 +1333,8 @@ input {
   text-align: right;
   font-size: 0.96rem;
   font-family: var(--font-display), sans-serif;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
 }
 
 .icon-button {
@@ -1247,6 +1347,13 @@ input {
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.icon-button:hover {
+  border-color: #b6c0d4;
+  background: #f9fafe;
+  transform: translateY(-1px);
 }
 
 .icon-button .icon {
@@ -1388,6 +1495,12 @@ input {
   border-radius: 14px;
   padding: 0.76rem 0.86rem;
   box-shadow: 0 17px 26px rgba(37, 211, 102, 0.34);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.mobile-cart-bar:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
 .mobile-cart-bar .icon {
@@ -1467,19 +1580,28 @@ input {
 }
 
 .whatsapp-widget-fab {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   color: #fff;
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, var(--success-strong), var(--success));
   box-shadow: 0 18px 28px rgba(37, 211, 102, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.84);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+}
+
+.whatsapp-widget-fab:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 22px 34px rgba(37, 211, 102, 0.4);
+  filter: saturate(1.05);
 }
 
 .whatsapp-widget-fab .icon {
-  width: 22px;
-  height: 22px;
+  width: 23px;
+  height: 23px;
+  color: #fff;
 }
 
 .toast-stack {
@@ -1784,11 +1906,13 @@ input {
   .cart-item-actions {
     justify-content: space-between;
     width: 100%;
+    row-gap: 0.5rem;
   }
 
   .item-subtotal {
     min-width: 0;
     text-align: left;
+    margin-left: 0;
   }
 
   .qty-controls button {
@@ -1828,8 +1952,13 @@ input {
   }
 
   .whatsapp-widget-fab {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .whatsapp-widget-fab .icon {
+    width: 22px;
+    height: 22px;
   }
 
   .site-footer {
@@ -1875,13 +2004,13 @@ input {
   }
 
   .whatsapp-widget-fab {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
   }
 
   .whatsapp-widget-fab .icon {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
   }
 }
 

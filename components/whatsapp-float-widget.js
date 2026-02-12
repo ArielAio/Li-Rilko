@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IconChat } from "@/components/icons";
+import { IconWhatsApp } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import { siteSettings } from "@/lib/catalog-data";
@@ -50,7 +50,7 @@ export default function WhatsAppFloatWidget() {
         aria-label="Abrir WhatsApp"
         onClick={handleClick}
       >
-        <IconChat className="icon" />
+        <IconWhatsApp className="icon" />
       </a>
     </div>
   );
