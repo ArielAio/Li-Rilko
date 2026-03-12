@@ -39,11 +39,6 @@ export default function WhatsAppFloatWidget() {
     if (action.mode === "picker") {
       setPendingMessage(message);
       setIsPickerOpen(true);
-      showToast({
-        type: "info",
-        title: "Escolha a atendente",
-        message: "Selecione uma atendente para continuar no WhatsApp.",
-      });
       return;
     }
 

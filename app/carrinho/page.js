@@ -93,11 +93,6 @@ export default function CartPage() {
     if (action.mode === "picker") {
       setPendingMessage(checkoutMessage);
       setIsPickerOpen(true);
-      showToast({
-        type: "info",
-        title: "Escolha a atendente",
-        message: "Selecione uma atendente para continuar no WhatsApp.",
-      });
       return;
     }
 
