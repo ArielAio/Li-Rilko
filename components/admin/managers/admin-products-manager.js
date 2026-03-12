@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import { formatCurrencyInput, formatCurrencyInputForEdit, parseCurrencyInputToNumber } from "@/lib/admin-input-formatters";
 import { formatCurrency } from "@/lib/store-utils";
 
 const EMPTY_PRODUCT_FORM = {
@@ -28,22 +29,13 @@ function toTextList(value) {
     .filter(Boolean);
 }
 
-function toNumber(value) {
-  const normalized = String(value ?? "").replace(",", ".").trim();
-  if (!normalized) {
-    return 0;
-  }
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 function productToForm(product) {
   return {
     name: product.name || "",
     category: product.category || "",
     sub: product.sub || "",
-    priceCash: String(product.priceCash ?? product.price ?? ""),
-    priceInstallment: String(product.priceInstallment ?? product.price ?? ""),
+    priceCash: formatCurrencyInput(product.priceCash ?? product.price ?? 0),
+    priceInstallment: formatCurrencyInput(product.priceInstallment ?? product.price ?? 0),
     badge: product.badge || "",
     shortDescription: product.shortDescription || "",
     highlightsText: Array.isArray(product.highlights) ? product.highlights.join("\n") : "",
@@ -162,13 +154,45 @@ export default function AdminProductsManager() {
     }));
   }
 
+  function handlePriceFieldChange(field, value) {
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function handlePriceFieldFocus(field) {
+    setProductForm((prev) => ({
+      ...prev,
+      [field]: formatCurrencyInputForEdit(prev[field]),
+    }));
+  }
+
+  function handlePriceFieldBlur(field) {
+    setProductForm((prev) => {
+      const rawValue = String(prev[field] ?? "").trim();
+
+      if (!rawValue) {
+        return {
+          ...prev,
+          [field]: "",
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: formatCurrencyInput(prev[field]),
+      };
+    });
+  }
+
   function buildProductPayload() {
     return {
       name: productForm.name,
       category: productForm.category,
       sub: productForm.sub,
-      priceCash: toNumber(productForm.priceCash),
-      priceInstallment: toNumber(productForm.priceInstallment),
+      priceCash: parseCurrencyInputToNumber(productForm.priceCash),
+      priceInstallment: parseCurrencyInputToNumber(productForm.priceInstallment),
       badge: productForm.badge,
       shortDescription: productForm.shortDescription,
       highlights: toTextList(productForm.highlightsText),
@@ -460,9 +484,12 @@ export default function AdminProductsManager() {
                   <span>Preço à vista</span>
                   <input
                     type="text"
+                    inputMode="decimal"
                     value={productForm.priceCash}
-                    onChange={(event) => handleProductField("priceCash", event.target.value)}
-                    placeholder="0,00"
+                    onChange={(event) => handlePriceFieldChange("priceCash", event.target.value)}
+                    onFocus={() => handlePriceFieldFocus("priceCash")}
+                    onBlur={() => handlePriceFieldBlur("priceCash")}
+                    placeholder="R$ 0,00"
                     required
                   />
                 </label>
@@ -471,9 +498,12 @@ export default function AdminProductsManager() {
                   <span>Preço a prazo</span>
                   <input
                     type="text"
+                    inputMode="decimal"
                     value={productForm.priceInstallment}
-                    onChange={(event) => handleProductField("priceInstallment", event.target.value)}
-                    placeholder="0,00"
+                    onChange={(event) => handlePriceFieldChange("priceInstallment", event.target.value)}
+                    onFocus={() => handlePriceFieldFocus("priceInstallment")}
+                    onBlur={() => handlePriceFieldBlur("priceInstallment")}
+                    placeholder="R$ 0,00"
                     required
                   />
                 </label>

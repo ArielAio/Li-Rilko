@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import { formatBrazilPhoneInput, toCanonicalBrazilWhatsAppPhone } from "@/lib/admin-input-formatters";
 
 function createEmptyAttendant() {
   return {
@@ -33,6 +34,20 @@ function getErrorMessageFromPayload(payload, fallbackMessage) {
   }
 
   return fallbackMessage;
+}
+
+function toDisplayAttendantDraft(attendant) {
+  return {
+    name: attendant?.name || "",
+    phone: formatBrazilPhoneInput(attendant?.phone || ""),
+  };
+}
+
+function toCanonicalAttendantDraft(attendant) {
+  return {
+    name: attendant?.name || "",
+    phone: toCanonicalBrazilWhatsAppPhone(attendant?.phone || ""),
+  };
 }
 
 export default function AdminServiceManager() {
@@ -78,10 +93,7 @@ export default function AdminServiceManager() {
         }
 
         const list = Array.isArray(payload?.attendants)
-          ? payload.attendants.map((attendant) => ({
-              name: attendant?.name || "",
-              phone: attendant?.phone || "",
-            }))
+          ? payload.attendants.map(toDisplayAttendantDraft)
           : [];
 
         setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
@@ -152,10 +164,7 @@ export default function AdminServiceManager() {
       }
 
       const list = Array.isArray(payload?.attendants)
-        ? payload.attendants.map((attendant) => ({
-            name: attendant?.name || "",
-            phone: attendant?.phone || "",
-          }))
+        ? payload.attendants.map(toDisplayAttendantDraft)
         : [];
 
       setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
@@ -192,7 +201,7 @@ export default function AdminServiceManager() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          attendants: attendantsDraft,
+          attendants: attendantsDraft.map(toCanonicalAttendantDraft),
         }),
       });
 
@@ -203,10 +212,7 @@ export default function AdminServiceManager() {
       }
 
       const list = Array.isArray(payload?.attendants)
-        ? payload.attendants.map((attendant) => ({
-            name: attendant?.name || "",
-            phone: attendant?.phone || "",
-          }))
+        ? payload.attendants.map(toDisplayAttendantDraft)
         : [];
 
       setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
@@ -234,7 +240,7 @@ export default function AdminServiceManager() {
         rowIndex === index
           ? {
               ...attendant,
-              [field]: value,
+              [field]: field === "phone" ? formatBrazilPhoneInput(value) : value,
             }
           : attendant,
       ),
@@ -298,11 +304,12 @@ export default function AdminServiceManager() {
               </label>
 
               <label className="admin-field">
-                <span>Número com DDI e DDD</span>
+                <span>Número com DDD</span>
                 <input
                   type="text"
+                  inputMode="tel"
                   value={attendant.phone}
-                  placeholder="5517999999999"
+                  placeholder="(17) 99999-9999"
                   onChange={(event) => updateAttendantField(index, "phone", event.target.value)}
                 />
               </label>
