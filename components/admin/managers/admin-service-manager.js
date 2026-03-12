@@ -281,7 +281,7 @@ export default function AdminServiceManager() {
       <section className="admin-manager-panel">
         <div className="admin-manager-title-row">
           <h4>Atendentes no WhatsApp</h4>
-          <small>O primeiro da lista é usado como atendente principal no carrinho e no botão flutuante.</small>
+          <small>Com 2 ou mais atendentes, o cliente escolhe a atendente antes de abrir o WhatsApp.</small>
         </div>
 
         <form className="admin-form" onSubmit={handleSaveAttendants}>

@@ -1,21 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { IconTrash, IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import TransitionLink from "@/components/transition-link";
-import { defaultAttendants, getPrimaryAttendant } from "@/lib/attendants-data";
-import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
+import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
+import { defaultAttendants, resolveAttendantFlow } from "@/lib/attendants-data";
+import { buildAttendantWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
+import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
 export default function CartPage() {
   const { siteSettings } = useCatalog();
   const { items, total, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
-  const primaryAttendant = getPrimaryAttendant(defaultAttendants);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState("");
+  const attendantFlow = resolveAttendantFlow(defaultAttendants);
 
   const message = buildWhatsAppMessage(items, siteSettings);
-  const whatsappLink = buildWhatsAppLink(items, siteSettings, primaryAttendant?.phone);
 
   function handleDecrease(item) {
     if (item.qty <= 1) {
@@ -62,8 +66,9 @@ export default function CartPage() {
   }
 
   function handleCheckoutClick(event) {
+    event.preventDefault();
+
     if (items.length === 0) {
-      event.preventDefault();
       showToast({
         type: "warning",
         title: "Carrinho vazio",
@@ -72,8 +77,10 @@ export default function CartPage() {
       return;
     }
 
-    if (!whatsappLink) {
-      event.preventDefault();
+    const checkoutMessage = buildWhatsAppMessage(items, siteSettings);
+    const action = resolveWhatsAppAttendantAction(defaultAttendants, checkoutMessage);
+
+    if (action.mode === "blocked") {
       showToast({
         type: "warning",
         title: "Atendimento indisponível",
@@ -82,13 +89,49 @@ export default function CartPage() {
       return;
     }
 
+    if (action.mode === "picker") {
+      setPendingMessage(checkoutMessage);
+      setIsPickerOpen(true);
+      showToast({
+        type: "info",
+        title: "Escolha a atendente",
+        message: "Selecione uma atendente para continuar no WhatsApp.",
+      });
+      return;
+    }
+
+    openWhatsAppLink(action.link);
     showToast({
       type: "success",
       title: "Abrindo WhatsApp",
-      message: primaryAttendant
-        ? `Resumo pronto para finalizar com ${primaryAttendant.name}.`
-        : "Resumo pronto com itens e total para finalizar com a loja.",
+      message: `Resumo pronto para finalizar com ${action.attendant.name}.`,
     });
+  }
+
+  function handleClosePicker() {
+    setIsPickerOpen(false);
+    setPendingMessage("");
+  }
+
+  function handleSelectAttendant(attendant) {
+    const link = buildAttendantWhatsAppLink(pendingMessage, attendant);
+
+    if (!link) {
+      showToast({
+        type: "warning",
+        title: "Atendimento indisponível",
+        message: "O número da atendente selecionada é inválido.",
+      });
+      return;
+    }
+
+    openWhatsAppLink(link);
+    showToast({
+      type: "success",
+      title: "Abrindo WhatsApp",
+      message: `Resumo pronto para finalizar com ${attendant.name}.`,
+    });
+    handleClosePicker();
   }
 
   return (
@@ -164,23 +207,24 @@ export default function CartPage() {
             <h2>Mensagem pronta para WhatsApp</h2>
             <p className="checkout-help">Seu pedido já vai com os itens e o total para agilizar o atendimento.</p>
             <p className="checkout-help">
-              Atendente principal: <strong>{primaryAttendant?.name || "não configurado"}</strong>
+              Com duas ou mais atendentes, a escolha é obrigatória antes de abrir o WhatsApp.
             </p>
             <div className="message-box">{message}</div>
 
-            <a
-              className="btn btn-whatsapp"
-              href={whatsappLink || "#"}
-              target={whatsappLink ? "_blank" : undefined}
-              rel={whatsappLink ? "noreferrer" : undefined}
-              onClick={handleCheckoutClick}
-            >
+            <a className="btn btn-whatsapp" href="#" onClick={handleCheckoutClick}>
               <IconWhatsApp className="icon" />
-              Finalizar no WhatsApp
+              {attendantFlow.mode === "blocked" ? "WhatsApp indisponível" : "Finalizar no WhatsApp"}
             </a>
           </article>
         </div>
       </section>
+
+      <WhatsAppAttendantPicker
+        isOpen={isPickerOpen}
+        attendants={attendantFlow.attendants}
+        onClose={handleClosePicker}
+        onSelect={handleSelectAttendant}
+      />
     </>
   );
 }
