@@ -28,7 +28,7 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
   const { categories } = useCatalog();
-  const { count, total } = useCart();
+  const { count, totalCash } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -105,10 +105,8 @@ export default function SiteHeader() {
       <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <div className="shell-container header-inner">
           <TransitionLink href="/" className="brand" aria-label="Li Rilko Imports">
-            <span className="brand-symbol">LR</span>
-            <span className="brand-text">
-              <strong>LI RILKO</strong>
-              <small>IMPORTS</small>
+            <span className="brand-mark">
+              <img src="/logo-li-rilko-imports.png" alt="Logo Li Rilko Imports" className="brand-logo" />
             </span>
           </TransitionLink>
 
@@ -140,7 +138,7 @@ export default function SiteHeader() {
                 <IconCart className="icon" />
                 <span className="header-cart-text">
                   <small>{count} item(ns)</small>
-                  <strong>{formatCurrency(total)}</strong>
+                  <strong>{formatCurrency(totalCash)}</strong>
                 </span>
               </TransitionLink>
             )}

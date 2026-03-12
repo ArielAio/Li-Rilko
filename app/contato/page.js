@@ -1,17 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
+import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
 import { buildWhatsAppLink } from "@/lib/store-utils";
 
 export default function ContactPage() {
   const { contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
   const { showToast } = useToast();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
+  const attendants = Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : [];
+  const hasAttendants = attendants.length > 0;
   const whatsappLink = buildWhatsAppLink(items, siteSettings);
+
+  function openWhatsApp(url) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   function handleStartContact() {
     showToast({
@@ -19,6 +28,21 @@ export default function ContactPage() {
       title: "Abrindo atendimento",
       message: "Você será direcionado para o WhatsApp da loja.",
     });
+  }
+
+  function handleOpenPicker() {
+    setIsPickerOpen(true);
+  }
+
+  function handleSelectAttendant(attendant) {
+    const selectedLink = buildWhatsAppLink(items, siteSettings, attendant.phone);
+    setIsPickerOpen(false);
+    showToast({
+      type: "success",
+      title: `Atendimento com ${attendant.name}`,
+      message: "Abrindo WhatsApp para iniciar a conversa.",
+    });
+    openWhatsApp(selectedLink);
   }
 
   return (
@@ -39,10 +63,20 @@ export default function ContactPage() {
               O WhatsApp é nosso principal canal de atendimento. Se você já montou seu carrinho, o resumo do pedido já
               segue automaticamente na mensagem.
             </p>
-            <a className="btn btn-whatsapp" href={whatsappLink} target="_blank" rel="noreferrer" onClick={handleStartContact}>
-              <IconWhatsApp className="icon" />
-              Iniciar conversa no WhatsApp
-            </a>
+            {hasAttendants ? (
+              <>
+                <p className="checkout-help">Você escolhe a atendente antes de abrir a conversa.</p>
+                <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
+                  <IconWhatsApp className="icon" />
+                  Escolher atendente no WhatsApp
+                </button>
+              </>
+            ) : (
+              <a className="btn btn-whatsapp" href={whatsappLink} target="_blank" rel="noreferrer" onClick={handleStartContact}>
+                <IconWhatsApp className="icon" />
+                Iniciar conversa no WhatsApp
+              </a>
+            )}
           </article>
 
           <aside className="contact-side-card reveal delay-1">
@@ -64,6 +98,13 @@ export default function ContactPage() {
           </aside>
         </div>
       </section>
+
+      <WhatsAppAttendantPicker
+        isOpen={isPickerOpen}
+        attendants={attendants}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={handleSelectAttendant}
+      />
     </>
   );
 }

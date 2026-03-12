@@ -102,11 +102,51 @@ function sanitizeContactChannels(rawChannels) {
   return normalized.length > 0 ? normalized : defaultContactChannels;
 }
 
+function sanitizeWhatsAppAttendants(rawAttendants) {
+  const source = Array.isArray(rawAttendants) ? rawAttendants : [];
+  const seenPhones = new Set();
+  const usedIds = new Set();
+
+  return source
+    .map((attendant, index) => {
+      const name = normalizeText(attendant?.name);
+      const phone = String(attendant?.phone || "").replace(/\D/g, "");
+
+      if (!name || !phone) {
+        return null;
+      }
+
+      if (seenPhones.has(phone)) {
+        return null;
+      }
+      seenPhones.add(phone);
+
+      const baseId = slugify(attendant?.id || name) || `attendant-${index + 1}`;
+      let id = baseId;
+      let suffix = 2;
+
+      while (usedIds.has(id)) {
+        id = `${baseId}-${suffix}`;
+        suffix += 1;
+      }
+
+      usedIds.add(id);
+
+      return {
+        id,
+        name,
+        phone,
+      };
+    })
+    .filter(Boolean);
+}
+
 function sanitizeSiteSettings(rawSettings) {
   return {
     whatsappPhone: normalizeText(rawSettings?.whatsappPhone, defaultSiteSettings.whatsappPhone),
     whatsappIntro: normalizeText(rawSettings?.whatsappIntro, defaultSiteSettings.whatsappIntro),
     whatsappFloatingMessage: normalizeText(rawSettings?.whatsappFloatingMessage, defaultSiteSettings.whatsappFloatingMessage),
+    whatsappAttendants: sanitizeWhatsAppAttendants(rawSettings?.whatsappAttendants),
   };
 }
 
@@ -158,6 +198,8 @@ function sanitizeProducts(rawProducts, fallbackProducts, categories) {
 
       const image = normalizeText(product?.image, getDefaultImage(id));
       const images = sanitizeImages(product?.images, image);
+      const priceInstallment = normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0));
+      const priceCash = normalizeMoney(product?.priceCash, priceInstallment);
 
       const highlightsRaw = Array.isArray(product?.highlights) ? product.highlights : [];
       const highlights = highlightsRaw.map((item) => normalizeText(item)).filter(Boolean);
@@ -167,8 +209,10 @@ function sanitizeProducts(rawProducts, fallbackProducts, categories) {
         name,
         category,
         sub,
-        price: normalizeMoney(product?.price, 0),
-        oldPrice: normalizeMoney(product?.oldPrice, normalizeMoney(product?.price, 0)),
+        price: priceInstallment,
+        priceInstallment,
+        priceCash,
+        oldPrice: normalizeMoney(product?.oldPrice, priceInstallment),
         badge: normalizeText(product?.badge, "Destaque"),
         shortDescription: normalizeText(product?.shortDescription, "Produto disponível na vitrine da loja."),
         highlights: highlights.length > 0 ? highlights.slice(0, 6) : ["Atendimento via WhatsApp"],
@@ -243,13 +287,18 @@ function normalizeProductInput(input, fallback = {}) {
   const images = sanitizeImages(rawImages, image);
   const rawHighlights = Array.isArray(input?.highlights) ? input.highlights : [];
   const highlights = rawHighlights.map((item) => normalizeText(item)).filter(Boolean);
+  const fallbackInstallment = normalizeMoney(fallback.priceInstallment, normalizeMoney(fallback.price, 0));
+  const priceInstallment = normalizeMoney(input?.priceInstallment, normalizeMoney(input?.price, fallbackInstallment));
+  const priceCash = normalizeMoney(input?.priceCash, normalizeMoney(fallback.priceCash, priceInstallment));
 
   return {
     name,
     category,
     sub,
-    price: normalizeMoney(input?.price, normalizeMoney(fallback.price, 0)),
-    oldPrice: normalizeMoney(input?.oldPrice, normalizeMoney(fallback.oldPrice, normalizeMoney(input?.price, 0))),
+    price: priceInstallment,
+    priceInstallment,
+    priceCash,
+    oldPrice: normalizeMoney(input?.oldPrice, normalizeMoney(fallback.oldPrice, priceInstallment)),
     badge: normalizeText(input?.badge, fallback.badge || "Destaque"),
     shortDescription: normalizeText(
       input?.shortDescription,
@@ -490,4 +539,3 @@ export function useCatalog() {
   }
   return context;
 }
-
