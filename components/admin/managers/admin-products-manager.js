@@ -72,6 +72,7 @@ export default function AdminProductsManager() {
   const [editingProductId, setEditingProductId] = useState("");
   const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldRevealEditorRef = useRef(false);
   const editorPanelRef = useRef(null);
   const editorNameInputRef = useRef(null);
@@ -178,59 +179,87 @@ export default function AdminProductsManager() {
     };
   }
 
-  function handleSaveProduct(event) {
+  function validatePayload(payload) {
+    if (!payload.name || !payload.category || !payload.sub) {
+      return "Nome, categoria e subcategoria são obrigatórios.";
+    }
+
+    if (payload.priceCash <= 0 || payload.priceInstallment <= 0) {
+      return "Preços à vista e a prazo devem ser maiores que zero.";
+    }
+
+    return "";
+  }
+
+  async function handleSaveProduct(event) {
     event.preventDefault();
     const payload = buildProductPayload();
+    const validationError = validatePayload(payload);
 
-    if (editingProductId) {
-      const result = updateProduct(editingProductId, payload);
+    if (validationError) {
+      showToast({
+        type: "warning",
+        title: "Dados inválidos",
+        message: validationError,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (editingProductId) {
+        const result = await updateProduct(editingProductId, payload);
+        if (!result.ok) {
+          showToast({
+            type: "warning",
+            title: "Erro ao salvar",
+            message: result.error || "Não foi possível atualizar o produto.",
+          });
+          return;
+        }
+
+        showToast({
+          type: "success",
+          title: "Produto atualizado",
+          message: "As informações do produto foram salvas.",
+        });
+        return;
+      }
+
+      const result = await addProduct(payload);
       if (!result.ok) {
         showToast({
           type: "warning",
-          title: "Erro ao salvar",
-          message: result.error || "Não foi possível atualizar o produto.",
+          title: "Erro ao criar produto",
+          message: result.error || "Não foi possível criar o produto.",
         });
         return;
       }
 
       showToast({
         type: "success",
-        title: "Produto atualizado",
-        message: "As informações do produto foram salvas.",
+        title: "Produto criado",
+        message: "Novo produto adicionado ao catálogo.",
       });
-      return;
+      setEditingProductId(result.id || "");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const result = addProduct(payload);
-    if (!result.ok) {
-      showToast({
-        type: "warning",
-        title: "Erro ao criar produto",
-        message: result.error || "Não foi possível criar o produto.",
-      });
-      return;
-    }
-
-    showToast({
-      type: "success",
-      title: "Produto criado",
-      message: "Novo produto adicionado ao catálogo.",
-    });
-    setEditingProductId(result.id || "");
   }
 
-  function handleRemoveProduct(product) {
+  async function handleRemoveProduct(product) {
     const confirmed = window.confirm(`Remover "${product.name}" do catálogo?`);
     if (!confirmed) {
       return;
     }
 
-    const removed = removeProduct(product.id);
-    if (!removed) {
+    const result = await removeProduct(product.id);
+    if (!result.ok) {
       showToast({
         type: "warning",
         title: "Erro ao remover",
-        message: "Não foi possível remover o produto.",
+        message: result.error || "Não foi possível remover o produto.",
       });
       return;
     }
@@ -246,19 +275,64 @@ export default function AdminProductsManager() {
     });
   }
 
-  function handleResetCatalog() {
+  async function handleResetCatalog() {
     const confirmed = window.confirm("Restaurar todo o catálogo para o padrão inicial?");
     if (!confirmed) {
       return;
     }
 
-    resetCatalog();
+    const result = await resetCatalog();
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao restaurar",
+        message: result.error || "Não foi possível restaurar o catálogo.",
+      });
+      return;
+    }
+
     clearCart();
     closeEditor();
     showToast({
       type: "warning",
       title: "Catálogo restaurado",
       message: "Dados voltaram para o padrão inicial.",
+    });
+  }
+
+  async function handleToggleVisibility(product) {
+    const result = await toggleProductVisibility(product.id);
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao atualizar",
+        message: result.error || "Não foi possível atualizar a visibilidade.",
+      });
+      return;
+    }
+
+    showToast({
+      type: "success",
+      title: product.isVisible ? "Produto ocultado" : "Produto exibido",
+      message: `${product.name} foi atualizado na vitrine.`,
+    });
+  }
+
+  async function handleToggleAvailability(product) {
+    const result = await toggleProductAvailability(product.id);
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao atualizar",
+        message: result.error || "Não foi possível atualizar a disponibilidade.",
+      });
+      return;
+    }
+
+    showToast({
+      type: "success",
+      title: product.isAvailable ? "Produto marcado como esgotado" : "Produto marcado como disponível",
+      message: `${product.name} foi atualizado.`,
     });
   }
 
@@ -317,10 +391,10 @@ export default function AdminProductsManager() {
                     <button type="button" className="btn btn-surface" onClick={() => startEditProduct(product)}>
                       Editar
                     </button>
-                    <button type="button" className="btn btn-surface" onClick={() => toggleProductVisibility(product.id)}>
+                    <button type="button" className="btn btn-surface" onClick={() => handleToggleVisibility(product)}>
                       {product.isVisible ? "Ocultar" : "Mostrar"}
                     </button>
-                    <button type="button" className="btn btn-surface" onClick={() => toggleProductAvailability(product.id)}>
+                    <button type="button" className="btn btn-surface" onClick={() => handleToggleAvailability(product)}>
                       {product.isAvailable ? "Marcar esgotado" : "Marcar disponível"}
                     </button>
                     <button type="button" className="btn btn-primary" onClick={() => handleRemoveProduct(product)}>
@@ -462,8 +536,8 @@ export default function AdminProductsManager() {
                 </label>
               </div>
 
-              <button type="submit" className="btn btn-primary">
-                {editingProductId ? "Salvar alterações" : "Criar produto"}
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? "Salvando..." : editingProductId ? "Salvar alterações" : "Criar produto"}
               </button>
             </form>
           </section>

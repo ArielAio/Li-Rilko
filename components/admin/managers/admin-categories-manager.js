@@ -16,6 +16,7 @@ export default function AdminCategoriesManager() {
   const { showToast } = useToast();
   const [categoryDrafts, setCategoryDrafts] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldRevealEditorRef = useRef(false);
   const editorFormRef = useRef(null);
 
@@ -47,7 +48,7 @@ export default function AdminCategoriesManager() {
     setIsEditMode(true);
   }
 
-  function handleSaveCategories(event) {
+  async function handleSaveCategories(event) {
     event.preventDefault();
     const normalized = categoryDrafts
       .map((category) => ({
@@ -56,7 +57,42 @@ export default function AdminCategoriesManager() {
       }))
       .filter((category) => category.name);
 
-    saveCategories(normalized);
+    if (normalized.length === 0) {
+      showToast({
+        type: "warning",
+        title: "Categorias inválidas",
+        message: "Cadastre pelo menos uma categoria antes de salvar.",
+      });
+      return;
+    }
+
+    const hasCategoryWithoutSub = normalized.some((category) => category.subs.length === 0);
+    if (hasCategoryWithoutSub) {
+      showToast({
+        type: "warning",
+        title: "Subcategorias pendentes",
+        message: "Cada categoria precisa ter ao menos uma subcategoria.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    let result = null;
+    try {
+      result = await saveCategories(normalized);
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao salvar",
+        message: result.error || "Não foi possível salvar as categorias.",
+      });
+      return;
+    }
+
     setIsEditMode(false);
     showToast({
       type: "success",
@@ -131,8 +167,8 @@ export default function AdminCategoriesManager() {
             >
               Adicionar categoria
             </button>
-            <button type="submit" className="btn btn-primary">
-              Salvar categorias
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? "Salvando..." : "Salvar categorias"}
             </button>
           </div>
         </form>

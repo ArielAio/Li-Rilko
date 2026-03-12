@@ -11,37 +11,88 @@ function createAttendantId() {
   return `attendant-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+function digitsOnly(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function stripBrazilCountryCode(value) {
+  const digits = digitsOnly(value);
+
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+    return digits.slice(2);
+  }
+
+  return digits;
+}
+
+function parseBrazilPhone(value) {
+  const localDigits = stripBrazilCountryCode(value).slice(0, 11);
+  const hasInput = localDigits.length > 0;
+  const isValid = localDigits.length === 10 || localDigits.length === 11;
+
+  return {
+    hasInput,
+    isValid,
+    localDigits,
+    normalized: isValid ? `55${localDigits}` : "",
+  };
+}
+
+function maskBrazilPhoneInput(value) {
+  const { localDigits } = parseBrazilPhone(value);
+
+  if (!localDigits) {
+    return "";
+  }
+
+  if (localDigits.length <= 2) {
+    return `(${localDigits}`;
+  }
+
+  const ddd = localDigits.slice(0, 2);
+  const number = localDigits.slice(2);
+
+  if (number.length <= 4) {
+    return `(${ddd}) ${number}`;
+  }
+
+  if (localDigits.length === 10) {
+    return `(${ddd}) ${number.slice(0, 4)}-${number.slice(4)}`;
+  }
+
+  return `(${ddd}) ${number.slice(0, 5)}-${number.slice(5, 9)}`;
+}
+
 function createSettingsDraft(siteSettings) {
   return {
-    whatsappPhone: siteSettings?.whatsappPhone || "",
     whatsappIntro: siteSettings?.whatsappIntro || "",
     whatsappFloatingMessage: siteSettings?.whatsappFloatingMessage || "",
     whatsappAttendants: Array.isArray(siteSettings?.whatsappAttendants)
       ? siteSettings.whatsappAttendants.map((attendant, index) => ({
           id: attendant.id || `attendant-${index + 1}`,
           name: attendant.name || "",
-          phone: attendant.phone || "",
+          phone: maskBrazilPhoneInput(attendant.phone || ""),
         }))
       : [],
   };
 }
 
 function formatPhoneLabel(phone) {
-  const digits = String(phone || "").replace(/\D/g, "");
+  const normalized = parseBrazilPhone(phone).normalized;
 
-  if (!digits) {
+  if (!normalized) {
     return "Não informado";
   }
 
-  if (digits.length === 13 && digits.startsWith("55")) {
-    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  if (normalized.length === 13) {
+    return `+55 (${normalized.slice(2, 4)}) ${normalized.slice(4, 9)}-${normalized.slice(9)}`;
   }
 
-  if (digits.length === 12 && digits.startsWith("55")) {
-    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 8)}-${digits.slice(8)}`;
+  if (normalized.length === 12) {
+    return `+55 (${normalized.slice(2, 4)}) ${normalized.slice(4, 8)}-${normalized.slice(8)}`;
   }
 
-  return `+${digits}`;
+  return `+${normalized}`;
 }
 
 export default function AdminWhatsAppManager() {
@@ -49,6 +100,7 @@ export default function AdminWhatsAppManager() {
   const { showToast } = useToast();
   const [settingsDraft, setSettingsDraft] = useState(() => createSettingsDraft(siteSettings));
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldRevealEditorRef = useRef(false);
   const editorFormRef = useRef(null);
 
@@ -103,16 +155,21 @@ export default function AdminWhatsAppManager() {
     }));
   }
 
-  function handleSaveSettings(event) {
+  async function handleSaveSettings(event) {
     event.preventDefault();
 
-    const normalizedAttendants = settingsDraft.whatsappAttendants.map((attendant) => ({
-      id: attendant.id || createAttendantId(),
-      name: String(attendant.name || "").trim(),
-      phone: String(attendant.phone || "").replace(/\D/g, ""),
-    }));
+    const normalizedAttendants = settingsDraft.whatsappAttendants.map((attendant) => {
+      const parsedPhone = parseBrazilPhone(attendant.phone);
+      return {
+        id: attendant.id || createAttendantId(),
+        name: String(attendant.name || "").trim(),
+        phone: parsedPhone.normalized,
+        hasInput: parsedPhone.hasInput,
+        isValidPhone: parsedPhone.isValid,
+      };
+    });
 
-    const hasInvalidAttendant = normalizedAttendants.some((attendant) => !attendant.name || !attendant.phone);
+    const hasInvalidAttendant = normalizedAttendants.some((attendant) => !attendant.name || !attendant.hasInput);
     if (hasInvalidAttendant) {
       showToast({
         type: "warning",
@@ -122,7 +179,23 @@ export default function AdminWhatsAppManager() {
       return;
     }
 
-    const hasDuplicatedPhone = new Set(normalizedAttendants.map((attendant) => attendant.phone)).size !== normalizedAttendants.length;
+    const hasInvalidPhone = normalizedAttendants.some((attendant) => !attendant.isValidPhone);
+    if (hasInvalidPhone) {
+      showToast({
+        type: "warning",
+        title: "Telefone incompleto",
+        message: "Use DDD + número (10 ou 11 dígitos). Ex.: (17) 99999-9999.",
+      });
+      return;
+    }
+
+    const sanitizedAttendants = normalizedAttendants.map(({ id, name, phone }) => ({
+      id,
+      name,
+      phone,
+    }));
+
+    const hasDuplicatedPhone = new Set(sanitizedAttendants.map((attendant) => attendant.phone)).size !== sanitizedAttendants.length;
     if (hasDuplicatedPhone) {
       showToast({
         type: "warning",
@@ -132,16 +205,32 @@ export default function AdminWhatsAppManager() {
       return;
     }
 
-    saveSiteSettings({
-      ...settingsDraft,
-      whatsappAttendants: normalizedAttendants,
-    });
+    setIsSubmitting(true);
+    let result = null;
+    try {
+      result = await saveSiteSettings({
+        whatsappIntro: settingsDraft.whatsappIntro,
+        whatsappFloatingMessage: settingsDraft.whatsappFloatingMessage,
+        whatsappAttendants: sanitizedAttendants,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao salvar",
+        message: result.error || "Não foi possível salvar as configurações.",
+      });
+      return;
+    }
 
     setIsEditMode(false);
     showToast({
       type: "success",
       title: "Configurações salvas",
-      message: "Mensagens, número principal e atendentes foram atualizados.",
+      message: "Mensagens e atendentes foram atualizados.",
     });
   }
 
@@ -150,7 +239,7 @@ export default function AdminWhatsAppManager() {
       <div className="admin-manager-toolbar">
         <div>
           <h3>Configurações do WhatsApp</h3>
-          <p>Defina o número principal, as mensagens padrão e as atendentes disponíveis para escolha do cliente.</p>
+          <p>Defina as mensagens padrão e as atendentes disponíveis para escolha do cliente.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           {!isEditMode ? (
@@ -167,16 +256,6 @@ export default function AdminWhatsAppManager() {
 
       {isEditMode ? (
         <form className="admin-form" onSubmit={handleSaveSettings} ref={editorFormRef}>
-          <label className="admin-field">
-            <span>Número (com DDI e DDD)</span>
-            <input
-              type="text"
-              value={settingsDraft.whatsappPhone || ""}
-              onChange={(event) => setSettingsDraft((prev) => ({ ...prev, whatsappPhone: event.target.value }))}
-              placeholder="5517999999999"
-            />
-          </label>
-
           <label className="admin-field">
             <span>Mensagem de finalização do carrinho</span>
             <textarea
@@ -207,7 +286,7 @@ export default function AdminWhatsAppManager() {
             </p>
 
             {settingsDraft.whatsappAttendants.length === 0 ? (
-              <p className="admin-manager-note">Nenhuma atendente cadastrada. Nesse caso, o site usa o número principal.</p>
+              <p className="admin-manager-note">Nenhuma atendente cadastrada. O cliente só consegue iniciar conversa após uma atendente ser cadastrada.</p>
             ) : (
               <div className="admin-compact-list">
                 {settingsDraft.whatsappAttendants.map((attendant, index) => (
@@ -222,12 +301,13 @@ export default function AdminWhatsAppManager() {
                       />
                     </label>
                     <label className="admin-field">
-                      <span>WhatsApp (com DDI e DDD)</span>
+                      <span>WhatsApp (DDD + número)</span>
                       <input
                         type="text"
                         value={attendant.phone}
-                        onChange={(event) => handleUpdateAttendant(index, "phone", event.target.value)}
-                        placeholder="5517999999999"
+                        onChange={(event) => handleUpdateAttendant(index, "phone", maskBrazilPhoneInput(event.target.value))}
+                        placeholder="(17) 99999-9999"
+                        inputMode="numeric"
                       />
                     </label>
                     <button type="button" className="btn btn-surface" onClick={() => handleRemoveAttendant(index)}>
@@ -239,16 +319,12 @@ export default function AdminWhatsAppManager() {
             )}
           </div>
 
-          <button type="submit" className="btn btn-primary">
-            Salvar configurações
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : "Salvar configurações"}
           </button>
         </form>
       ) : (
         <div className="admin-compact-list">
-          <article className="admin-compact-item">
-            <strong>Número atual</strong>
-            <p>{siteSettings.whatsappPhone || "Não configurado"}</p>
-          </article>
           <article className="admin-compact-item">
             <strong>Mensagem de carrinho</strong>
             <p>{siteSettings.whatsappIntro}</p>
@@ -269,7 +345,7 @@ export default function AdminWhatsAppManager() {
                 ))}
               </ul>
             ) : (
-              <p>Nenhuma atendente cadastrada. O site usa o número principal para todos os contatos.</p>
+              <p>Nenhuma atendente cadastrada. Cadastre ao menos uma para liberar contato via WhatsApp.</p>
             )}
           </article>
         </div>

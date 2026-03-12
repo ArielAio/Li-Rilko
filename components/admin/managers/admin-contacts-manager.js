@@ -9,6 +9,7 @@ export default function AdminContactsManager() {
   const { showToast } = useToast();
   const [channelDrafts, setChannelDrafts] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldRevealEditorRef = useRef(false);
   const editorFormRef = useRef(null);
 
@@ -54,9 +55,44 @@ export default function AdminContactsManager() {
     setIsEditMode(true);
   }
 
-  function handleSaveChannels(event) {
+  async function handleSaveChannels(event) {
     event.preventDefault();
-    saveContactChannels(channelDrafts);
+
+    const normalized = channelDrafts
+      .map((channel, index) => ({
+        id: channel.id || `channel-${index + 1}`,
+        title: String(channel.title || "").trim(),
+        value: String(channel.value || "").trim(),
+        href: String(channel.href || "#").trim() || "#",
+      }))
+      .filter((channel) => channel.title);
+
+    if (normalized.length === 0) {
+      showToast({
+        type: "warning",
+        title: "Canais inválidos",
+        message: "Cadastre pelo menos um canal de contato.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    let result = null;
+    try {
+      result = await saveContactChannels(normalized);
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao salvar",
+        message: result.error || "Não foi possível salvar os canais.",
+      });
+      return;
+    }
+
     setIsEditMode(false);
     showToast({
       type: "success",
@@ -145,8 +181,8 @@ export default function AdminContactsManager() {
             >
               Adicionar canal
             </button>
-            <button type="submit" className="btn btn-primary">
-              Salvar canais
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? "Salvando..." : "Salvar canais"}
             </button>
           </div>
         </form>

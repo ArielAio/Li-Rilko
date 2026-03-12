@@ -7,18 +7,25 @@ import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import TransitionLink from "@/components/transition-link";
 import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
+import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency, openWhatsAppLink } from "@/lib/store-utils";
 
 export default function CartPage() {
   const { siteSettings } = useCatalog();
   const { items, totalCash, totalInstallment, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
 
-  const attendants = Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : [];
-  const hasAttendants = attendants.length > 0;
-  const message = buildWhatsAppMessage(items, siteSettings);
-  const whatsappLink = buildWhatsAppLink(items, siteSettings);
+  const attendants = (Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : []).filter((attendant) => {
+    const name = String(attendant?.name || "").trim();
+    const phone = String(attendant?.phone || "").replace(/\D/g, "");
+    return name && phone;
+  });
+  const messageOptions = {
+    sourcePage: "Carrinho",
+    siteUrl,
+  };
+  const message = buildWhatsAppMessage(items, siteSettings, messageOptions);
 
   function handleDecrease(item) {
     if (item.qty <= 1) {
@@ -77,39 +84,48 @@ export default function CartPage() {
     return true;
   }
 
-  function openWhatsApp(url) {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  function handleCheckoutClick(event) {
-    if (!canCheckout()) {
-      event.preventDefault();
-      return;
-    }
-
-    showToast({
-      type: "success",
-      title: "Abrindo WhatsApp",
-      message: "Resumo pronto com itens e totais à vista e a prazo.",
-    });
-  }
-
   function handleOpenPicker() {
     if (!canCheckout()) {
       return;
     }
+
+    if (attendants.length === 0) {
+      showToast({
+        type: "warning",
+        title: "Sem atendentes disponíveis",
+        message: "No momento não há atendentes configuradas. Tente novamente mais tarde.",
+      });
+      return;
+    }
+
     setIsPickerOpen(true);
   }
 
   function handleSelectAttendant(attendant) {
-    const selectedLink = buildWhatsAppLink(items, siteSettings, attendant.phone);
+    const selectedLink = buildWhatsAppLink(items, siteSettings, {
+      preferredPhone: attendant.phone,
+      attendantId: attendant.id,
+      attendantName: attendant.name,
+      sourcePage: "Carrinho",
+      siteUrl,
+    });
+
+    if (!selectedLink) {
+      showToast({
+        type: "warning",
+        title: "WhatsApp não configurado",
+        message: "A atendente selecionada não possui telefone válido.",
+      });
+      return;
+    }
+
     setIsPickerOpen(false);
     showToast({
       type: "success",
       title: `Atendimento com ${attendant.name}`,
       message: "Abrindo WhatsApp com o resumo do seu pedido.",
     });
-    openWhatsApp(selectedLink);
+    openWhatsAppLink(selectedLink);
   }
 
   return (
@@ -193,23 +209,10 @@ export default function CartPage() {
             <p className="checkout-help">Seu pedido já vai com os itens e os totais à vista e a prazo.</p>
             <div className="message-box">{message}</div>
 
-            {hasAttendants ? (
-              <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
-                <IconWhatsApp className="icon" />
-                Escolher atendente e finalizar
-              </button>
-            ) : (
-              <a
-                className="btn btn-whatsapp"
-                href={whatsappLink}
-                target="_blank"
-                rel="noreferrer"
-                onClick={handleCheckoutClick}
-              >
-                <IconWhatsApp className="icon" />
-                Finalizar no WhatsApp
-              </a>
-            )}
+            <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
+              <IconWhatsApp className="icon" />
+              Escolher atendente e finalizar
+            </button>
           </article>
         </div>
       </section>

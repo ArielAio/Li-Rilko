@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import PageTransitionOverlay from "@/components/page-transition-overlay";
 import {
+  PAGE_TRANSITIONS_ENABLED,
   PAGE_TRANSITION_CONFIG,
   getEnterDurationMs,
   getExitDurationMs,
@@ -152,6 +153,10 @@ export default function PageTransitionProvider({ children }) {
   }, [phase]);
 
   const startNavigation = useCallback(({ href, replace = false, scroll = true }) => {
+    if (!PAGE_TRANSITIONS_ENABLED) {
+      return false;
+    }
+
     const hrefValue = normalizeHref(href);
 
     if (!hrefValue) {
