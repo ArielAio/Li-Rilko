@@ -2123,6 +2123,10 @@ input:focus-visible {
   gap: 0.52rem;
 }
 
+.contact-side-card h3:not(:first-of-type) {
+  margin-top: 0.85rem;
+}
+
 .contact-side-card li {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -2404,6 +2408,13 @@ body.modal-open {
 .admin-list-header h4 {
   font-size: var(--type-title-sm);
   font-weight: var(--font-weight-semibold);
+}
+
+.admin-manager-title-row small,
+.admin-form > small {
+  color: #5a6376;
+  font-size: var(--type-body-sm);
+  line-height: 1.4;
 }
 
 .admin-manager-footer-actions {

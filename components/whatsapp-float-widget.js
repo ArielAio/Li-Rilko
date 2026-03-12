@@ -5,95 +5,74 @@ import { IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { buildFloatingWhatsAppLink, openWhatsAppLink } from "@/lib/store-utils";
+import { defaultAttendants, getPrimaryAttendant } from "@/lib/attendants-data";
+import { buildFloatingWhatsAppLink } from "@/lib/store-utils";
 
 export default function WhatsAppFloatWidget() {
   const [isCardVisible, setIsCardVisible] = useState(true);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const { siteSettings } = useCatalog();
   const { count } = useCart();
   const { showToast } = useToast();
-  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const primaryAttendant = getPrimaryAttendant(defaultAttendants);
 
-  const attendants = (Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : []).filter((attendant) => {
-    const name = String(attendant?.name || "").trim();
-    const phone = String(attendant?.phone || "").replace(/\D/g, "");
-    return name && phone;
-  });
+  const link = buildFloatingWhatsAppLink(siteSettings, primaryAttendant?.phone);
 
-  function handleOpenPicker() {
-    if (attendants.length === 0) {
+  function handleClick(event) {
+    if (!link) {
+      event.preventDefault();
       showToast({
         type: "warning",
-        title: "Sem atendentes disponíveis",
-        message: "No momento não há atendentes configuradas. Tente novamente mais tarde.",
+        title: "Atendimento indisponível",
+        message: "Nenhum atendente com número válido foi configurado no admin.",
       });
       return;
     }
 
-    setIsPickerOpen(true);
-  }
-
-  function handleSelectAttendant(attendant) {
-    const selectedLink = buildFloatingWhatsAppLink(siteSettings, {
-      preferredPhone: attendant.phone,
-      attendantId: attendant.id,
-      attendantName: attendant.name,
-      sourcePage: "Widget flutuante",
-      siteUrl,
-    });
-
-    if (!selectedLink) {
-      showToast({
-        type: "warning",
-        title: "WhatsApp não configurado",
-        message: "A atendente selecionada não possui telefone válido.",
-      });
-      return;
-    }
-
-    setIsPickerOpen(false);
     showToast({
       type: "success",
-      title: `Atendimento com ${attendant.name}`,
-      message: "Abrindo conversa no WhatsApp.",
+      title: "Atendimento rápido",
+      message: primaryAttendant
+        ? `Abrindo WhatsApp com mensagem pronta para ${primaryAttendant.name}.`
+        : "Abrindo WhatsApp com mensagem pronta.",
     });
-    openWhatsAppLink(selectedLink);
   }
 
   return (
-    <>
-      <div className={`whatsapp-widget ${count > 0 ? "with-cart" : ""}`}>
-        {isCardVisible && (
-          <article className="whatsapp-widget-card" aria-live="polite">
-            <button
-              type="button"
-              className="whatsapp-widget-close"
-              onClick={() => setIsCardVisible(false)}
-              aria-label="Fechar popup do WhatsApp"
-            >
-              ×
-            </button>
-            <strong>Precisa de ajuda?</strong>
-            <p>{siteSettings.whatsappFloatingMessage}</p>
-            <button type="button" className="whatsapp-widget-link" onClick={handleOpenPicker}>
-              Escolher atendente
-            </button>
-          </article>
-        )}
+    <div className={`whatsapp-widget ${count > 0 ? "with-cart" : ""}`}>
+      {isCardVisible && (
+        <article className="whatsapp-widget-card" aria-live="polite">
+          <button
+            type="button"
+            className="whatsapp-widget-close"
+            onClick={() => setIsCardVisible(false)}
+            aria-label="Fechar popup do WhatsApp"
+          >
+            ×
+          </button>
+          <strong>Precisa de ajuda?</strong>
+          <p>{siteSettings.whatsappFloatingMessage}</p>
+          <a
+            className="whatsapp-widget-link"
+            href={link || "#"}
+            target={link ? "_blank" : undefined}
+            rel={link ? "noreferrer" : undefined}
+            onClick={handleClick}
+          >
+            {primaryAttendant ? `Falar com ${primaryAttendant.name}` : "WhatsApp indisponível"}
+          </a>
+        </article>
+      )}
 
-        <button type="button" className="whatsapp-widget-fab" aria-label="Escolher atendente" onClick={handleOpenPicker}>
-          <IconWhatsApp className="icon" />
-        </button>
-      </div>
-
-      <WhatsAppAttendantPicker
-        isOpen={isPickerOpen}
-        attendants={attendants}
-        onClose={() => setIsPickerOpen(false)}
-        onSelect={handleSelectAttendant}
-      />
-    </>
+      <a
+        className="whatsapp-widget-fab"
+        href={link || "#"}
+        target={link ? "_blank" : undefined}
+        rel={link ? "noreferrer" : undefined}
+        aria-label="Abrir WhatsApp"
+        onClick={handleClick}
+      >
+        <IconWhatsApp className="icon" />
+      </a>
+    </div>
   );
 }

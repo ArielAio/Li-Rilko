@@ -1,20 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { adminLogoutAction } from "@/app/admin/actions";
 import AdminModal from "@/components/admin/admin-modal";
 import AdminCategoriesManager from "@/components/admin/managers/admin-categories-manager";
-import AdminContactsManager from "@/components/admin/managers/admin-contacts-manager";
 import AdminProductsManager from "@/components/admin/managers/admin-products-manager";
-import AdminWhatsAppManager from "@/components/admin/managers/admin-whatsapp-manager";
+import AdminServiceManager from "@/components/admin/managers/admin-service-manager";
 import { useCatalog } from "@/components/providers/catalog-provider";
-import TransitionLink from "@/components/transition-link";
 
 const PANELS = {
   products: "products",
   categories: "categories",
-  contacts: "contacts",
-  whatsapp: "whatsapp",
+  service: "service",
 };
 
 function getPanelTitle(panel) {
@@ -23,10 +21,8 @@ function getPanelTitle(panel) {
       return "Gerenciar produtos";
     case PANELS.categories:
       return "Gerenciar categorias";
-    case PANELS.contacts:
-      return "Gerenciar canais de contato";
-    case PANELS.whatsapp:
-      return "Gerenciar WhatsApp";
+    case PANELS.service:
+      return "Gerenciar atendimento";
     default:
       return "";
   }
@@ -82,7 +78,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <strong>{summary.unavailableProducts}</strong>
-                <span>produtos esgotados</span>
+                <span>produtos indisponíveis</span>
               </div>
               <div>
                 <strong>{categories.length}</strong>
@@ -111,25 +107,17 @@ export default function AdminDashboard() {
               </article>
 
               <article className="admin-module-card">
-                <h3>Canais de contato</h3>
-                <p>Atualize WhatsApp, Instagram, endereço e links usados no site.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.contacts)}>
-                  Editar contatos
-                </button>
-              </article>
-
-              <article className="admin-module-card">
-                <h3>WhatsApp e atendentes</h3>
-                <p>Defina número oficial, mensagens padrão e equipe de atendimento.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.whatsapp)}>
-                  Editar WhatsApp
+                <h3>Atendimento</h3>
+                <p>Gerencie atendentes no WhatsApp, canais adicionais e mensagens padrão em um único módulo.</p>
+                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.service)}>
+                  Editar atendimento
                 </button>
               </article>
             </div>
             <div className="admin-actions">
-              <TransitionLink className="btn btn-surface" href="/catalogo">
+              <Link className="btn btn-surface" href="/catalogo">
                 Ver site público
-              </TransitionLink>
+              </Link>
               <form action={adminLogoutAction} className="admin-logout-form">
                 <button type="submit" className="btn btn-primary">
                   Sair do painel
@@ -159,21 +147,12 @@ export default function AdminDashboard() {
       </AdminModal>
 
       <AdminModal
-        isOpen={activePanel === PANELS.contacts}
+        isOpen={activePanel === PANELS.service}
         title={getPanelTitle(activePanel)}
-        size="lg"
+        size="xl"
         onClose={() => setActivePanel("")}
       >
-        <AdminContactsManager />
-      </AdminModal>
-
-      <AdminModal
-        isOpen={activePanel === PANELS.whatsapp}
-        title={getPanelTitle(activePanel)}
-        size="md"
-        onClose={() => setActivePanel("")}
-      >
-        <AdminWhatsAppManager />
+        <AdminServiceManager />
       </AdminModal>
     </>
   );

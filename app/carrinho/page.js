@@ -1,31 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { IconTrash, IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import TransitionLink from "@/components/transition-link";
-import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency, openWhatsAppLink } from "@/lib/store-utils";
+import { defaultAttendants, getPrimaryAttendant } from "@/lib/attendants-data";
+import { buildWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
 
 export default function CartPage() {
   const { siteSettings } = useCatalog();
-  const { items, totalCash, totalInstallment, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
+  const { items, total, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const primaryAttendant = getPrimaryAttendant(defaultAttendants);
 
-  const attendants = (Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : []).filter((attendant) => {
-    const name = String(attendant?.name || "").trim();
-    const phone = String(attendant?.phone || "").replace(/\D/g, "");
-    return name && phone;
-  });
-  const messageOptions = {
-    sourcePage: "Carrinho",
-    siteUrl,
-  };
-  const message = buildWhatsAppMessage(items, siteSettings, messageOptions);
+  const message = buildWhatsAppMessage(items, siteSettings);
+  const whatsappLink = buildWhatsAppLink(items, siteSettings, primaryAttendant?.phone);
 
   function handleDecrease(item) {
     if (item.qty <= 1) {
@@ -46,8 +36,8 @@ export default function CartPage() {
     if (!added) {
       showToast({
         type: "warning",
-        title: "Produto esgotado",
-        message: `${item.name} está esgotado e não pode ser adicionado agora.`,
+        title: "Produto indisponível",
+        message: `${item.name} não está disponível para aumentar quantidade agora.`,
       });
       return;
     }
@@ -71,61 +61,34 @@ export default function CartPage() {
     });
   }
 
-  function canCheckout() {
+  function handleCheckoutClick(event) {
     if (items.length === 0) {
+      event.preventDefault();
       showToast({
         type: "warning",
         title: "Carrinho vazio",
         message: "Adicione produtos antes de finalizar no WhatsApp.",
       });
-      return false;
-    }
-
-    return true;
-  }
-
-  function handleOpenPicker() {
-    if (!canCheckout()) {
       return;
     }
 
-    if (attendants.length === 0) {
+    if (!whatsappLink) {
+      event.preventDefault();
       showToast({
         type: "warning",
-        title: "Sem atendentes disponíveis",
-        message: "No momento não há atendentes configuradas. Tente novamente mais tarde.",
+        title: "Atendimento indisponível",
+        message: "Nenhum atendente com número válido foi configurado no admin.",
       });
       return;
     }
 
-    setIsPickerOpen(true);
-  }
-
-  function handleSelectAttendant(attendant) {
-    const selectedLink = buildWhatsAppLink(items, siteSettings, {
-      preferredPhone: attendant.phone,
-      attendantId: attendant.id,
-      attendantName: attendant.name,
-      sourcePage: "Carrinho",
-      siteUrl,
-    });
-
-    if (!selectedLink) {
-      showToast({
-        type: "warning",
-        title: "WhatsApp não configurado",
-        message: "A atendente selecionada não possui telefone válido.",
-      });
-      return;
-    }
-
-    setIsPickerOpen(false);
     showToast({
       type: "success",
-      title: `Atendimento com ${attendant.name}`,
-      message: "Abrindo WhatsApp com o resumo do seu pedido.",
+      title: "Abrindo WhatsApp",
+      message: primaryAttendant
+        ? `Resumo pronto para finalizar com ${primaryAttendant.name}.`
+        : "Resumo pronto com itens e total para finalizar com a loja.",
     });
-    openWhatsAppLink(selectedLink);
   }
 
   return (
@@ -165,7 +128,7 @@ export default function CartPage() {
                     <div className="cart-item-content">
                       <strong>{item.name}</strong>
                       <small>
-                        {item.category} • À vista {formatCurrency(item.priceCash)} • A prazo {formatCurrency(item.priceInstallment)}
+                        {item.category} • {formatCurrency(item.price)} cada
                       </small>
                     </div>
 
@@ -180,10 +143,7 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      <div className="item-subtotal">
-                        <strong>À vista {formatCurrency(item.subtotalCash)}</strong>
-                        <small>A prazo {formatCurrency(item.subtotalInstallment)}</small>
-                      </div>
+                      <strong className="item-subtotal">{formatCurrency(item.subtotal)}</strong>
 
                       <button type="button" className="icon-button" onClick={() => handleRemove(item)} aria-label={`Remover ${item.name}`}>
                         <IconTrash className="icon" />
@@ -194,35 +154,33 @@ export default function CartPage() {
               </ul>
             )}
 
-            <div className="cart-total-row is-main">
-              <span>Total à vista</span>
-              <strong>{formatCurrency(totalCash)}</strong>
-            </div>
             <div className="cart-total-row">
-              <span>Total a prazo</span>
-              <strong>{formatCurrency(totalInstallment)}</strong>
+              <span>Total</span>
+              <strong>{formatCurrency(total)}</strong>
             </div>
           </article>
 
           <article className="checkout-card reveal delay-1">
             <h2>Mensagem pronta para WhatsApp</h2>
-            <p className="checkout-help">Seu pedido já vai com os itens e os totais à vista e a prazo.</p>
+            <p className="checkout-help">Seu pedido já vai com os itens e o total para agilizar o atendimento.</p>
+            <p className="checkout-help">
+              Atendente principal: <strong>{primaryAttendant?.name || "não configurado"}</strong>
+            </p>
             <div className="message-box">{message}</div>
 
-            <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
+            <a
+              className="btn btn-whatsapp"
+              href={whatsappLink || "#"}
+              target={whatsappLink ? "_blank" : undefined}
+              rel={whatsappLink ? "noreferrer" : undefined}
+              onClick={handleCheckoutClick}
+            >
               <IconWhatsApp className="icon" />
-              Escolher atendente e finalizar
-            </button>
+              Finalizar no WhatsApp
+            </a>
           </article>
         </div>
       </section>
-
-      <WhatsAppAttendantPicker
-        isOpen={isPickerOpen}
-        attendants={attendants}
-        onClose={() => setIsPickerOpen(false)}
-        onSelect={handleSelectAttendant}
-      />
     </>
   );
 }

@@ -1,64 +1,40 @@
 "use client";
 
-import { useState } from "react";
 import { IconWhatsApp } from "@/components/icons";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { buildWhatsAppLink, openWhatsAppLink } from "@/lib/store-utils";
+import { defaultAttendants, getPrimaryAttendant } from "@/lib/attendants-data";
+import { buildAttendantWhatsAppLink, buildWhatsAppLink, buildWhatsAppMessage } from "@/lib/store-utils";
 
 export default function ContactPage() {
   const { contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
   const { showToast } = useToast();
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const attendants = defaultAttendants;
+  const primaryAttendant = getPrimaryAttendant(attendants);
+  const message = buildWhatsAppMessage(items, siteSettings);
 
-  const attendants = (Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : []).filter((attendant) => {
-    const name = String(attendant?.name || "").trim();
-    const phone = String(attendant?.phone || "").replace(/\D/g, "");
-    return name && phone;
-  });
+  const whatsappLink = buildWhatsAppLink(items, siteSettings, primaryAttendant?.phone);
 
-  function handleOpenPicker() {
-    if (attendants.length === 0) {
+  function handleStartContact(event) {
+    if (!whatsappLink) {
+      event.preventDefault();
       showToast({
         type: "warning",
-        title: "Sem atendentes disponíveis",
-        message: "No momento não há atendentes configuradas. Tente novamente mais tarde.",
+        title: "Atendimento indisponível",
+        message: "Nenhum atendente com número válido está configurado no momento.",
       });
       return;
     }
 
-    setIsPickerOpen(true);
-  }
-
-  function handleSelectAttendant(attendant) {
-    const selectedLink = buildWhatsAppLink(items, siteSettings, {
-      preferredPhone: attendant.phone,
-      attendantId: attendant.id,
-      attendantName: attendant.name,
-      sourcePage: "Contato",
-      siteUrl,
-    });
-
-    if (!selectedLink) {
-      showToast({
-        type: "warning",
-        title: "WhatsApp não configurado",
-        message: "A atendente selecionada não possui telefone válido.",
-      });
-      return;
-    }
-
-    setIsPickerOpen(false);
     showToast({
       type: "success",
-      title: `Atendimento com ${attendant.name}`,
-      message: "Abrindo WhatsApp para iniciar a conversa.",
+      title: "Abrindo atendimento",
+      message: primaryAttendant
+        ? `Você será direcionado para o WhatsApp de ${primaryAttendant.name}.`
+        : "Você será direcionado para o WhatsApp da loja.",
     });
-    openWhatsAppLink(selectedLink);
   }
 
   return (
@@ -79,14 +55,46 @@ export default function ContactPage() {
               O WhatsApp é nosso principal canal de atendimento. Se você já montou seu carrinho, o resumo do pedido já
               segue automaticamente na mensagem.
             </p>
-            <p className="checkout-help">Você escolhe a atendente antes de abrir a conversa.</p>
-            <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
+            <a
+              className="btn btn-whatsapp"
+              href={whatsappLink || "#"}
+              target={whatsappLink ? "_blank" : undefined}
+              rel={whatsappLink ? "noreferrer" : undefined}
+              onClick={handleStartContact}
+            >
               <IconWhatsApp className="icon" />
-              Escolher atendente no WhatsApp
-            </button>
+              {primaryAttendant ? `Iniciar conversa com ${primaryAttendant.name}` : "WhatsApp indisponível"}
+            </a>
           </article>
 
           <aside className="contact-side-card reveal delay-1">
+            <h3>Atendentes no WhatsApp</h3>
+            <ul>
+              {attendants.length > 0 ? (
+                attendants.map((attendant, index) => {
+                  const link = buildAttendantWhatsAppLink(message, attendant);
+
+                  return (
+                    <li key={`${attendant.phone}-${index}`}>
+                      <strong>{index === 0 ? `${attendant.name} (principal)` : attendant.name}</strong>
+                      {link ? (
+                        <a href={link} target="_blank" rel="noreferrer">
+                          {attendant.phone}
+                        </a>
+                      ) : (
+                        <span>Número inválido</span>
+                      )}
+                    </li>
+                  );
+                })
+              ) : (
+                <li>
+                  <strong>Sem atendentes cadastrados</strong>
+                  <span>Peça para o admin configurar ao menos 1 atendente no painel.</span>
+                </li>
+              )}
+            </ul>
+
             <h3>Outros canais</h3>
             <ul>
               {contactChannels.map((channel) => (
@@ -105,13 +113,6 @@ export default function ContactPage() {
           </aside>
         </div>
       </section>
-
-      <WhatsAppAttendantPicker
-        isOpen={isPickerOpen}
-        attendants={attendants}
-        onClose={() => setIsPickerOpen(false)}
-        onSelect={handleSelectAttendant}
-      />
     </>
   );
 }
