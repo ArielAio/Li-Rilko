@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "npm run test:gate",
+    "test:unit": "vitest run --config vitest.unit.config.js",
+    "test:integration": "vitest run --config vitest.integration.config.js",
+    "test:e2e:smoke": "playwright test --config=playwright.smoke.config.js",
+    "test:known-issues": "vitest run --config vitest.known-issues.config.js",
+    "test:gate": "npm run test:unit && npm run test:integration && npm run build && npm run test:e2e:smoke"
   },
   "keywords": [
     "nextjs",
@@ -19,5 +25,16 @@
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@vitejs/plugin-react": "^6.0.0",
+    "@vitest/coverage-v8": "^4.1.0",
+    "jsdom": "^28.1.0",
+    "server-only": "^0.0.1",
+    "vitest": "^4.1.0"
   }
 }

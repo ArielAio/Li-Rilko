@@ -7,7 +7,7 @@ import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import TransitionLink from "@/components/transition-link";
 import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { defaultAttendants, resolveAttendantFlow } from "@/lib/attendants-data";
+import { resolveAttendantFlow } from "@/lib/attendants-data";
 import { buildAttendantWhatsAppLink, buildWhatsAppMessage, formatCurrency } from "@/lib/store-utils";
 import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
@@ -17,7 +17,8 @@ export default function CartPage() {
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
-  const attendantFlow = resolveAttendantFlow(defaultAttendants);
+  const attendantFlow = resolveAttendantFlow();
+  const attendants = attendantFlow.attendants;
 
   const message = buildWhatsAppMessage(items, siteSettings);
 
@@ -78,7 +79,7 @@ export default function CartPage() {
     }
 
     const checkoutMessage = buildWhatsAppMessage(items, siteSettings);
-    const action = resolveWhatsAppAttendantAction(defaultAttendants, checkoutMessage);
+    const action = resolveWhatsAppAttendantAction(attendants, checkoutMessage);
 
     if (action.mode === "blocked") {
       showToast({
@@ -221,7 +222,7 @@ export default function CartPage() {
 
       <WhatsAppAttendantPicker
         isOpen={isPickerOpen}
-        attendants={attendantFlow.attendants}
+        attendants={attendants}
         onClose={handleClosePicker}
         onSelect={handleSelectAttendant}
       />
