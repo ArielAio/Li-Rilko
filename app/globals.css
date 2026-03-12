@@ -2191,6 +2191,11 @@ body.modal-open {
   overflow: hidden;
 }
 
+body.modal-open .toast-stack {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .admin-card {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2877,7 +2882,7 @@ body.modal-open {
 .whatsapp-picker-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 145;
+  z-index: 2200;
   background: rgba(5, 8, 16, 0.62);
   display: grid;
   place-items: center;
