@@ -2324,7 +2324,7 @@ body.modal-open .toast-stack {
 .admin-module-grid {
   margin-top: 0.7rem;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 0.58rem;
 }
 
@@ -2334,6 +2334,7 @@ body.modal-open .toast-stack {
   background: var(--surface-alt);
   padding: 0.7rem;
   display: grid;
+  grid-template-rows: auto 1fr auto;
   gap: 0.45rem;
 }
 
@@ -2346,6 +2347,10 @@ body.modal-open .toast-stack {
   color: #566071;
   font-size: var(--type-body-md);
   line-height: 1.42;
+}
+
+.admin-module-card .btn {
+  width: 100%;
 }
 
 .admin-manager {
@@ -2646,11 +2651,16 @@ body.modal-open .toast-stack {
   margin-top: 0.8rem;
   display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
   gap: 0.52rem;
 }
 
 .admin-logout-form {
-  display: inline-flex;
+  display: flex;
+}
+
+.admin-logout-form .btn {
+  width: 100%;
 }
 
 .admin-modal-backdrop {
@@ -3222,6 +3232,10 @@ body.modal-open .toast-stack {
   .admin-overview-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .admin-module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 780px) {
@@ -3334,6 +3348,16 @@ body.modal-open .toast-stack {
 
   .admin-actions .btn {
     flex: 1;
+  }
+
+  .admin-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-actions .btn,
+  .admin-logout-form {
+    width: 100%;
   }
 
   .admin-field-grid {
