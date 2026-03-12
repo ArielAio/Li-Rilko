@@ -83,6 +83,12 @@ export async function PUT(request) {
       {
         attendants: result.attendants,
         commitSha: result.commitSha,
+        pullRequestUrl: result.pullRequestUrl,
+        pullRequestNumber: result.pullRequestNumber,
+        workBranch: result.workBranch,
+        unchanged: result.unchanged,
+        autoMergeRequested: result.autoMergeRequested,
+        autoMergeStatusMessage: result.autoMergeStatusMessage,
       },
       {
         status: 200,

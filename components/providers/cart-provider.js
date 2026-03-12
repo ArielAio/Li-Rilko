@@ -28,6 +28,18 @@ function sanitizeCart(rawCart, productMap) {
   }, {});
 }
 
+function mergeCartMaps(baseCart, extraCart) {
+  const merged = { ...baseCart };
+
+  Object.entries(extraCart).forEach(([productId, qty]) => {
+    const currentQty = Number(merged[productId]) || 0;
+    const extraQty = Number(qty) || 0;
+    merged[productId] = Math.max(0, Math.min(99, currentQty + extraQty));
+  });
+
+  return merged;
+}
+
 export function CartProvider({ children }) {
   const { productMap, isHydrated: isCatalogHydrated } = useCatalog();
   const [cartMap, setCartMap] = useState({});
@@ -49,9 +61,20 @@ export function CartProvider({ children }) {
       }
 
       const parsed = JSON.parse(serialized);
-      setCartMap(sanitizeCart(parsed, productMap));
+      const cartFromStorage = sanitizeCart(parsed, productMap);
+
+      // Preserva interações do usuário que podem ocorrer antes do fim da hidratação.
+      setCartMap((prev) => {
+        const currentCart = sanitizeCart(prev, productMap);
+        if (Object.keys(currentCart).length === 0) {
+          return cartFromStorage;
+        }
+
+        return mergeCartMaps(cartFromStorage, currentCart);
+      });
     } catch {
-      setCartMap({});
+      // Mantém o estado em memória quando houver erro de leitura no storage.
+      setCartMap((prev) => sanitizeCart(prev, productMap));
     } finally {
       setIsHydrated(true);
     }
