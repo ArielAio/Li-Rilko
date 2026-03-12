@@ -7,6 +7,14 @@ const CATALOG_STORAGE_KEY = "li-rilko-catalog-v1";
 
 const CatalogContext = createContext(null);
 
+function okResult(extra = {}) {
+  return { ok: true, ...extra };
+}
+
+function errorResult(error) {
+  return { ok: false, error };
+}
+
 function normalizeText(value, fallback = "") {
   const normalized = String(value ?? "").trim();
   return normalized || fallback;
@@ -350,13 +358,13 @@ export function CatalogProvider({ children }) {
   const addProduct = useCallback((input) => {
     const normalized = normalizeProductInput(input);
     if (!normalized.name) {
-      return { ok: false, error: "Nome do produto é obrigatório." };
+      return errorResult("Nome do produto é obrigatório.");
     }
     if (!normalized.category) {
-      return { ok: false, error: "Categoria é obrigatória." };
+      return errorResult("Categoria é obrigatória.");
     }
     if (!normalized.sub) {
-      return { ok: false, error: "Subcategoria é obrigatória." };
+      return errorResult("Subcategoria é obrigatória.");
     }
 
     let createdId = "";
@@ -382,89 +390,102 @@ export function CatalogProvider({ children }) {
       };
     });
 
-    return { ok: true, id: createdId };
+    return okResult({ id: createdId });
   }, []);
 
-  const updateProduct = useCallback((productId, input) => {
-    let updated = false;
-    let error = "";
-
-    setCatalog((prev) => {
-      const current = prev.products.find((product) => product.id === productId);
+  const updateProduct = useCallback(
+    (productId, input) => {
+      const current = productMap.get(productId);
       if (!current) {
-        error = "Produto não encontrado.";
-        return prev;
+        return errorResult("Produto não encontrado.");
       }
 
       const normalized = normalizeProductInput(input, current);
       if (!normalized.name || !normalized.category || !normalized.sub) {
-        error = "Nome, categoria e subcategoria são obrigatórios.";
-        return prev;
+        return errorResult("Nome, categoria e subcategoria são obrigatórios.");
       }
 
-      updated = true;
-      const nextCategories = ensureCategoryAndSub(prev.categories, normalized.category, normalized.sub);
-
-      return {
+      setCatalog((prev) => ({
         ...prev,
-        categories: nextCategories,
+        categories: ensureCategoryAndSub(prev.categories, normalized.category, normalized.sub),
         products: prev.products.map((product) => (product.id === productId ? { ...product, ...normalized } : product)),
-      };
-    });
+      }));
 
-    if (!updated) {
-      return { ok: false, error: error || "Não foi possível atualizar o produto." };
-    }
+      return okResult();
+    },
+    [productMap],
+  );
 
-    return { ok: true };
-  }, []);
-
-  const removeProduct = useCallback((productId) => {
-    let removed = false;
-
-    setCatalog((prev) => {
-      const nextProducts = prev.products.filter((product) => product.id !== productId);
-      removed = nextProducts.length < prev.products.length;
-
-      if (!removed) {
-        return prev;
+  const removeProduct = useCallback(
+    (productId) => {
+      if (!productMap.has(productId)) {
+        return errorResult("Produto não encontrado.");
       }
 
-      return {
+      setCatalog((prev) => ({
         ...prev,
-        products: nextProducts,
-      };
-    });
+        products: prev.products.filter((product) => product.id !== productId),
+      }));
 
-    return removed;
-  }, []);
+      return okResult();
+    },
+    [productMap],
+  );
 
-  const toggleProductVisibility = useCallback((productId) => {
-    setCatalog((prev) => ({
-      ...prev,
-      products: prev.products.map((product) =>
-        product.id === productId ? { ...product, isVisible: !product.isVisible } : product,
-      ),
-    }));
-  }, []);
+  const toggleProductVisibility = useCallback(
+    (productId) => {
+      if (!productMap.has(productId)) {
+        return errorResult("Produto não encontrado.");
+      }
 
-  const toggleProductAvailability = useCallback((productId) => {
-    setCatalog((prev) => ({
-      ...prev,
-      products: prev.products.map((product) =>
-        product.id === productId ? { ...product, isAvailable: !product.isAvailable } : product,
-      ),
-    }));
-  }, []);
+      setCatalog((prev) => ({
+        ...prev,
+        products: prev.products.map((product) =>
+          product.id === productId ? { ...product, isVisible: !product.isVisible } : product,
+        ),
+      }));
+
+      return okResult();
+    },
+    [productMap],
+  );
+
+  const toggleProductAvailability = useCallback(
+    (productId) => {
+      if (!productMap.has(productId)) {
+        return errorResult("Produto não encontrado.");
+      }
+
+      setCatalog((prev) => ({
+        ...prev,
+        products: prev.products.map((product) =>
+          product.id === productId ? { ...product, isAvailable: !product.isAvailable } : product,
+        ),
+      }));
+
+      return okResult();
+    },
+    [productMap],
+  );
 
   const saveCategories = useCallback((nextCategories) => {
+    if (!Array.isArray(nextCategories)) {
+      return errorResult("Formato de categorias inválido.");
+    }
+
     setCatalog((prev) => ({
       ...prev,
       categories: sanitizeCategories(nextCategories, prev.categories),
     }));
+
+    return okResult();
   }, []);
 
   const saveSiteSettings = useCallback((nextSettings) => {
+    if (!nextSettings || typeof nextSettings !== "object") {
+      return errorResult("Formato de configurações inválido.");
+    }
+
     setCatalog((prev) => ({
       ...prev,
       siteSettings: sanitizeSiteSettings({
@@ -472,17 +493,27 @@ export function CatalogProvider({ children }) {
         ...nextSettings,
       }),
     }));
+
+    return okResult();
   }, []);
 
   const saveContactChannels = useCallback((nextChannels) => {
+    if (!Array.isArray(nextChannels)) {
+      return errorResult("Formato de canais inválido.");
+    }
+
     setCatalog((prev) => ({
       ...prev,
       contactChannels: sanitizeContactChannels(nextChannels),
     }));
+
+    return okResult();
   }, []);
 
   const resetCatalog = useCallback(() => {
     setCatalog(createDefaultCatalog());
+
+    return okResult();
   }, []);
 
   const value = useMemo(

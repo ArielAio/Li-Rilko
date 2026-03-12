@@ -6,7 +6,7 @@ import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import { defaultAttendants, resolveAttendantFlow } from "@/lib/attendants-data";
+import { resolveAttendantFlow } from "@/lib/attendants-data";
 import { buildAttendantWhatsAppLink } from "@/lib/store-utils";
 import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
@@ -17,7 +17,7 @@ export default function WhatsAppFloatWidget() {
   const { siteSettings } = useCatalog();
   const { count } = useCart();
   const { showToast } = useToast();
-  const attendantFlow = resolveAttendantFlow(defaultAttendants);
+  const attendantFlow = resolveAttendantFlow();
   const attendants = attendantFlow.attendants;
   const directAttendant = attendantFlow.mode === "direct" ? attendantFlow.attendant : null;
 
