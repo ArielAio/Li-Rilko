@@ -109,9 +109,12 @@ export function CartProvider({ children }) {
       return false;
     }
 
+    const parsedAmount = Number(amount);
+    const quantityToAdd = Math.max(1, Math.min(99, Number.isFinite(parsedAmount) ? Math.floor(parsedAmount) : 1));
+
     setCartMap((prev) => {
       const currentQty = prev[productId] || 0;
-      const qty = Math.max(0, Math.min(99, Math.floor(currentQty + amount)));
+      const qty = Math.max(0, Math.min(99, Math.floor(currentQty + quantityToAdd)));
       if (qty === 0) {
         return prev;
       }
@@ -160,6 +163,10 @@ export function CartProvider({ children }) {
     setCartMap({});
   }
 
+  function getItemQty(productId) {
+    return cartMap[String(productId)] || 0;
+  }
+
   const value = useMemo(
     () => ({
       items,
@@ -171,8 +178,9 @@ export function CartProvider({ children }) {
       decreaseItem,
       removeItem,
       clearCart,
+      getItemQty,
     }),
-    [items, count, total, totalCash, totalInstallment],
+    [items, count, total, totalCash, totalInstallment, cartMap],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

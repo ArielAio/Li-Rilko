@@ -6,43 +6,59 @@ import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
-import { buildWhatsAppLink } from "@/lib/store-utils";
+import { buildWhatsAppLink, openWhatsAppLink } from "@/lib/store-utils";
 
 export default function ContactPage() {
   const { contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
 
-  const attendants = Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : [];
-  const hasAttendants = attendants.length > 0;
-  const whatsappLink = buildWhatsAppLink(items, siteSettings);
-
-  function openWhatsApp(url) {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  function handleStartContact() {
-    showToast({
-      type: "success",
-      title: "Abrindo atendimento",
-      message: "Você será direcionado para o WhatsApp da loja.",
-    });
-  }
+  const attendants = (Array.isArray(siteSettings.whatsappAttendants) ? siteSettings.whatsappAttendants : []).filter((attendant) => {
+    const name = String(attendant?.name || "").trim();
+    const phone = String(attendant?.phone || "").replace(/\D/g, "");
+    return name && phone;
+  });
 
   function handleOpenPicker() {
+    if (attendants.length === 0) {
+      showToast({
+        type: "warning",
+        title: "Sem atendentes disponíveis",
+        message: "No momento não há atendentes configuradas. Tente novamente mais tarde.",
+      });
+      return;
+    }
+
     setIsPickerOpen(true);
   }
 
   function handleSelectAttendant(attendant) {
-    const selectedLink = buildWhatsAppLink(items, siteSettings, attendant.phone);
+    const selectedLink = buildWhatsAppLink(items, siteSettings, {
+      preferredPhone: attendant.phone,
+      attendantId: attendant.id,
+      attendantName: attendant.name,
+      sourcePage: "Contato",
+      siteUrl,
+    });
+
+    if (!selectedLink) {
+      showToast({
+        type: "warning",
+        title: "WhatsApp não configurado",
+        message: "A atendente selecionada não possui telefone válido.",
+      });
+      return;
+    }
+
     setIsPickerOpen(false);
     showToast({
       type: "success",
       title: `Atendimento com ${attendant.name}`,
       message: "Abrindo WhatsApp para iniciar a conversa.",
     });
-    openWhatsApp(selectedLink);
+    openWhatsAppLink(selectedLink);
   }
 
   return (
@@ -63,20 +79,11 @@ export default function ContactPage() {
               O WhatsApp é nosso principal canal de atendimento. Se você já montou seu carrinho, o resumo do pedido já
               segue automaticamente na mensagem.
             </p>
-            {hasAttendants ? (
-              <>
-                <p className="checkout-help">Você escolhe a atendente antes de abrir a conversa.</p>
-                <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
-                  <IconWhatsApp className="icon" />
-                  Escolher atendente no WhatsApp
-                </button>
-              </>
-            ) : (
-              <a className="btn btn-whatsapp" href={whatsappLink} target="_blank" rel="noreferrer" onClick={handleStartContact}>
-                <IconWhatsApp className="icon" />
-                Iniciar conversa no WhatsApp
-              </a>
-            )}
+            <p className="checkout-help">Você escolhe a atendente antes de abrir a conversa.</p>
+            <button type="button" className="btn btn-whatsapp" onClick={handleOpenPicker}>
+              <IconWhatsApp className="icon" />
+              Escolher atendente no WhatsApp
+            </button>
           </article>
 
           <aside className="contact-side-card reveal delay-1">

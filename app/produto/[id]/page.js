@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import ProductDetailActions from "@/components/product-detail-actions";
 import { useCatalog } from "@/components/providers/catalog-provider";
@@ -11,6 +12,18 @@ export default function ProductPage() {
   const { publicProductMap } = useCatalog();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const product = publicProductMap.get(id);
+  const gallery = useMemo(
+    () => (product?.images && product.images.length > 0 ? product.images : [product?.image]).filter(Boolean),
+    [product],
+  );
+  const [selectedImage, setSelectedImage] = useState("");
+
+  useEffect(() => {
+    if (!product) {
+      return;
+    }
+    setSelectedImage(gallery[0] || "");
+  }, [gallery, product]);
 
   if (!product) {
     return (
@@ -26,7 +39,6 @@ export default function ProductPage() {
     );
   }
 
-  const gallery = (product.images && product.images.length > 0 ? product.images : [product.image]).filter(Boolean);
   const priceCash = Number(product.priceCash ?? product.price ?? 0);
   const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
@@ -51,9 +63,9 @@ export default function ProductPage() {
         <div className="shell-container detail-grid">
           <article className="detail-media-card reveal">
             <div className="detail-media-main">
-              {gallery[0] ? (
+              {selectedImage ? (
                 <img
-                  src={gallery[0]}
+                  src={selectedImage}
                   alt={product.name}
                   loading="eager"
                   style={{ viewTransitionName: `product-media-${product.id}` }}
@@ -64,9 +76,14 @@ export default function ProductPage() {
             </div>
             <div className="detail-media-thumbs">
               {gallery.slice(0, 3).map((imageUrl, index) => (
-                <div key={`${product.id}-${index}`} className="thumb-card">
+                <button
+                  key={`${product.id}-${index}`}
+                  type="button"
+                  className={`thumb-card ${selectedImage === imageUrl ? "is-active" : ""}`}
+                  onClick={() => setSelectedImage(imageUrl)}
+                >
                   <img src={imageUrl} alt={`${product.name} - imagem ${index + 1}`} loading="lazy" decoding="async" />
-                </div>
+                </button>
               ))}
             </div>
           </article>

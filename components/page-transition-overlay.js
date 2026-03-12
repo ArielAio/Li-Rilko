@@ -15,11 +15,7 @@ export default function PageTransitionOverlay({ phase, styleVars }) {
       <div className="page-transition-layer layer-front" />
 
       <div className="page-transition-brand">
-        <span className="page-transition-badge">LR</span>
-        <span className="page-transition-wordmark">
-          <strong>LI RILKO</strong>
-          <small>IMPORTS</small>
-        </span>
+        <img src="/logo-li-rilko-imports.png" alt="Li Rilko Imports" className="page-transition-logo" />
       </div>
     </div>
   );

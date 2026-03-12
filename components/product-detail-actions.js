@@ -9,9 +9,10 @@ import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductDetailActions({ product }) {
   const [qty, setQty] = useState(1);
-  const { addItem } = useCart();
+  const { addItem, getItemQty } = useCart();
   const { showToast } = useToast();
   const isAvailable = product.isAvailable !== false;
+  const qtyInCart = getItemQty(product.id);
   const priceCash = Number(product.priceCash ?? product.price ?? 0);
   const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
@@ -31,14 +32,7 @@ export default function ProductDetailActions({ product }) {
         title: "Produto esgotado",
         message: `${product.name} está esgotado no momento.`,
       });
-      return;
     }
-
-    showToast({
-      type: "success",
-      title: "Item adicionado",
-      message: `${product.name} (${qty}x) foi para o carrinho.`,
-    });
   }
 
   return (
@@ -46,6 +40,7 @@ export default function ProductDetailActions({ product }) {
       <div className="detail-price">
         <strong className="detail-price-cash">À vista: {formatCurrency(priceCash)}</strong>
         <small className="detail-price-installment">A prazo: {formatCurrency(priceInstallment)}</small>
+        {qtyInCart > 0 ? <small className="detail-in-cart-hint">No carrinho: {qtyInCart}</small> : null}
       </div>
 
       <div className="detail-qty" role="group" aria-label="Quantidade">

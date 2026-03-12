@@ -16,24 +16,29 @@ function shuffleAttendants(attendants) {
 
 function formatPhoneLabel(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
+  let normalizedDigits = digits;
 
-  if (!digits) {
+  if (!normalizedDigits) {
     return "";
   }
 
-  if (digits.length === 13 && digits.startsWith("55")) {
-    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  if (normalizedDigits.startsWith("55") && (normalizedDigits.length === 12 || normalizedDigits.length === 13)) {
+    // Already in international format.
+  } else if (normalizedDigits.length === 10 || normalizedDigits.length === 11) {
+    normalizedDigits = `55${normalizedDigits}`;
+  } else {
+    return `+${normalizedDigits}`;
   }
 
-  if (digits.length === 12 && digits.startsWith("55")) {
-    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 8)}-${digits.slice(8)}`;
+  if (normalizedDigits.length === 13) {
+    return `+55 (${normalizedDigits.slice(2, 4)}) ${normalizedDigits.slice(4, 9)}-${normalizedDigits.slice(9)}`;
   }
 
-  if (digits.length > 2) {
-    return `+${digits}`;
+  if (normalizedDigits.length === 12) {
+    return `+55 (${normalizedDigits.slice(2, 4)}) ${normalizedDigits.slice(4, 8)}-${normalizedDigits.slice(8)}`;
   }
 
-  return digits;
+  return `+${normalizedDigits}`;
 }
 
 export default function WhatsAppAttendantPicker({ isOpen = false, attendants = [], onClose, onSelect }) {
