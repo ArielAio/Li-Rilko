@@ -27,6 +27,8 @@ export default function ProductPage() {
   }
 
   const gallery = (product.images && product.images.length > 0 ? product.images : [product.image]).filter(Boolean);
+  const priceCash = Number(product.priceCash ?? product.price ?? 0);
+  const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
   return (
     <>
@@ -70,7 +72,7 @@ export default function ProductPage() {
           </article>
 
           <article className="detail-content-card reveal delay-1">
-            <p className="product-badge">{product.isAvailable === false ? "Indisponível no momento" : product.badge}</p>
+            <p className="product-badge">{product.isAvailable === false ? "Esgotado" : product.badge}</p>
             <h2 style={{ viewTransitionName: `product-title-${product.id}` }}>{product.name}</h2>
             <p className="detail-category">
               {product.category} • {product.sub}
@@ -78,12 +80,8 @@ export default function ProductPage() {
             <p className="detail-description">{product.shortDescription}</p>
 
             <div className="price-block">
-              {Number(product.oldPrice) > Number(product.price) ? (
-                <small>Preço anterior: {formatCurrency(product.oldPrice)}</small>
-              ) : (
-                <small>Preço atualizado</small>
-              )}
-              <strong>{formatCurrency(product.price)}</strong>
+              <strong className="price-block-cash">Preço à vista: {formatCurrency(priceCash)}</strong>
+              <small className="price-block-installment">Preço a prazo: {formatCurrency(priceInstallment)}</small>
             </div>
 
             <ul className="detail-highlights">

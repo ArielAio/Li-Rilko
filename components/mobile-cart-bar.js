@@ -8,7 +8,7 @@ import { formatCurrency } from "@/lib/store-utils";
 
 export default function MobileCartBar() {
   const pathname = usePathname();
-  const { count, total } = useCart();
+  const { count, totalCash } = useCart();
 
   if (count === 0 || pathname === "/carrinho") {
     return null;
@@ -18,7 +18,7 @@ export default function MobileCartBar() {
     <TransitionLink href="/carrinho" className="mobile-cart-bar" aria-label={`Abrir carrinho com ${count} itens`}>
       <IconCart className="icon" />
       <span>
-        {count} item(ns) • {formatCurrency(total)}
+        {count} item(ns) • {formatCurrency(totalCash)}
       </span>
       <strong>Ver carrinho</strong>
     </TransitionLink>

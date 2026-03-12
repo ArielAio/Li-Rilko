@@ -82,7 +82,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <strong>{summary.unavailableProducts}</strong>
-                <span>produtos indisponíveis</span>
+                <span>produtos esgotados</span>
               </div>
               <div>
                 <strong>{categories.length}</strong>
@@ -119,8 +119,8 @@ export default function AdminDashboard() {
               </article>
 
               <article className="admin-module-card">
-                <h3>Mensagens do WhatsApp</h3>
-                <p>Defina número oficial e textos padrão do atendimento.</p>
+                <h3>WhatsApp e atendentes</h3>
+                <p>Defina número oficial, mensagens padrão e equipe de atendimento.</p>
                 <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.whatsapp)}>
                   Editar WhatsApp
                 </button>

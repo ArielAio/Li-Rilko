@@ -10,15 +10,16 @@ export default function ProductCard({ product, highlight = false }) {
   const { addItem } = useCart();
   const { showToast } = useToast();
   const isAvailable = product.isAvailable !== false;
-  const shouldShowOldPrice = Number(product.oldPrice) > Number(product.price);
+  const priceCash = Number(product.priceCash ?? product.price ?? 0);
+  const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
   function handleAddToCart() {
     const added = addItem(product.id, 1);
     if (!added) {
       showToast({
         type: "warning",
-        title: "Produto indisponível",
-        message: `${product.name} está temporariamente indisponível.`,
+        title: "Produto esgotado",
+        message: `${product.name} está esgotado no momento.`,
       });
       return;
     }
@@ -43,11 +44,13 @@ export default function ProductCard({ product, highlight = false }) {
         <span>{product.sub}</span>
       </div>
       <div className="product-body">
-        <p className="product-badge">{isAvailable ? product.badge : "Indisponível no momento"}</p>
+        <p className="product-badge">{isAvailable ? product.badge : "Esgotado"}</p>
         <h3 style={{ viewTransitionName: `product-title-${product.id}` }}>{product.name}</h3>
         <p className="product-short-description">{product.shortDescription}</p>
-        {shouldShowOldPrice ? <p className="old-price">{formatCurrency(product.oldPrice)}</p> : null}
-        <p className="product-price">{formatCurrency(product.price)}</p>
+        <div className="product-price-lines">
+          <p className="product-price">À vista: {formatCurrency(priceCash)}</p>
+          <p className="product-price-alt">A prazo: {formatCurrency(priceInstallment)}</p>
+        </div>
 
         <div className="product-actions">
           <TransitionLink className="link-detail" href={`/produto/${product.id}`}>
@@ -56,7 +59,7 @@ export default function ProductCard({ product, highlight = false }) {
           </TransitionLink>
           <button type="button" className="product-button" onClick={handleAddToCart} disabled={!isAvailable}>
             <IconCartPlus className="icon" />
-            {isAvailable ? "Adicionar" : "Indisponível"}
+            {isAvailable ? "Adicionar" : "Esgotado"}
           </button>
         </div>
       </div>

@@ -12,6 +12,8 @@ export default function ProductDetailActions({ product }) {
   const { addItem } = useCart();
   const { showToast } = useToast();
   const isAvailable = product.isAvailable !== false;
+  const priceCash = Number(product.priceCash ?? product.price ?? 0);
+  const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
   function decreaseQty() {
     setQty((prev) => Math.max(1, prev - 1));
@@ -26,8 +28,8 @@ export default function ProductDetailActions({ product }) {
     if (!added) {
       showToast({
         type: "warning",
-        title: "Produto indisponível",
-        message: `${product.name} está temporariamente indisponível.`,
+        title: "Produto esgotado",
+        message: `${product.name} está esgotado no momento.`,
       });
       return;
     }
@@ -42,8 +44,8 @@ export default function ProductDetailActions({ product }) {
   return (
     <div className="detail-action-panel">
       <div className="detail-price">
-        <small>A partir de</small>
-        <strong>{formatCurrency(product.price)}</strong>
+        <strong className="detail-price-cash">À vista: {formatCurrency(priceCash)}</strong>
+        <small className="detail-price-installment">A prazo: {formatCurrency(priceInstallment)}</small>
       </div>
 
       <div className="detail-qty" role="group" aria-label="Quantidade">
@@ -59,7 +61,7 @@ export default function ProductDetailActions({ product }) {
       <div className="detail-buttons">
         <button type="button" className="btn btn-primary" onClick={handleAdd} disabled={!isAvailable}>
           <IconCartPlus className="icon" />
-          {isAvailable ? "Adicionar ao carrinho" : "Indisponível no momento"}
+          {isAvailable ? "Adicionar ao carrinho" : "Esgotado"}
         </button>
         <TransitionLink className="btn btn-surface" href="/carrinho">
           Ir para o carrinho

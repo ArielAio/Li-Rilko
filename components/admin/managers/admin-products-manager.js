@@ -10,8 +10,8 @@ const EMPTY_PRODUCT_FORM = {
   name: "",
   category: "",
   sub: "",
-  price: "",
-  oldPrice: "",
+  priceCash: "",
+  priceInstallment: "",
   badge: "",
   shortDescription: "",
   highlightsText: "",
@@ -42,8 +42,8 @@ function productToForm(product) {
     name: product.name || "",
     category: product.category || "",
     sub: product.sub || "",
-    price: String(product.price ?? ""),
-    oldPrice: String(product.oldPrice ?? ""),
+    priceCash: String(product.priceCash ?? product.price ?? ""),
+    priceInstallment: String(product.priceInstallment ?? product.price ?? ""),
     badge: product.badge || "",
     shortDescription: product.shortDescription || "",
     highlightsText: Array.isArray(product.highlights) ? product.highlights.join("\n") : "",
@@ -166,8 +166,8 @@ export default function AdminProductsManager() {
       name: productForm.name,
       category: productForm.category,
       sub: productForm.sub,
-      price: toNumber(productForm.price),
-      oldPrice: toNumber(productForm.oldPrice),
+      priceCash: toNumber(productForm.priceCash),
+      priceInstallment: toNumber(productForm.priceInstallment),
       badge: productForm.badge,
       shortDescription: productForm.shortDescription,
       highlights: toTextList(productForm.highlightsText),
@@ -267,7 +267,7 @@ export default function AdminProductsManager() {
       <div className="admin-manager-toolbar">
         <div>
           <h3>Produtos do catálogo</h3>
-          <p>Crie, edite, oculte ou marque produtos como indisponíveis.</p>
+          <p>Crie, edite, oculte ou marque produtos como esgotados.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           <button type="button" className="btn btn-surface" onClick={startCreateProduct}>
@@ -308,8 +308,9 @@ export default function AdminProductsManager() {
                       {product.category} • {product.sub}
                     </p>
                     <small>
-                      {formatCurrency(product.price)} • {product.isVisible ? "Visível" : "Oculto"} •{" "}
-                      {product.isAvailable ? "Disponível" : "Indisponível"}
+                      À vista {formatCurrency(product.priceCash ?? product.price)} • A prazo{" "}
+                      {formatCurrency(product.priceInstallment ?? product.price)} • {product.isVisible ? "Visível" : "Oculto"} •{" "}
+                      {product.isAvailable ? "Disponível" : "Esgotado"}
                     </small>
                   </div>
                   <div className="admin-product-actions">
@@ -320,7 +321,7 @@ export default function AdminProductsManager() {
                       {product.isVisible ? "Ocultar" : "Mostrar"}
                     </button>
                     <button type="button" className="btn btn-surface" onClick={() => toggleProductAvailability(product.id)}>
-                      {product.isAvailable ? "Indisponível" : "Disponível"}
+                      {product.isAvailable ? "Marcar esgotado" : "Marcar disponível"}
                     </button>
                     <button type="button" className="btn btn-primary" onClick={() => handleRemoveProduct(product)}>
                       Excluir
@@ -382,23 +383,24 @@ export default function AdminProductsManager() {
                 </label>
 
                 <label className="admin-field">
-                  <span>Preço atual</span>
+                  <span>Preço à vista</span>
                   <input
                     type="text"
-                    value={productForm.price}
-                    onChange={(event) => handleProductField("price", event.target.value)}
+                    value={productForm.priceCash}
+                    onChange={(event) => handleProductField("priceCash", event.target.value)}
                     placeholder="0,00"
                     required
                   />
                 </label>
 
                 <label className="admin-field">
-                  <span>Preço anterior</span>
+                  <span>Preço a prazo</span>
                   <input
                     type="text"
-                    value={productForm.oldPrice}
-                    onChange={(event) => handleProductField("oldPrice", event.target.value)}
+                    value={productForm.priceInstallment}
+                    onChange={(event) => handleProductField("priceInstallment", event.target.value)}
                     placeholder="0,00"
+                    required
                   />
                 </label>
 
@@ -456,7 +458,7 @@ export default function AdminProductsManager() {
                     checked={productForm.isAvailable}
                     onChange={(event) => handleProductField("isAvailable", event.target.checked)}
                   />
-                  Produto disponível
+                  Produto disponível (desmarque para esgotado)
                 </label>
               </div>
 

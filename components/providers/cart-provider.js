@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useCatalog } from "@/components/providers/catalog-provider";
+import { resolveProductPrices } from "@/lib/store-utils";
 
 const CART_STORAGE_KEY = "li-rilko-cart-v1";
 
@@ -81,18 +82,26 @@ export function CartProvider({ children }) {
         }
 
         const normalizedQty = Number(qty) || 0;
+        const { priceCash, priceInstallment } = resolveProductPrices(product);
 
         return {
           ...product,
           qty: normalizedQty,
-          subtotal: normalizedQty * product.price,
+          price: priceInstallment,
+          priceInstallment,
+          priceCash,
+          subtotal: normalizedQty * priceInstallment,
+          subtotalInstallment: normalizedQty * priceInstallment,
+          subtotalCash: normalizedQty * priceCash,
         };
       })
       .filter(Boolean);
   }, [cartMap, productMap]);
 
   const count = useMemo(() => items.reduce((acc, item) => acc + item.qty, 0), [items]);
-  const total = useMemo(() => items.reduce((acc, item) => acc + item.subtotal, 0), [items]);
+  const totalInstallment = useMemo(() => items.reduce((acc, item) => acc + item.subtotalInstallment, 0), [items]);
+  const totalCash = useMemo(() => items.reduce((acc, item) => acc + item.subtotalCash, 0), [items]);
+  const total = totalInstallment;
 
   function addItem(productId, amount = 1) {
     const product = productMap.get(productId);
@@ -156,12 +165,14 @@ export function CartProvider({ children }) {
       items,
       count,
       total,
+      totalInstallment,
+      totalCash,
       addItem,
       decreaseItem,
       removeItem,
       clearCart,
     }),
-    [items, count, total],
+    [items, count, total, totalCash, totalInstallment],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
