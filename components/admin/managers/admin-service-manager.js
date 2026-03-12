@@ -60,6 +60,7 @@ export default function AdminServiceManager() {
   const [isLoadingAttendants, setIsLoadingAttendants] = useState(false);
   const [isSavingAttendants, setIsSavingAttendants] = useState(false);
   const [lastCommitSha, setLastCommitSha] = useState("");
+  const [lastPullRequestUrl, setLastPullRequestUrl] = useState("");
 
   useEffect(() => {
     setChannelDrafts(contactChannels.map(createChannelDraft));
@@ -217,11 +218,23 @@ export default function AdminServiceManager() {
 
       setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
       setLastCommitSha(payload?.commitSha || "");
+      setLastPullRequestUrl(payload?.pullRequestUrl || "");
+
+      const pullRequestLabel = payload?.pullRequestNumber
+        ? `PR #${payload.pullRequestNumber}`
+        : "pull request de atendentes";
+      const changeStatusMessage = payload?.unchanged
+        ? "Sem mudanças novas no branch de trabalho."
+        : `${pullRequestLabel} atualizado para aguardar checks.`;
+      const autoMergeMessage =
+        typeof payload?.autoMergeStatusMessage === "string" && payload.autoMergeStatusMessage.trim()
+          ? payload.autoMergeStatusMessage
+          : "Acompanhe o quality-gate antes do merge.";
 
       showToast({
         type: "success",
         title: "Atendentes salvos",
-        message: "Alterações enviadas para o repositório e aguardando novo deploy.",
+        message: `${changeStatusMessage} ${autoMergeMessage}`,
       });
     } catch (error) {
       showToast({
@@ -348,6 +361,14 @@ export default function AdminServiceManager() {
           </div>
 
           {lastCommitSha ? <small>Último commit: {lastCommitSha.slice(0, 7)}</small> : null}
+          {lastPullRequestUrl ? (
+            <small>
+              Pull request:{" "}
+              <a href={lastPullRequestUrl} target="_blank" rel="noreferrer">
+                abrir PR
+              </a>
+            </small>
+          ) : null}
         </form>
       </section>
 

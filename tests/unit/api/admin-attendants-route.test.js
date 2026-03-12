@@ -81,6 +81,40 @@ describe("/api/admin/attendants", () => {
     expect(payload.error).toContain("Payload inválido");
   });
 
+  it("retorna 200 com metadados de PR ao salvar atendentes", async () => {
+    isAdminSessionValidMock.mockReturnValue(true);
+    updateAttendantsInRepositoryMock.mockResolvedValue({
+      attendants: [{ name: "Ari", phone: "5517999991111" }],
+      commitSha: "abc123",
+      pullRequestUrl: "https://github.com/ArielAio/Li-Rilko/pull/42",
+      pullRequestNumber: 42,
+      workBranch: "bot/attendants-admin",
+      unchanged: false,
+      autoMergeRequested: true,
+      autoMergeStatusMessage: "Auto-merge solicitado com método squash.",
+    });
+
+    const response = await PUT(
+      makeRequest(
+        "PUT",
+        JSON.stringify({
+          attendants: [{ name: "Ari", phone: "5517999991111" }],
+        }),
+      ),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.attendants).toHaveLength(1);
+    expect(payload.commitSha).toBe("abc123");
+    expect(payload.pullRequestUrl).toContain("/pull/42");
+    expect(payload.pullRequestNumber).toBe(42);
+    expect(payload.workBranch).toBe("bot/attendants-admin");
+    expect(payload.unchanged).toBe(false);
+    expect(payload.autoMergeRequested).toBe(true);
+    expect(payload.autoMergeStatusMessage).toContain("squash");
+  });
+
   it("retorna 400 para erro de validação", async () => {
     isAdminSessionValidMock.mockReturnValue(true);
     updateAttendantsInRepositoryMock.mockRejectedValue(new AttendantsValidationError("Cadastre pelo menos 1 atendente."));
