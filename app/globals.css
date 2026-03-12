@@ -57,6 +57,10 @@
   --motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
   --motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
   --motion-easing-wave-soft: cubic-bezier(0.35, 0.03, 0.2, 1);
+
+  --z-admin-modal: 140;
+  --z-whatsapp-modal: 2200;
+  --z-toast: 3000;
 }
 
 * {
@@ -2191,11 +2195,6 @@ body.modal-open {
   overflow: hidden;
 }
 
-body.modal-open .toast-stack {
-  opacity: 0;
-  pointer-events: none;
-}
-
 .admin-card {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -2656,7 +2655,7 @@ body.modal-open .toast-stack {
 .admin-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 140;
+  z-index: var(--z-admin-modal);
   padding: 1rem;
   background: rgba(5, 8, 16, 0.62);
   display: grid;
@@ -2882,7 +2881,7 @@ body.modal-open .toast-stack {
 .whatsapp-picker-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-whatsapp-modal);
   background: rgba(5, 8, 16, 0.62);
   display: grid;
   place-items: center;
@@ -3002,7 +3001,7 @@ body.modal-open .toast-stack {
   width: min(372px, calc(100vw - 1.55rem));
   display: grid;
   gap: 0.54rem;
-  z-index: 2000;
+  z-index: var(--z-toast);
   pointer-events: none;
 }
 
