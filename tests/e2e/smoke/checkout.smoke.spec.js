@@ -10,6 +10,7 @@ test.describe("Smoke: jornada de compra", () => {
     await page.goto("/catalogo");
 
     await page.getByRole("button", { name: /Adicionar/ }).first().click();
+    await expect(page.getByText(/No carrinho:\s*1/i).first()).toBeVisible();
     await page.getByRole("link", { name: "Ir para o carrinho" }).first().click();
 
     await expect(page.getByRole("heading", { name: "Seu carrinho" })).toBeVisible();
