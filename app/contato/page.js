@@ -38,11 +38,6 @@ export default function ContactPage() {
     if (action.mode === "picker") {
       setPendingMessage(contactMessage);
       setIsPickerOpen(true);
-      showToast({
-        type: "info",
-        title: "Escolha a atendente",
-        message: "Selecione uma atendente para iniciar a conversa no WhatsApp.",
-      });
       return;
     }
 

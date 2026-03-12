@@ -29,11 +29,42 @@ function createSettingsDraft(settings) {
 }
 
 function getErrorMessageFromPayload(payload, fallbackMessage) {
-  if (payload && typeof payload.error === "string" && payload.error.trim()) {
-    return payload.error;
+  const rawMessage = payload && typeof payload.error === "string" ? payload.error : "";
+  const normalized = rawMessage.trim();
+
+  if (!normalized) {
+    return fallbackMessage;
   }
 
-  return fallbackMessage;
+  const lower = normalized.toLowerCase();
+
+  const isUserValidationMessage =
+    lower.includes("cadastre pelo menos") ||
+    lower.includes("limite de") ||
+    lower.includes("deve ter entre") ||
+    lower.includes("número do atendente") ||
+    lower.includes("está duplicado") ||
+    lower.includes("lista de atendentes precisa ser um array");
+
+  if (isUserValidationMessage) {
+    return normalized;
+  }
+
+  const hasTechnicalTerms =
+    lower.includes("pull request") ||
+    lower.includes("auto-merge") ||
+    lower.includes("branch") ||
+    lower.includes("github") ||
+    lower.includes("token") ||
+    lower.includes("resource not accessible") ||
+    lower.includes("quality-gate") ||
+    lower.includes("api");
+
+  if (hasTechnicalTerms) {
+    return fallbackMessage;
+  }
+
+  return normalized;
 }
 
 function toDisplayAttendantDraft(attendant) {
@@ -107,7 +138,7 @@ export default function AdminServiceManager() {
         showToast({
           type: "warning",
           title: "Falha ao carregar atendentes",
-          message: error instanceof Error ? error.message : "Tente novamente em instantes.",
+          message: "Não foi possível carregar a lista agora. Tente novamente em instantes.",
         });
       } finally {
         if (isMounted) {
@@ -172,13 +203,13 @@ export default function AdminServiceManager() {
       showToast({
         type: "success",
         title: "Lista atualizada",
-        message: "Atendentes carregados a partir do JSON do repositório.",
+        message: "A lista de atendentes foi atualizada com sucesso.",
       });
     } catch (error) {
       showToast({
         type: "warning",
         title: "Falha ao atualizar",
-        message: error instanceof Error ? error.message : "Tente novamente em instantes.",
+        message: "Não foi possível atualizar a lista agora. Tente novamente em instantes.",
       });
     } finally {
       setIsLoadingAttendants(false);
@@ -209,7 +240,7 @@ export default function AdminServiceManager() {
       const payload = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(getErrorMessageFromPayload(payload, "Não foi possível salvar atendentes no GitHub."));
+        throw new Error(getErrorMessageFromPayload(payload, "Não foi possível salvar os atendentes agora."));
       }
 
       const list = Array.isArray(payload?.attendants)
@@ -220,27 +251,26 @@ export default function AdminServiceManager() {
       setLastCommitSha(payload?.commitSha || "");
       setLastPullRequestUrl(payload?.pullRequestUrl || "");
 
-      const pullRequestLabel = payload?.pullRequestNumber
-        ? `PR #${payload.pullRequestNumber}`
-        : "pull request de atendentes";
-      const changeStatusMessage = payload?.unchanged
-        ? "Sem mudanças novas no branch de trabalho."
-        : `${pullRequestLabel} atualizado para aguardar checks.`;
-      const autoMergeMessage =
-        typeof payload?.autoMergeStatusMessage === "string" && payload.autoMergeStatusMessage.trim()
-          ? payload.autoMergeStatusMessage
-          : "Acompanhe o quality-gate antes do merge.";
+      let successMessage = "Seus atendentes foram salvos com sucesso.";
+
+      if (payload?.unchanged) {
+        successMessage = "Nenhuma alteração nova foi encontrada. Seus atendentes já estavam atualizados.";
+      } else if (payload?.autoMergeRequested) {
+        successMessage = "Seus atendentes foram atualizados e serão publicados automaticamente após a validação.";
+      } else if (payload?.pullRequestUrl) {
+        successMessage = "Seus atendentes foram atualizados. A publicação será concluída após a aprovação da atualização.";
+      }
 
       showToast({
         type: "success",
         title: "Atendentes salvos",
-        message: `${changeStatusMessage} ${autoMergeMessage}`,
+        message: successMessage,
       });
     } catch (error) {
       showToast({
         type: "warning",
         title: "Falha ao salvar atendentes",
-        message: error instanceof Error ? error.message : "Verifique as variáveis do GitHub e tente novamente.",
+        message: error instanceof Error ? error.message : "Não foi possível salvar os atendentes agora.",
       });
     } finally {
       setIsSavingAttendants(false);
@@ -288,7 +318,7 @@ export default function AdminServiceManager() {
       <div className="admin-manager-toolbar">
         <div>
           <h3>Atendimento</h3>
-          <p>Gerencie atendentes via JSON no repositório e ajuste mensagens/canais exibidos no site.</p>
+          <p>Gerencie atendentes e ajuste mensagens/canais exibidos no site.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           <button type="button" className="btn btn-surface" onClick={handleRefreshAttendants} disabled={isLoadingAttendants}>
@@ -356,7 +386,7 @@ export default function AdminServiceManager() {
               Adicionar atendente
             </button>
             <button type="submit" className="btn btn-primary" disabled={isSavingAttendants}>
-              {isSavingAttendants ? "Salvando no GitHub..." : "Salvar atendentes"}
+              {isSavingAttendants ? "Salvando..." : "Salvar atendentes"}
             </button>
           </div>
 
