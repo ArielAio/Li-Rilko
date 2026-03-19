@@ -2,25 +2,10 @@ import { adminJson, requireAdminRequest } from "@/lib/admin-route";
 import {
   CatalogRepositoryConfigError,
   CatalogRepositoryValidationError,
-  getAdminBootstrapSnapshot,
-  saveAttendantsInCatalog,
+  saveCategoriesInCatalog,
 } from "@/lib/catalog-repository";
 
 export const runtime = "nodejs";
-
-export async function GET(request) {
-  const unauthorized = requireAdminRequest(request);
-  if (unauthorized) {
-    return unauthorized;
-  }
-
-  try {
-    const catalog = await getAdminBootstrapSnapshot();
-    return adminJson({ attendants: catalog.attendants });
-  } catch {
-    return adminJson({ error: "Não foi possível carregar atendentes agora." }, 500);
-  }
-}
 
 export async function PUT(request) {
   const unauthorized = requireAdminRequest(request);
@@ -36,11 +21,8 @@ export async function PUT(request) {
   }
 
   try {
-    const result = await saveAttendantsInCatalog(payload?.attendants);
-    return adminJson({
-      attendants: result.catalog.attendants,
-      catalog: result.catalog,
-    });
+    const result = await saveCategoriesInCatalog(payload?.categories);
+    return adminJson({ catalog: result.catalog });
   } catch (error) {
     if (error instanceof CatalogRepositoryValidationError) {
       return adminJson({ error: error.message }, 400);
@@ -50,6 +32,6 @@ export async function PUT(request) {
       return adminJson({ error: error.message }, 503);
     }
 
-    return adminJson({ error: "Erro interno ao salvar atendentes." }, 500);
+    return adminJson({ error: "Erro interno ao salvar categorias." }, 500);
   }
 }

@@ -7,6 +7,7 @@ import { formatBrazilPhoneInput, toCanonicalBrazilWhatsAppPhone } from "@/lib/ad
 
 function createEmptyAttendant() {
   return {
+    id: "",
     name: "",
     phone: "",
   };
@@ -28,47 +29,9 @@ function createSettingsDraft(settings) {
   };
 }
 
-function getErrorMessageFromPayload(payload, fallbackMessage) {
-  const rawMessage = payload && typeof payload.error === "string" ? payload.error : "";
-  const normalized = rawMessage.trim();
-
-  if (!normalized) {
-    return fallbackMessage;
-  }
-
-  const lower = normalized.toLowerCase();
-
-  const isUserValidationMessage =
-    lower.includes("cadastre pelo menos") ||
-    lower.includes("limite de") ||
-    lower.includes("deve ter entre") ||
-    lower.includes("número do atendente") ||
-    lower.includes("está duplicado") ||
-    lower.includes("lista de atendentes precisa ser um array");
-
-  if (isUserValidationMessage) {
-    return normalized;
-  }
-
-  const hasTechnicalTerms =
-    lower.includes("pull request") ||
-    lower.includes("auto-merge") ||
-    lower.includes("branch") ||
-    lower.includes("github") ||
-    lower.includes("token") ||
-    lower.includes("resource not accessible") ||
-    lower.includes("quality-gate") ||
-    lower.includes("api");
-
-  if (hasTechnicalTerms) {
-    return fallbackMessage;
-  }
-
-  return normalized;
-}
-
 function toDisplayAttendantDraft(attendant) {
   return {
+    id: attendant?.id || "",
     name: attendant?.name || "",
     phone: formatBrazilPhoneInput(attendant?.phone || ""),
   };
@@ -76,13 +39,22 @@ function toDisplayAttendantDraft(attendant) {
 
 function toCanonicalAttendantDraft(attendant) {
   return {
+    id: attendant?.id || "",
     name: attendant?.name || "",
     phone: toCanonicalBrazilWhatsAppPhone(attendant?.phone || ""),
   };
 }
 
 export default function AdminServiceManager() {
-  const { contactChannels, saveContactChannels, siteSettings, saveSiteSettings } = useCatalog();
+  const {
+    attendants,
+    contactChannels,
+    refreshAdminCatalog,
+    saveAttendants,
+    saveContactChannels,
+    siteSettings,
+    saveSiteSettings,
+  } = useCatalog();
   const { showToast } = useToast();
 
   const [channelDrafts, setChannelDrafts] = useState([]);
@@ -90,8 +62,6 @@ export default function AdminServiceManager() {
   const [attendantsDraft, setAttendantsDraft] = useState([createEmptyAttendant()]);
   const [isLoadingAttendants, setIsLoadingAttendants] = useState(false);
   const [isSavingAttendants, setIsSavingAttendants] = useState(false);
-  const [lastCommitSha, setLastCommitSha] = useState("");
-  const [lastPullRequestUrl, setLastPullRequestUrl] = useState("");
 
   useEffect(() => {
     setChannelDrafts(contactChannels.map(createChannelDraft));
@@ -102,118 +72,77 @@ export default function AdminServiceManager() {
   }, [siteSettings]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadAttendants() {
-      setIsLoadingAttendants(true);
-
-      try {
-        const response = await fetch("/api/admin/attendants", {
-          method: "GET",
-          cache: "no-store",
-          credentials: "same-origin",
-        });
-
-        const payload = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(getErrorMessageFromPayload(payload, "Não foi possível carregar atendentes."));
-        }
-
-        if (!isMounted) {
-          return;
-        }
-
-        const list = Array.isArray(payload?.attendants)
-          ? payload.attendants.map(toDisplayAttendantDraft)
-          : [];
-
-        setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setAttendantsDraft((current) => (current.length > 0 ? current : [createEmptyAttendant()]));
-        showToast({
-          type: "warning",
-          title: "Falha ao carregar atendentes",
-          message: "Não foi possível carregar a lista agora. Tente novamente em instantes.",
-        });
-      } finally {
-        if (isMounted) {
-          setIsLoadingAttendants(false);
-        }
-      }
-    }
-
-    void loadAttendants();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [showToast]);
+    const nextDrafts = attendants.map(toDisplayAttendantDraft);
+    setAttendantsDraft(nextDrafts.length > 0 ? nextDrafts : [createEmptyAttendant()]);
+  }, [attendants]);
 
   function handleSaveChannels(event) {
     event.preventDefault();
-    saveContactChannels(channelDrafts);
-    showToast({
-      type: "success",
-      title: "Canais atualizados",
-      message: "Dados da página de contato foram salvos.",
-    });
+
+    void (async () => {
+      const result = await saveContactChannels(channelDrafts);
+      if (!result.ok) {
+        showToast({
+          type: "warning",
+          title: "Erro ao salvar canais",
+          message: result.error || "Não foi possível salvar os canais agora.",
+        });
+        return;
+      }
+
+      showToast({
+        type: "success",
+        title: "Canais atualizados",
+        message: "Dados da página de contato foram salvos.",
+      });
+    })();
   }
 
   function handleSaveMessages(event) {
     event.preventDefault();
 
-    saveSiteSettings({
-      whatsappIntro: settingsDraft.whatsappIntro,
-      whatsappFloatingMessage: settingsDraft.whatsappFloatingMessage,
-    });
+    void (async () => {
+      const result = await saveSiteSettings({
+        whatsappIntro: settingsDraft.whatsappIntro,
+        whatsappFloatingMessage: settingsDraft.whatsappFloatingMessage,
+      });
 
-    showToast({
-      type: "success",
-      title: "Mensagens atualizadas",
-      message: "Textos padrão do WhatsApp foram salvos.",
-    });
+      if (!result.ok) {
+        showToast({
+          type: "warning",
+          title: "Erro ao salvar mensagens",
+          message: result.error || "Não foi possível salvar as mensagens agora.",
+        });
+        return;
+      }
+
+      showToast({
+        type: "success",
+        title: "Mensagens atualizadas",
+        message: "Textos padrão do WhatsApp foram salvos.",
+      });
+    })();
   }
 
   async function handleRefreshAttendants() {
     setIsLoadingAttendants(true);
+    const result = await refreshAdminCatalog();
+    setIsLoadingAttendants(false);
 
-    try {
-      const response = await fetch("/api/admin/attendants", {
-        method: "GET",
-        cache: "no-store",
-        credentials: "same-origin",
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(getErrorMessageFromPayload(payload, "Não foi possível atualizar a lista agora."));
-      }
-
-      const list = Array.isArray(payload?.attendants)
-        ? payload.attendants.map(toDisplayAttendantDraft)
-        : [];
-
-      setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
-      showToast({
-        type: "success",
-        title: "Lista atualizada",
-        message: "A lista de atendentes foi atualizada com sucesso.",
-      });
-    } catch (error) {
+    if (!result.ok) {
       showToast({
         type: "warning",
         title: "Falha ao atualizar",
-        message: "Não foi possível atualizar a lista agora. Tente novamente em instantes.",
+        message: result.error || "Não foi possível atualizar a lista agora. Tente novamente em instantes.",
       });
-    } finally {
-      setIsLoadingAttendants(false);
+      return;
     }
+
+    showToast({
+      type: "success",
+      title: "Lista atualizada",
+      message: "A lista de atendentes foi atualizada com sucesso.",
+    });
   }
 
   async function handleSaveAttendants(event) {
@@ -224,57 +153,23 @@ export default function AdminServiceManager() {
     }
 
     setIsSavingAttendants(true);
+    const result = await saveAttendants(attendantsDraft.map(toCanonicalAttendantDraft));
+    setIsSavingAttendants(false);
 
-    try {
-      const response = await fetch("/api/admin/attendants", {
-        method: "PUT",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          attendants: attendantsDraft.map(toCanonicalAttendantDraft),
-        }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(getErrorMessageFromPayload(payload, "Não foi possível salvar os atendentes agora."));
-      }
-
-      const list = Array.isArray(payload?.attendants)
-        ? payload.attendants.map(toDisplayAttendantDraft)
-        : [];
-
-      setAttendantsDraft(list.length > 0 ? list : [createEmptyAttendant()]);
-      setLastCommitSha(payload?.commitSha || "");
-      setLastPullRequestUrl(payload?.pullRequestUrl || "");
-
-      let successMessage = "Seus atendentes foram salvos com sucesso.";
-
-      if (payload?.unchanged) {
-        successMessage = "Nenhuma alteração nova foi encontrada. Seus atendentes já estavam atualizados.";
-      } else if (payload?.autoMergeRequested) {
-        successMessage = "Seus atendentes foram atualizados e serão publicados automaticamente após a validação.";
-      } else if (payload?.pullRequestUrl) {
-        successMessage = "Seus atendentes foram atualizados. A publicação será concluída após a aprovação da atualização.";
-      }
-
-      showToast({
-        type: "success",
-        title: "Atendentes salvos",
-        message: successMessage,
-      });
-    } catch (error) {
+    if (!result.ok) {
       showToast({
         type: "warning",
         title: "Falha ao salvar atendentes",
-        message: error instanceof Error ? error.message : "Não foi possível salvar os atendentes agora.",
+        message: result.error || "Não foi possível salvar os atendentes agora.",
       });
-    } finally {
-      setIsSavingAttendants(false);
+      return;
     }
+
+    showToast({
+      type: "success",
+      title: "Atendentes salvos",
+      message: "Os atendentes foram atualizados com sucesso.",
+    });
   }
 
   function updateAttendantField(index, field, value) {
@@ -335,7 +230,7 @@ export default function AdminServiceManager() {
 
         <form className="admin-form" onSubmit={handleSaveAttendants}>
           {attendantsDraft.map((attendant, index) => (
-            <div key={`attendant-${index}`} className="admin-channel-block">
+            <div key={attendant.id || `attendant-${index}`} className="admin-channel-block">
               <label className="admin-field">
                 <span>Nome do atendente</span>
                 <input
@@ -382,23 +277,17 @@ export default function AdminServiceManager() {
           ))}
 
           <div className="admin-manager-footer-actions">
-            <button type="button" className="btn btn-surface" onClick={() => setAttendantsDraft((prev) => [...prev, createEmptyAttendant()])}>
+            <button
+              type="button"
+              className="btn btn-surface"
+              onClick={() => setAttendantsDraft((prev) => [...prev, createEmptyAttendant()])}
+            >
               Adicionar atendente
             </button>
             <button type="submit" className="btn btn-primary" disabled={isSavingAttendants}>
               {isSavingAttendants ? "Salvando..." : "Salvar atendentes"}
             </button>
           </div>
-
-          {lastCommitSha ? <small>Último commit: {lastCommitSha.slice(0, 7)}</small> : null}
-          {lastPullRequestUrl ? (
-            <small>
-              Pull request:{" "}
-              <a href={lastPullRequestUrl} target="_blank" rel="noreferrer">
-                abrir PR
-              </a>
-            </small>
-          ) : null}
         </form>
       </section>
 

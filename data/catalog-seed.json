@@ -1,0 +1,240 @@
+{
+  "categories": [
+    { "name": "Smartphones", "subs": ["iPhone", "Celular (outros)"] },
+    { "name": "Apple", "subs": ["Apple Watch", "iPad e MacBook"] },
+    { "name": "Acessórios", "subs": ["Capinhas", "Películas", "Cabos e carregadores"] },
+    { "name": "Importados", "subs": ["Perfumes", "Maquiagem", "Bijuterias", "Mochilas"] },
+    { "name": "Mobilidade", "subs": ["Moto elétrica"] },
+    { "name": "Outros", "subs": ["Itens variados"] }
+  ],
+  "products": [
+    {
+      "id": "iphone-13-128gb",
+      "name": "iPhone 13 128GB",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 2899,
+      "priceInstallment": 2899,
+      "oldPrice": 3149,
+      "badge": "Oferta da semana",
+      "shortDescription": "Desempenho premium, câmeras avançadas e design elegante.",
+      "highlights": ["Tela Super Retina", "Chip A15 Bionic", "Excelente revenda"],
+      "images": [
+        "https://picsum.photos/seed/smartphone-premium-red-1/1200/1200",
+        "https://picsum.photos/seed/smartphone-premium-red-2/1200/1200",
+        "https://picsum.photos/seed/smartphone-premium-red-3/1200/1200"
+      ]
+    },
+    {
+      "id": "iphone-12-128gb",
+      "name": "iPhone 12 128GB",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 2499,
+      "priceInstallment": 2499,
+      "oldPrice": 2799,
+      "badge": "Últimas unidades",
+      "shortDescription": "Excelente custo-benefício para quem busca iPhone original.",
+      "highlights": ["Face ID", "5G", "Ótima performance"],
+      "images": [
+        "https://picsum.photos/seed/smartphone-minimal-black-1/1200/1200",
+        "https://picsum.photos/seed/smartphone-minimal-black-2/1200/1200",
+        "https://picsum.photos/seed/smartphone-minimal-black-3/1200/1200"
+      ]
+    },
+    {
+      "id": "apple-watch-series-8",
+      "name": "Apple Watch Series 8",
+      "category": "Apple",
+      "sub": "Apple Watch",
+      "priceCash": 2199,
+      "priceInstallment": 2199,
+      "oldPrice": 2450,
+      "badge": "Mais vendido",
+      "shortDescription": "Monitoramento completo de saúde e estilo para o dia a dia.",
+      "highlights": ["Saúde e treino", "GPS", "Acabamento premium"],
+      "images": [
+        "https://picsum.photos/seed/watch-tech-modern-1/1200/1200",
+        "https://picsum.photos/seed/watch-tech-modern-2/1200/1200",
+        "https://picsum.photos/seed/watch-tech-modern-3/1200/1200"
+      ]
+    },
+    {
+      "id": "ipad-9-geracao-64gb",
+      "name": "iPad 9ª Geração 64GB",
+      "category": "Apple",
+      "sub": "iPad e MacBook",
+      "priceCash": 2590,
+      "priceInstallment": 2590,
+      "oldPrice": 2890,
+      "badge": "Novo lote",
+      "shortDescription": "Tela ampla e fluida para produtividade e entretenimento.",
+      "highlights": ["Tela de 10,2\"", "Chip A13", "Ideal para estudos"],
+      "images": [
+        "https://picsum.photos/seed/tablet-clean-desk-1/1200/1200",
+        "https://picsum.photos/seed/tablet-clean-desk-2/1200/1200",
+        "https://picsum.photos/seed/tablet-clean-desk-3/1200/1200"
+      ]
+    },
+    {
+      "id": "pelicula-3d-premium",
+      "name": "Película 3D Premium",
+      "category": "Acessórios",
+      "sub": "Películas",
+      "priceCash": 39.9,
+      "priceInstallment": 39.9,
+      "oldPrice": 49.9,
+      "badge": "Leve 2 com desconto",
+      "shortDescription": "Proteção reforçada e acabamento transparente de alta qualidade.",
+      "highlights": ["Cobertura 3D", "Alta transparência", "Toque preciso"],
+      "images": [
+        "https://picsum.photos/seed/accessory-glass-shield-1/1200/1200",
+        "https://picsum.photos/seed/accessory-glass-shield-2/1200/1200",
+        "https://picsum.photos/seed/accessory-glass-shield-3/1200/1200"
+      ]
+    },
+    {
+      "id": "capinha-anti-impacto",
+      "name": "Capinha Anti-impacto",
+      "category": "Acessórios",
+      "sub": "Capinhas",
+      "priceCash": 49.9,
+      "priceInstallment": 49.9,
+      "oldPrice": 59.9,
+      "badge": "Proteção reforçada",
+      "shortDescription": "Absorção de impacto com visual moderno e premium.",
+      "highlights": ["Bordas reforçadas", "Leve", "Design elegante"],
+      "images": [
+        "https://picsum.photos/seed/phone-case-texture-1/1200/1200",
+        "https://picsum.photos/seed/phone-case-texture-2/1200/1200",
+        "https://picsum.photos/seed/phone-case-texture-3/1200/1200"
+      ]
+    },
+    {
+      "id": "perfume-importado-100ml",
+      "name": "Perfume Importado 100ml",
+      "category": "Importados",
+      "sub": "Perfumes",
+      "priceCash": 249,
+      "priceInstallment": 249,
+      "oldPrice": 289,
+      "badge": "Linha premium",
+      "shortDescription": "Fragrância marcante com alta fixação e excelente projeção.",
+      "highlights": ["Alta fixação", "Assinatura sofisticada", "100ml"],
+      "images": [
+        "https://picsum.photos/seed/perfume-luxury-bottle-1/1200/1200",
+        "https://picsum.photos/seed/perfume-luxury-bottle-2/1200/1200",
+        "https://picsum.photos/seed/perfume-luxury-bottle-3/1200/1200"
+      ]
+    },
+    {
+      "id": "kit-maquiagem-pro",
+      "name": "Kit Maquiagem Pro",
+      "category": "Importados",
+      "sub": "Maquiagem",
+      "priceCash": 129,
+      "priceInstallment": 129,
+      "oldPrice": 149,
+      "badge": "Acabamento profissional",
+      "shortDescription": "Seleção completa para looks do básico ao sofisticado.",
+      "highlights": ["Paleta versátil", "Ótima pigmentação", "Uso diário"],
+      "images": [
+        "https://picsum.photos/seed/makeup-kit-color-1/1200/1200",
+        "https://picsum.photos/seed/makeup-kit-color-2/1200/1200",
+        "https://picsum.photos/seed/makeup-kit-color-3/1200/1200"
+      ]
+    },
+    {
+      "id": "mochila-urban-tech",
+      "name": "Mochila Urban Tech",
+      "category": "Importados",
+      "sub": "Mochilas",
+      "priceCash": 189,
+      "priceInstallment": 189,
+      "oldPrice": 229,
+      "badge": "Visual executivo",
+      "shortDescription": "Mochila resistente com compartimentos inteligentes.",
+      "highlights": ["Compartimento notebook", "Design urbano", "Material resistente"],
+      "images": [
+        "https://picsum.photos/seed/urban-backpack-style-1/1200/1200",
+        "https://picsum.photos/seed/urban-backpack-style-2/1200/1200",
+        "https://picsum.photos/seed/urban-backpack-style-3/1200/1200"
+      ]
+    },
+    {
+      "id": "moto-eletrica-compact",
+      "name": "Moto Elétrica Compact",
+      "category": "Mobilidade",
+      "sub": "Moto elétrica",
+      "priceCash": 6990,
+      "priceInstallment": 6990,
+      "oldPrice": 7590,
+      "badge": "Pré-venda",
+      "shortDescription": "Mobilidade urbana com economia e visual moderno.",
+      "highlights": ["Baixo consumo", "Visual premium", "Uso urbano"],
+      "images": [
+        "https://picsum.photos/seed/electric-bike-city-1/1200/1200",
+        "https://picsum.photos/seed/electric-bike-city-2/1200/1200",
+        "https://picsum.photos/seed/electric-bike-city-3/1200/1200"
+      ]
+    },
+    {
+      "id": "garrafa-termica-1l",
+      "name": "Garrafa Térmica 1L",
+      "category": "Outros",
+      "sub": "Itens variados",
+      "priceCash": 69.9,
+      "priceInstallment": 69.9,
+      "oldPrice": 89.9,
+      "badge": "Destaque da semana",
+      "shortDescription": "Mantém temperatura por horas com design elegante.",
+      "highlights": ["1 litro", "Vedação segura", "Acabamento premium"],
+      "images": [
+        "https://picsum.photos/seed/thermal-bottle-clean-1/1200/1200",
+        "https://picsum.photos/seed/thermal-bottle-clean-2/1200/1200",
+        "https://picsum.photos/seed/thermal-bottle-clean-3/1200/1200"
+      ]
+    },
+    {
+      "id": "bijuteria-luxury-set",
+      "name": "Bijuteria Luxury Set",
+      "category": "Importados",
+      "sub": "Bijuterias",
+      "priceCash": 119,
+      "priceInstallment": 119,
+      "oldPrice": 149,
+      "badge": "Coleção nova",
+      "shortDescription": "Peças sofisticadas para elevar o visual de qualquer produção.",
+      "highlights": ["Brilho intenso", "Leve e confortável", "Mix versátil"],
+      "images": [
+        "https://picsum.photos/seed/jewelry-premium-light-1/1200/1200",
+        "https://picsum.photos/seed/jewelry-premium-light-2/1200/1200",
+        "https://picsum.photos/seed/jewelry-premium-light-3/1200/1200"
+      ]
+    }
+  ],
+  "contactChannels": [
+    {
+      "id": "whatsapp",
+      "title": "WhatsApp",
+      "value": "Atendimento para orçamento e fechamento",
+      "href": "https://wa.me/"
+    },
+    {
+      "id": "instagram",
+      "title": "Instagram",
+      "value": "@lirilkoimports",
+      "href": "#"
+    },
+    {
+      "id": "endereco",
+      "title": "Endereço",
+      "value": "Fernandópolis - SP",
+      "href": "#"
+    }
+  ],
+  "siteSettings": {
+    "whatsappIntro": "Olá! Separei esses produtos e gostaria de finalizar a compra. Pode me ajudar?",
+    "whatsappFloatingMessage": "Olá, estou navegando em sua loja e gostaria de mais informações."
+  }
+}

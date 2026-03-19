@@ -14,11 +14,10 @@ export default function WhatsAppFloatWidget() {
   const [isCardVisible, setIsCardVisible] = useState(true);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
-  const { siteSettings } = useCatalog();
+  const { attendants, siteSettings } = useCatalog();
   const { count } = useCart();
   const { showToast } = useToast();
-  const attendantFlow = resolveAttendantFlow();
-  const attendants = attendantFlow.attendants;
+  const attendantFlow = resolveAttendantFlow(attendants);
   const directAttendant = attendantFlow.mode === "direct" ? attendantFlow.attendant : null;
 
   function handleClick(event) {

@@ -1,4 +1,3 @@
-const CATALOG_STORAGE_KEY = "li-rilko-catalog-v1";
 const CART_STORAGE_KEY = "li-rilko-cart-v1";
 
 export async function applyRuntimeMocks(page, { attendants = [], cartMap = {}, catalog = null } = {}) {
@@ -7,7 +6,7 @@ export async function applyRuntimeMocks(page, { attendants = [], cartMap = {}, c
       window.localStorage.clear();
 
       if (runtimeCatalog) {
-        window.localStorage.setItem(keys.catalog, JSON.stringify(runtimeCatalog));
+        window.__LI_RILKO_TEST_PUBLIC_CATALOG__ = runtimeCatalog;
       }
 
       window.localStorage.setItem(keys.cart, JSON.stringify(runtimeCartMap || {}));
@@ -24,7 +23,6 @@ export async function applyRuntimeMocks(page, { attendants = [], cartMap = {}, c
       cartMap,
       catalog,
       keys: {
-        catalog: CATALOG_STORAGE_KEY,
         cart: CART_STORAGE_KEY,
       },
     },

@@ -2,6 +2,17 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useParams: () => ({}),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  redirect: vi.fn(),
+}));
+
 function createMemoryStorage() {
   const store = new Map();
 
@@ -60,6 +71,8 @@ beforeAll(() => {
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  delete window.__LI_RILKO_TEST_PUBLIC_CATALOG__;
+  delete window.__LI_RILKO_TEST_ATTENDANTS__;
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
 });

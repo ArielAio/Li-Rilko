@@ -1,9 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { createDefaultCatalog, defaultContactChannels, defaultSiteSettings } from "@/lib/catalog-data";
-
-const CATALOG_STORAGE_KEY = "li-rilko-catalog-v1";
+import { usePathname } from "next/navigation";
+import { defaultAttendants } from "@/lib/attendants-data";
+import { createDefaultAppCatalog } from "@/lib/app-catalog-data";
+import { sanitizeContactChannels, sanitizeSiteSettings } from "@/lib/catalog-normalizer";
 
 const CatalogContext = createContext(null);
 
@@ -25,326 +26,232 @@ function normalizeMoney(value, fallback = 0) {
   if (!Number.isFinite(numeric) || numeric < 0) {
     return fallback;
   }
+
   return Number(numeric.toFixed(2));
 }
 
-function slugify(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+function createFallbackAdminCategories(categories) {
+  return categories.map((category, categoryIndex) => {
+    const categoryId = `fallback-category-${categoryIndex + 1}`;
+
+    return {
+      id: categoryId,
+      name: category.name,
+      sortOrder: categoryIndex,
+      isActive: true,
+      subs: category.subs.map((sub, subIndex) => ({
+        id: `${categoryId}-sub-${subIndex + 1}`,
+        categoryId,
+        name: sub,
+        sortOrder: subIndex,
+        isActive: true,
+      })),
+    };
+  });
 }
 
-function sanitizeCategories(rawCategories, fallbackCategories) {
-  const source = Array.isArray(rawCategories) && rawCategories.length > 0 ? rawCategories : fallbackCategories;
-  const seen = new Set();
+function normalizeProduct(product, index, fallbackCategories, fallbackAdminCategories) {
+  const fallbackCategory = fallbackCategories[0]?.name || "Outros";
+  const fallbackSub = fallbackCategories[0]?.subs?.[0] || "Geral";
+  const categoryName = normalizeText(product?.category, fallbackCategory);
+  const subName = normalizeText(product?.sub, fallbackSub);
+  const categoryId =
+    normalizeText(product?.categoryId) ||
+    fallbackAdminCategories.find((category) => category.name === categoryName)?.id ||
+    fallbackAdminCategories[0]?.id ||
+    "";
+  const subcategoryId =
+    normalizeText(product?.subcategoryId) ||
+    fallbackAdminCategories
+      .find((category) => category.id === categoryId)
+      ?.subs?.find((sub) => sub.name === subName)?.id ||
+    fallbackAdminCategories[0]?.subs?.[0]?.id ||
+    "";
+  const images = Array.isArray(product?.images) && product.images.length > 0 ? product.images.filter(Boolean).slice(0, 6) : [];
+  const imageItems = Array.isArray(product?.imageItems)
+    ? product.imageItems
+        .map((item, imageIndex) => ({
+          id: normalizeText(item?.id, `fallback-image-${index + 1}-${imageIndex + 1}`),
+          storagePath: normalizeText(item?.storagePath, images[imageIndex] || ""),
+          publicUrl: normalizeText(item?.publicUrl, images[imageIndex] || ""),
+          sortOrder: Number(item?.sortOrder ?? imageIndex),
+        }))
+        .filter((item) => item.storagePath || item.publicUrl)
+    : images.map((image, imageIndex) => ({
+        id: `fallback-image-${index + 1}-${imageIndex + 1}`,
+        storagePath: image,
+        publicUrl: image,
+        sortOrder: imageIndex,
+      }));
 
-  const result = source
-    .map((category) => {
-      const name = normalizeText(category?.name);
-      if (!name) {
-        return null;
-      }
+  const resolvedImages = imageItems.map((item) => item.publicUrl || item.storagePath).filter(Boolean);
 
-      const normalizedKey = name.toLowerCase();
-      if (seen.has(normalizedKey)) {
-        return null;
-      }
-      seen.add(normalizedKey);
-
-      const subsRaw = Array.isArray(category?.subs) ? category.subs : [];
-      const subsSeen = new Set();
-      const subs = subsRaw
-        .map((sub) => normalizeText(sub))
-        .filter((sub) => {
-          if (!sub) {
-            return false;
-          }
-          const subKey = sub.toLowerCase();
-          if (subsSeen.has(subKey)) {
-            return false;
-          }
-          subsSeen.add(subKey);
-          return true;
-        });
-
-      return {
-        name,
-        subs: subs.length > 0 ? subs : ["Geral"],
-      };
-    })
-    .filter(Boolean);
-
-  if (result.length > 0) {
-    return result;
-  }
-
-  return fallbackCategories;
-}
-
-function sanitizeHighlights(rawHighlights, fallbackHighlights) {
-  const source = Array.isArray(rawHighlights) && rawHighlights.length > 0 ? rawHighlights : fallbackHighlights;
-  const normalized = source
-    .map((item) => ({
-      title: normalizeText(item?.title),
-      text: normalizeText(item?.text),
-    }))
-    .filter((item) => item.title && item.text);
-
-  return normalized.length > 0 ? normalized : fallbackHighlights;
-}
-
-function sanitizeContactChannels(rawChannels) {
-  const source = Array.isArray(rawChannels) && rawChannels.length > 0 ? rawChannels : defaultContactChannels;
-  const normalized = source
-    .map((channel, index) => ({
-      id: normalizeText(channel?.id, `channel-${index + 1}`),
-      title: normalizeText(channel?.title, "Canal"),
-      value: normalizeText(channel?.value, "-"),
-      href: normalizeText(channel?.href, "#"),
-    }))
-    .filter((channel) => channel.title);
-
-  return normalized.length > 0 ? normalized : defaultContactChannels;
-}
-
-function sanitizeWhatsAppAttendants(rawAttendants) {
-  const source = Array.isArray(rawAttendants) ? rawAttendants : [];
-  const seenPhones = new Set();
-  const usedIds = new Set();
-
-  return source
-    .map((attendant, index) => {
-      const name = normalizeText(attendant?.name);
-      const phone = String(attendant?.phone || "").replace(/\D/g, "");
-
-      if (!name || !phone) {
-        return null;
-      }
-
-      if (seenPhones.has(phone)) {
-        return null;
-      }
-      seenPhones.add(phone);
-
-      const baseId = slugify(attendant?.id || name) || `attendant-${index + 1}`;
-      let id = baseId;
-      let suffix = 2;
-
-      while (usedIds.has(id)) {
-        id = `${baseId}-${suffix}`;
-        suffix += 1;
-      }
-
-      usedIds.add(id);
-
-      return {
-        id,
-        name,
-        phone,
-      };
-    })
-    .filter(Boolean);
-}
-
-function sanitizeSiteSettings(rawSettings) {
   return {
-    whatsappIntro: normalizeText(rawSettings?.whatsappIntro, defaultSiteSettings.whatsappIntro),
-    whatsappFloatingMessage: normalizeText(rawSettings?.whatsappFloatingMessage, defaultSiteSettings.whatsappFloatingMessage),
-    whatsappAttendants: sanitizeWhatsAppAttendants(rawSettings?.whatsappAttendants),
+    id: normalizeText(product?.id, `produto-${index + 1}`),
+    slug: normalizeText(product?.slug),
+    name: normalizeText(product?.name, `Produto ${index + 1}`),
+    categoryId,
+    subcategoryId,
+    category: categoryName,
+    sub: subName,
+    price: normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0)),
+    priceInstallment: normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0)),
+    priceCash: normalizeMoney(product?.priceCash, normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0))),
+    oldPrice: normalizeMoney(product?.oldPrice, normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0))),
+    badge: normalizeText(product?.badge, "Destaque"),
+    shortDescription: normalizeText(product?.shortDescription, "Produto disponível na vitrine da loja."),
+    highlights: Array.isArray(product?.highlights) && product.highlights.length > 0 ? product.highlights : ["Atendimento via WhatsApp"],
+    image: resolvedImages[0] || "",
+    images: resolvedImages,
+    imageItems,
+    isVisible: product?.isVisible !== false,
+    isAvailable: product?.isAvailable !== false,
   };
 }
 
-function getDefaultImage(seed) {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed || "li-rilko-produto")}/1200/1200`;
-}
-
-function sanitizeImages(imagesRaw, fallbackImage) {
-  const source = Array.isArray(imagesRaw) ? imagesRaw : [];
-  const unique = [];
-  const seen = new Set();
-
-  source.forEach((value) => {
-    const url = normalizeText(value);
-    if (!url || seen.has(url)) {
-      return;
-    }
-    seen.add(url);
-    unique.push(url);
-  });
-
-  if (fallbackImage && !seen.has(fallbackImage)) {
-    unique.unshift(fallbackImage);
-  }
-
-  return unique.length > 0 ? unique.slice(0, 6) : [getDefaultImage("li-rilko")];
-}
-
-function sanitizeProducts(rawProducts, fallbackProducts, categories) {
-  const source = Array.isArray(rawProducts) && rawProducts.length > 0 ? rawProducts : fallbackProducts;
-  const fallbackCategory = categories[0]?.name || "Outros";
-  const fallbackSub = categories[0]?.subs?.[0] || "Geral";
-  const usedIds = new Set();
-
-  const normalized = source
-    .map((product, index) => {
-      const name = normalizeText(product?.name, `Produto ${index + 1}`);
-      const category = normalizeText(product?.category, fallbackCategory);
-      const sub = normalizeText(product?.sub, fallbackSub);
-      const baseId = slugify(product?.id || name) || `produto-${index + 1}`;
-
-      let id = baseId;
-      let suffix = 2;
-      while (usedIds.has(id)) {
-        id = `${baseId}-${suffix}`;
-        suffix += 1;
-      }
-      usedIds.add(id);
-
-      const image = normalizeText(product?.image, getDefaultImage(id));
-      const images = sanitizeImages(product?.images, image);
-      const priceInstallment = normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0));
-      const priceCash = normalizeMoney(product?.priceCash, priceInstallment);
-
-      const highlightsRaw = Array.isArray(product?.highlights) ? product.highlights : [];
-      const highlights = highlightsRaw.map((item) => normalizeText(item)).filter(Boolean);
-
-      return {
-        id,
-        name,
-        category,
-        sub,
-        price: priceInstallment,
-        priceInstallment,
-        priceCash,
-        oldPrice: normalizeMoney(product?.oldPrice, priceInstallment),
-        badge: normalizeText(product?.badge, "Destaque"),
-        shortDescription: normalizeText(product?.shortDescription, "Produto disponível na vitrine da loja."),
-        highlights: highlights.length > 0 ? highlights.slice(0, 6) : ["Atendimento via WhatsApp"],
-        image: images[0],
-        images,
-        isVisible: product?.isVisible !== false,
-        isAvailable: product?.isAvailable !== false,
-      };
-    })
-    .filter((product) => product.name);
-
-  return normalized.length > 0 ? normalized : fallbackProducts;
-}
-
-function sanitizeCatalog(rawCatalog) {
-  const fallback = createDefaultCatalog();
-  if (!rawCatalog || typeof rawCatalog !== "object") {
+function normalizeAdminCategories(adminCategories, publicCategories) {
+  const fallback = createFallbackAdminCategories(publicCategories);
+  if (!Array.isArray(adminCategories) || adminCategories.length === 0) {
     return fallback;
   }
 
-  const categories = sanitizeCategories(rawCatalog.categories, fallback.categories);
-  const products = sanitizeProducts(rawCatalog.products, fallback.products, categories);
+  return adminCategories.map((category, categoryIndex) => {
+    const categoryId = normalizeText(category?.id, fallback[categoryIndex]?.id || `category-${categoryIndex + 1}`);
+    const subs = Array.isArray(category?.subs)
+      ? category.subs
+          .map((sub, subIndex) => ({
+            id: normalizeText(sub?.id, `${categoryId}-sub-${subIndex + 1}`),
+            categoryId,
+            name: normalizeText(sub?.name),
+            sortOrder: Number(sub?.sortOrder ?? subIndex),
+            isActive: sub?.isActive !== false,
+          }))
+          .filter((sub) => sub.name)
+      : [];
+
+    return {
+      id: categoryId,
+      name: normalizeText(category?.name, fallback[categoryIndex]?.name || "Categoria"),
+      sortOrder: Number(category?.sortOrder ?? categoryIndex),
+      isActive: category?.isActive !== false,
+      subs: subs.length > 0 ? subs : fallback[categoryIndex]?.subs || [],
+    };
+  });
+}
+
+function normalizeCatalogSnapshot(snapshot) {
+  const fallback = createDefaultAppCatalog();
+  const categories =
+    Array.isArray(snapshot?.categories) && snapshot.categories.length > 0
+      ? snapshot.categories.map((category) => ({
+          name: normalizeText(category?.name),
+          subs: Array.isArray(category?.subs) ? category.subs.map((sub) => normalizeText(sub)).filter(Boolean) : [],
+        }))
+      : fallback.categories;
+  const adminCategories = normalizeAdminCategories(snapshot?.adminCategories, categories);
+  const productsSource = Array.isArray(snapshot?.products) && snapshot.products.length > 0 ? snapshot.products : fallback.products;
+  const attendantsSource = Array.isArray(snapshot?.attendants) ? snapshot.attendants : defaultAttendants;
+  const homeHighlights =
+    Array.isArray(snapshot?.homeHighlights) && snapshot.homeHighlights.length > 0 ? snapshot.homeHighlights : fallback.homeHighlights;
 
   return {
-    categories,
-    products,
-    homeHighlights: sanitizeHighlights(rawCatalog.homeHighlights, fallback.homeHighlights),
-    contactChannels: sanitizeContactChannels(rawCatalog.contactChannels),
-    siteSettings: sanitizeSiteSettings(rawCatalog.siteSettings),
+    categories: categories.length > 0 ? categories : fallback.categories,
+    adminCategories,
+    products: productsSource.map((product, index) => normalizeProduct(product, index, categories, adminCategories)),
+    attendants: attendantsSource.map((attendant, index) => ({
+      id: normalizeText(attendant?.id, `attendant-${index + 1}`),
+      name: normalizeText(attendant?.name),
+      phone: normalizeText(attendant?.phone),
+      sortOrder: Number(attendant?.sortOrder ?? index),
+      isActive: attendant?.isActive !== false,
+    })),
+    homeHighlights,
+    contactChannels: sanitizeContactChannels(snapshot?.contactChannels),
+    siteSettings: sanitizeSiteSettings(snapshot?.siteSettings),
   };
 }
 
-function ensureCategoryAndSub(categories, categoryName, subName) {
-  const normalizedCategory = normalizeText(categoryName);
-  const normalizedSub = normalizeText(subName);
-
-  if (!normalizedCategory) {
-    return categories;
+function resolveRuntimeCatalogOverride(snapshot) {
+  if (process.env.NODE_ENV === "production" || typeof window === "undefined") {
+    return snapshot;
   }
 
-  const next = categories.map((category) => ({
-    name: category.name,
-    subs: [...category.subs],
-  }));
+  let nextSnapshot = snapshot;
 
-  const index = next.findIndex((category) => category.name.toLowerCase() === normalizedCategory.toLowerCase());
+  if (window.__LI_RILKO_TEST_PUBLIC_CATALOG__ && typeof window.__LI_RILKO_TEST_PUBLIC_CATALOG__ === "object") {
+    nextSnapshot = {
+      ...nextSnapshot,
+      ...window.__LI_RILKO_TEST_PUBLIC_CATALOG__,
+    };
+  }
 
-  if (index === -1) {
-    next.push({
-      name: normalizedCategory,
-      subs: normalizedSub ? [normalizedSub] : ["Geral"],
+  if (Array.isArray(window.__LI_RILKO_TEST_ATTENDANTS__)) {
+    nextSnapshot = {
+      ...nextSnapshot,
+      attendants: window.__LI_RILKO_TEST_ATTENDANTS__,
+    };
+  }
+
+  return nextSnapshot;
+}
+
+async function parseJsonResponse(response) {
+  return response.json().catch(() => null);
+}
+
+async function requestJson(url, options, fallbackMessage) {
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      credentials: "same-origin",
+      ...options,
     });
-    return next;
-  }
+    const payload = await parseJsonResponse(response);
 
-  if (normalizedSub) {
-    const hasSub = next[index].subs.some((sub) => sub.toLowerCase() === normalizedSub.toLowerCase());
-    if (!hasSub) {
-      next[index].subs.push(normalizedSub);
+    if (!response.ok) {
+      const errorMessage = payload && typeof payload.error === "string" ? payload.error : fallbackMessage;
+      return errorResult(errorMessage);
     }
+
+    return okResult({ payload });
+  } catch {
+    return errorResult(fallbackMessage);
   }
-
-  return next;
 }
 
-function normalizeProductInput(input, fallback = {}) {
-  const name = normalizeText(input?.name, fallback.name || "");
-  const category = normalizeText(input?.category, fallback.category || "");
-  const sub = normalizeText(input?.sub, fallback.sub || "");
-  const image = normalizeText(input?.image, fallback.image || getDefaultImage(name || "produto"));
-  const rawImages = Array.isArray(input?.images) ? input.images : [];
-  const images = sanitizeImages(rawImages, image);
-  const rawHighlights = Array.isArray(input?.highlights) ? input.highlights : [];
-  const highlights = rawHighlights.map((item) => normalizeText(item)).filter(Boolean);
-  const fallbackInstallment = normalizeMoney(fallback.priceInstallment, normalizeMoney(fallback.price, 0));
-  const priceInstallment = normalizeMoney(input?.priceInstallment, normalizeMoney(input?.price, fallbackInstallment));
-  const priceCash = normalizeMoney(input?.priceCash, normalizeMoney(fallback.priceCash, priceInstallment));
-
-  return {
-    name,
-    category,
-    sub,
-    price: priceInstallment,
-    priceInstallment,
-    priceCash,
-    oldPrice: normalizeMoney(input?.oldPrice, normalizeMoney(fallback.oldPrice, priceInstallment)),
-    badge: normalizeText(input?.badge, fallback.badge || "Destaque"),
-    shortDescription: normalizeText(
-      input?.shortDescription,
-      fallback.shortDescription || "Produto disponível na vitrine da loja.",
-    ),
-    image: images[0],
-    images,
-    highlights: highlights.length > 0 ? highlights.slice(0, 6) : fallback.highlights || ["Atendimento via WhatsApp"],
-    isVisible: input?.isVisible !== false,
-    isAvailable: input?.isAvailable !== false,
-  };
-}
-
-export function CatalogProvider({ children }) {
-  const [catalog, setCatalog] = useState(() => createDefaultCatalog());
+export function CatalogProvider({ children, initialCatalog }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
+  const resolvedInitialCatalog = useMemo(
+    () => resolveRuntimeCatalogOverride(initialCatalog),
+    [initialCatalog],
+  );
+  const [catalog, setCatalog] = useState(() => normalizeCatalogSnapshot(resolvedInitialCatalog));
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const serialized = window.localStorage.getItem(CATALOG_STORAGE_KEY);
-      if (serialized) {
-        const parsed = JSON.parse(serialized);
-        setCatalog(sanitizeCatalog(parsed));
-      } else {
-        setCatalog(createDefaultCatalog());
-      }
-    } catch {
-      setCatalog(createDefaultCatalog());
-    } finally {
-      setIsHydrated(true);
+    setCatalog(normalizeCatalogSnapshot(resolvedInitialCatalog));
+    setIsHydrated(true);
+  }, [resolvedInitialCatalog]);
+
+  const refreshAdminCatalog = useCallback(async () => {
+    const result = await requestJson("/api/admin/bootstrap", { method: "GET" }, "Não foi possível carregar os dados do admin.");
+    if (!result.ok) {
+      return result;
     }
+
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult();
   }, []);
 
   useEffect(() => {
-    if (!isHydrated) {
+    if (!isAdminRoute) {
+      setCatalog(normalizeCatalogSnapshot(resolvedInitialCatalog));
       return;
     }
-    window.localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalog));
-  }, [catalog, isHydrated]);
+
+    void refreshAdminCatalog();
+  }, [resolvedInitialCatalog, isAdminRoute, refreshAdminCatalog]);
 
   const productMap = useMemo(() => new Map(catalog.products.map((product) => [product.id, product])), [catalog.products]);
 
@@ -355,163 +262,233 @@ export function CatalogProvider({ children }) {
 
   const publicProductMap = useMemo(() => new Map(publicProducts.map((product) => [product.id, product])), [publicProducts]);
 
-  const addProduct = useCallback((input) => {
-    const normalized = normalizeProductInput(input);
-    if (!normalized.name) {
-      return errorResult("Nome do produto é obrigatório.");
+  const addProduct = useCallback(async (input) => {
+    const result = await requestJson(
+      "/api/admin/products",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      },
+      "Não foi possível criar o produto.",
+    );
+
+    if (!result.ok) {
+      return result;
     }
-    if (!normalized.category) {
-      return errorResult("Categoria é obrigatória.");
-    }
-    if (!normalized.sub) {
-      return errorResult("Subcategoria é obrigatória.");
-    }
 
-    let createdId = "";
-
-    setCatalog((prev) => {
-      const taken = new Set(prev.products.map((product) => product.id));
-      const baseId = slugify(normalized.name) || `produto-${prev.products.length + 1}`;
-      let id = baseId;
-      let suffix = 2;
-
-      while (taken.has(id)) {
-        id = `${baseId}-${suffix}`;
-        suffix += 1;
-      }
-
-      createdId = id;
-      const nextCategories = ensureCategoryAndSub(prev.categories, normalized.category, normalized.sub);
-
-      return {
-        ...prev,
-        categories: nextCategories,
-        products: [{ ...normalized, id }, ...prev.products],
-      };
-    });
-
-    return okResult({ id: createdId });
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult({ id: result.payload?.productId || "" });
   }, []);
 
-  const updateProduct = useCallback(
-    (productId, input) => {
-      const current = productMap.get(productId);
-      if (!current) {
-        return errorResult("Produto não encontrado.");
-      }
+  const updateProduct = useCallback(async (productId, input) => {
+    const result = await requestJson(
+      `/api/admin/products/${encodeURIComponent(productId)}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+      },
+      "Não foi possível atualizar o produto.",
+    );
 
-      const normalized = normalizeProductInput(input, current);
-      if (!normalized.name || !normalized.category || !normalized.sub) {
-        return errorResult("Nome, categoria e subcategoria são obrigatórios.");
-      }
+    if (!result.ok) {
+      return result;
+    }
 
-      setCatalog((prev) => ({
-        ...prev,
-        categories: ensureCategoryAndSub(prev.categories, normalized.category, normalized.sub),
-        products: prev.products.map((product) => (product.id === productId ? { ...product, ...normalized } : product)),
-      }));
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult();
+  }, []);
 
-      return okResult();
-    },
-    [productMap],
-  );
+  const removeProduct = useCallback(async (productId) => {
+    const result = await requestJson(
+      `/api/admin/products/${encodeURIComponent(productId)}`,
+      {
+        method: "DELETE",
+      },
+      "Não foi possível remover o produto.",
+    );
 
-  const removeProduct = useCallback(
-    (productId) => {
-      if (!productMap.has(productId)) {
-        return errorResult("Produto não encontrado.");
-      }
+    if (!result.ok) {
+      return result;
+    }
 
-      setCatalog((prev) => ({
-        ...prev,
-        products: prev.products.filter((product) => product.id !== productId),
-      }));
-
-      return okResult();
-    },
-    [productMap],
-  );
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult();
+  }, []);
 
   const toggleProductVisibility = useCallback(
-    (productId) => {
-      if (!productMap.has(productId)) {
+    async (productId) => {
+      const product = productMap.get(productId);
+      if (!product) {
         return errorResult("Produto não encontrado.");
       }
 
-      setCatalog((prev) => ({
-        ...prev,
-        products: prev.products.map((product) =>
-          product.id === productId ? { ...product, isVisible: !product.isVisible } : product,
-        ),
-      }));
-
-      return okResult();
+      return updateProduct(productId, {
+        id: product.id,
+        name: product.name,
+        categoryId: product.categoryId,
+        subcategoryId: product.subcategoryId,
+        priceCash: product.priceCash,
+        priceInstallment: product.priceInstallment,
+        oldPrice: product.oldPrice,
+        badge: product.badge,
+        shortDescription: product.shortDescription,
+        highlights: product.highlights,
+        isVisible: !product.isVisible,
+        isAvailable: product.isAvailable,
+        imageItems: product.imageItems,
+      });
     },
-    [productMap],
+    [productMap, updateProduct],
   );
 
   const toggleProductAvailability = useCallback(
-    (productId) => {
-      if (!productMap.has(productId)) {
+    async (productId) => {
+      const product = productMap.get(productId);
+      if (!product) {
         return errorResult("Produto não encontrado.");
       }
 
-      setCatalog((prev) => ({
-        ...prev,
-        products: prev.products.map((product) =>
-          product.id === productId ? { ...product, isAvailable: !product.isAvailable } : product,
-        ),
-      }));
-
-      return okResult();
+      return updateProduct(productId, {
+        id: product.id,
+        name: product.name,
+        categoryId: product.categoryId,
+        subcategoryId: product.subcategoryId,
+        priceCash: product.priceCash,
+        priceInstallment: product.priceInstallment,
+        oldPrice: product.oldPrice,
+        badge: product.badge,
+        shortDescription: product.shortDescription,
+        highlights: product.highlights,
+        isVisible: product.isVisible,
+        isAvailable: !product.isAvailable,
+        imageItems: product.imageItems,
+      });
     },
-    [productMap],
+    [productMap, updateProduct],
   );
 
-  const saveCategories = useCallback((nextCategories) => {
-    if (!Array.isArray(nextCategories)) {
-      return errorResult("Formato de categorias inválido.");
+  const saveCategories = useCallback(async (nextCategories) => {
+    const result = await requestJson(
+      "/api/admin/categories",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ categories: nextCategories }),
+      },
+      "Não foi possível salvar as categorias.",
+    );
+
+    if (!result.ok) {
+      return result;
     }
 
-    setCatalog((prev) => ({
-      ...prev,
-      categories: sanitizeCategories(nextCategories, prev.categories),
-    }));
-
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
     return okResult();
   }, []);
 
-  const saveSiteSettings = useCallback((nextSettings) => {
-    if (!nextSettings || typeof nextSettings !== "object") {
-      return errorResult("Formato de configurações inválido.");
+  const saveSiteSettings = useCallback(async (nextSettings) => {
+    const result = await requestJson(
+      "/api/admin/site-settings",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ siteSettings: nextSettings }),
+      },
+      "Não foi possível salvar as configurações do site.",
+    );
+
+    if (!result.ok) {
+      return result;
     }
 
-    setCatalog((prev) => ({
-      ...prev,
-      siteSettings: sanitizeSiteSettings({
-        ...prev.siteSettings,
-        ...nextSettings,
-      }),
-    }));
-
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
     return okResult();
   }, []);
 
-  const saveContactChannels = useCallback((nextChannels) => {
-    if (!Array.isArray(nextChannels)) {
-      return errorResult("Formato de canais inválido.");
+  const saveContactChannels = useCallback(async (nextChannels) => {
+    const result = await requestJson(
+      "/api/admin/contact-channels",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contactChannels: nextChannels }),
+      },
+      "Não foi possível salvar os canais de contato.",
+    );
+
+    if (!result.ok) {
+      return result;
     }
 
-    setCatalog((prev) => ({
-      ...prev,
-      contactChannels: sanitizeContactChannels(nextChannels),
-    }));
-
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
     return okResult();
   }, []);
 
-  const resetCatalog = useCallback(() => {
-    setCatalog(createDefaultCatalog());
+  const saveAttendants = useCallback(async (nextAttendants) => {
+    const result = await requestJson(
+      "/api/admin/attendants",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ attendants: nextAttendants }),
+      },
+      "Não foi possível salvar os atendentes.",
+    );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult();
+  }, []);
+
+  const uploadProductImage = useCallback(async (productId, file) => {
+    const formData = new FormData();
+    formData.set("file", file);
+
+    const result = await requestJson(
+      `/api/admin/products/${encodeURIComponent(productId)}/images`,
+      {
+        method: "POST",
+        body: formData,
+      },
+      "Não foi possível enviar a imagem do produto.",
+    );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    return okResult({ image: result.payload?.image || null });
+  }, []);
+
+  const deleteProductImage = useCallback(async (productId, imageId) => {
+    const result = await requestJson(
+      `/api/admin/products/${encodeURIComponent(productId)}/images/${encodeURIComponent(imageId)}`,
+      {
+        method: "DELETE",
+      },
+      "Não foi possível excluir a imagem do produto.",
+    );
+
+    if (!result.ok) {
+      return result;
+    }
 
     return okResult();
   }, []);
@@ -520,10 +497,12 @@ export function CatalogProvider({ children }) {
     () => ({
       isHydrated,
       categories: catalog.categories,
+      adminCategories: catalog.adminCategories,
       products: catalog.products,
       publicProducts,
       productMap,
       publicProductMap,
+      attendants: catalog.attendants,
       homeHighlights: catalog.homeHighlights,
       contactChannels: catalog.contactChannels,
       siteSettings: catalog.siteSettings,
@@ -535,27 +514,35 @@ export function CatalogProvider({ children }) {
       saveCategories,
       saveSiteSettings,
       saveContactChannels,
-      resetCatalog,
+      saveAttendants,
+      uploadProductImage,
+      deleteProductImage,
+      refreshAdminCatalog,
     }),
     [
       addProduct,
+      catalog.adminCategories,
+      catalog.attendants,
       catalog.categories,
       catalog.contactChannels,
       catalog.homeHighlights,
       catalog.products,
       catalog.siteSettings,
+      deleteProductImage,
       isHydrated,
       productMap,
       publicProductMap,
       publicProducts,
+      refreshAdminCatalog,
       removeProduct,
-      resetCatalog,
+      saveAttendants,
       saveCategories,
       saveContactChannels,
       saveSiteSettings,
       toggleProductAvailability,
       toggleProductVisibility,
       updateProduct,
+      uploadProductImage,
     ],
   );
 

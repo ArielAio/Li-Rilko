@@ -2,22 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCatalog } from "@/components/providers/catalog-provider";
-import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import { formatCurrencyInput, formatCurrencyInputForEdit, parseCurrencyInputToNumber } from "@/lib/admin-input-formatters";
 import { formatCurrency } from "@/lib/store-utils";
 
 const EMPTY_PRODUCT_FORM = {
+  id: "",
   name: "",
-  category: "",
-  sub: "",
+  categoryId: "",
+  subcategoryId: "",
   priceCash: "",
   priceInstallment: "",
   badge: "",
   shortDescription: "",
   highlightsText: "",
-  image: "",
-  imagesText: "",
   isVisible: true,
   isAvailable: true,
 };
@@ -29,58 +27,81 @@ function toTextList(value) {
     .filter(Boolean);
 }
 
+function createDraftProductId() {
+  return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `draft-${Date.now()}`;
+}
+
+function createEmptyProductForm(adminCategories) {
+  const firstCategory = adminCategories[0] || null;
+  const firstSub = firstCategory?.subs?.[0] || null;
+
+  return {
+    ...EMPTY_PRODUCT_FORM,
+    id: createDraftProductId(),
+    categoryId: firstCategory?.id || "",
+    subcategoryId: firstSub?.id || "",
+  };
+}
+
 function productToForm(product) {
   return {
+    id: product.id || "",
     name: product.name || "",
-    category: product.category || "",
-    sub: product.sub || "",
+    categoryId: product.categoryId || "",
+    subcategoryId: product.subcategoryId || "",
     priceCash: formatCurrencyInput(product.priceCash ?? product.price ?? 0),
     priceInstallment: formatCurrencyInput(product.priceInstallment ?? product.price ?? 0),
     badge: product.badge || "",
     shortDescription: product.shortDescription || "",
     highlightsText: Array.isArray(product.highlights) ? product.highlights.join("\n") : "",
-    image: product.image || "",
-    imagesText: Array.isArray(product.images) ? product.images.join("\n") : "",
     isVisible: product.isVisible !== false,
     isAvailable: product.isAvailable !== false,
   };
 }
 
+function normalizeImageItem(item, index) {
+  return {
+    id: item?.id || `image-${index + 1}`,
+    storagePath: item?.storagePath || "",
+    publicUrl: item?.publicUrl || item?.storagePath || "",
+    sortOrder: Number(item?.sortOrder ?? index),
+  };
+}
+
 export default function AdminProductsManager() {
   const {
-    categories,
+    adminCategories,
     products,
     addProduct,
     updateProduct,
     removeProduct,
     toggleProductVisibility,
     toggleProductAvailability,
-    resetCatalog,
+    uploadProductImage,
+    deleteProductImage,
   } = useCatalog();
-  const { clearCart } = useCart();
   const { showToast } = useToast();
 
   const [productSearch, setProductSearch] = useState("");
   const [editingProductId, setEditingProductId] = useState("");
-  const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
+  const [productForm, setProductForm] = useState(() => createEmptyProductForm(adminCategories));
+  const [productImages, setProductImages] = useState([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const shouldRevealEditorRef = useRef(false);
   const editorPanelRef = useRef(null);
   const editorNameInputRef = useRef(null);
 
   useEffect(() => {
-    if (editingProductId) {
+    if (productForm.categoryId) {
       return;
     }
-    if (!productForm.category && categories[0]?.name) {
-      setProductForm((prev) => ({
-        ...prev,
-        category: categories[0].name,
-        sub: categories[0].subs?.[0] || "",
-      }));
-    }
-  }, [categories, editingProductId, productForm.category]);
+
+    setProductForm(createEmptyProductForm(adminCategories));
+  }, [adminCategories, productForm.categoryId]);
 
   useEffect(() => {
     if (!isEditorOpen || !shouldRevealEditorRef.current) {
@@ -109,6 +130,13 @@ export default function AdminProductsManager() {
     return () => window.cancelAnimationFrame(frame);
   }, [isEditorOpen, editingProductId]);
 
+  const selectedCategory = useMemo(
+    () => adminCategories.find((category) => category.id === productForm.categoryId) || null,
+    [adminCategories, productForm.categoryId],
+  );
+
+  const availableSubcategories = useMemo(() => selectedCategory?.subs || [], [selectedCategory]);
+
   const filteredProducts = useMemo(() => {
     const query = productSearch.trim().toLowerCase();
     if (!query) {
@@ -127,11 +155,8 @@ export default function AdminProductsManager() {
   function startCreateProduct() {
     shouldRevealEditorRef.current = true;
     setEditingProductId("");
-    setProductForm({
-      ...EMPTY_PRODUCT_FORM,
-      category: categories[0]?.name || "",
-      sub: categories[0]?.subs?.[0] || "",
-    });
+    setProductForm(createEmptyProductForm(adminCategories));
+    setProductImages([]);
     setIsEditorOpen(true);
   }
 
@@ -139,6 +164,7 @@ export default function AdminProductsManager() {
     shouldRevealEditorRef.current = true;
     setEditingProductId(product.id);
     setProductForm(productToForm(product));
+    setProductImages(Array.isArray(product.imageItems) ? product.imageItems.map(normalizeImageItem) : []);
     setIsEditorOpen(true);
   }
 
@@ -151,6 +177,15 @@ export default function AdminProductsManager() {
     setProductForm((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  }
+
+  function handleCategoryChange(categoryId) {
+    const category = adminCategories.find((item) => item.id === categoryId) || null;
+    setProductForm((prev) => ({
+      ...prev,
+      categoryId,
+      subcategoryId: category?.subs?.[0]?.id || "",
     }));
   }
 
@@ -188,23 +223,26 @@ export default function AdminProductsManager() {
 
   function buildProductPayload() {
     return {
+      id: productForm.id,
       name: productForm.name,
-      category: productForm.category,
-      sub: productForm.sub,
+      categoryId: productForm.categoryId,
+      subcategoryId: productForm.subcategoryId,
       priceCash: parseCurrencyInputToNumber(productForm.priceCash),
       priceInstallment: parseCurrencyInputToNumber(productForm.priceInstallment),
       badge: productForm.badge,
       shortDescription: productForm.shortDescription,
       highlights: toTextList(productForm.highlightsText),
-      image: productForm.image,
-      images: toTextList(productForm.imagesText),
       isVisible: productForm.isVisible,
       isAvailable: productForm.isAvailable,
+      imageItems: productImages.map((item) => ({
+        id: item.id,
+        storagePath: item.storagePath,
+      })),
     };
   }
 
   function validatePayload(payload) {
-    if (!payload.name || !payload.category || !payload.sub) {
+    if (!payload.name || !payload.categoryId || !payload.subcategoryId) {
       return "Nome, categoria e subcategoria são obrigatórios.";
     }
 
@@ -212,7 +250,82 @@ export default function AdminProductsManager() {
       return "Preços à vista e a prazo devem ser maiores que zero.";
     }
 
+    if (!Array.isArray(payload.imageItems) || payload.imageItems.length === 0) {
+      return "Cadastre ao menos uma imagem do produto.";
+    }
+
     return "";
+  }
+
+  async function handleUploadFiles(fileList, { prepend = false, replace = false } = {}) {
+    const files = Array.from(fileList || []).filter(Boolean);
+    if (files.length === 0) {
+      return;
+    }
+
+    setIsUploadingImages(true);
+
+    const uploadedItems = [];
+    for (const file of files) {
+      const result = await uploadProductImage(productForm.id, file);
+      if (!result.ok) {
+        showToast({
+          type: "warning",
+          title: "Falha no upload",
+          message: result.error || "Não foi possível enviar uma das imagens.",
+        });
+        setIsUploadingImages(false);
+        return;
+      }
+
+      if (result.image) {
+        uploadedItems.push(normalizeImageItem(result.image, uploadedItems.length));
+      }
+    }
+
+    setProductImages((prev) => {
+      if (replace) {
+        return uploadedItems;
+      }
+
+      const next = prepend ? [...uploadedItems, ...prev] : [...prev, ...uploadedItems];
+      return next.slice(0, 6).map(normalizeImageItem);
+    });
+
+    setIsUploadingImages(false);
+
+    showToast({
+      type: "success",
+      title: "Imagens enviadas",
+      message: "As imagens do produto foram preparadas para salvar.",
+    });
+  }
+
+  async function handleRemoveImage(image, index) {
+    const result = await deleteProductImage(productForm.id, image.id);
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Erro ao excluir imagem",
+        message: result.error || "Não foi possível excluir a imagem.",
+      });
+      return;
+    }
+
+    setProductImages((prev) => prev.filter((_, currentIndex) => currentIndex !== index).map(normalizeImageItem));
+  }
+
+  function moveImageToPrimary(index) {
+    setProductImages((prev) => {
+      if (index <= 0 || index >= prev.length) {
+        return prev;
+      }
+
+      const next = [...prev];
+      const [selected] = next.splice(index, 1);
+      next.unshift(selected);
+      return next.map(normalizeImageItem);
+    });
   }
 
   async function handleSaveProduct(event) {
@@ -267,6 +380,7 @@ export default function AdminProductsManager() {
         message: "Novo produto adicionado ao catálogo.",
       });
       setEditingProductId(result.id || "");
+      setProductForm((prev) => ({ ...prev, id: result.id || prev.id }));
     } finally {
       setIsSubmitting(false);
     }
@@ -296,31 +410,6 @@ export default function AdminProductsManager() {
       type: "warning",
       title: "Produto removido",
       message: `${product.name} foi removido do catálogo.`,
-    });
-  }
-
-  async function handleResetCatalog() {
-    const confirmed = window.confirm("Restaurar todo o catálogo para o padrão inicial?");
-    if (!confirmed) {
-      return;
-    }
-
-    const result = await resetCatalog();
-    if (!result.ok) {
-      showToast({
-        type: "warning",
-        title: "Erro ao restaurar",
-        message: result.error || "Não foi possível restaurar o catálogo.",
-      });
-      return;
-    }
-
-    clearCart();
-    closeEditor();
-    showToast({
-      type: "warning",
-      title: "Catálogo restaurado",
-      message: "Dados voltaram para o padrão inicial.",
     });
   }
 
@@ -365,14 +454,11 @@ export default function AdminProductsManager() {
       <div className="admin-manager-toolbar">
         <div>
           <h3>Produtos do catálogo</h3>
-          <p>Crie, edite, oculte ou marque produtos como esgotados.</p>
+          <p>Crie, edite, oculte e marque produtos como esgotados.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           <button type="button" className="btn btn-surface" onClick={startCreateProduct}>
             Novo produto
-          </button>
-          <button type="button" className="btn btn-surface" onClick={handleResetCatalog}>
-            Restaurar padrão
           </button>
         </div>
       </div>
@@ -462,22 +548,28 @@ export default function AdminProductsManager() {
 
                 <label className="admin-field">
                   <span>Categoria</span>
-                  <input
-                    type="text"
-                    value={productForm.category}
-                    onChange={(event) => handleProductField("category", event.target.value)}
-                    required
-                  />
+                  <select value={productForm.categoryId} onChange={(event) => handleCategoryChange(event.target.value)} required>
+                    {adminCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 <label className="admin-field">
                   <span>Subcategoria</span>
-                  <input
-                    type="text"
-                    value={productForm.sub}
-                    onChange={(event) => handleProductField("sub", event.target.value)}
+                  <select
+                    value={productForm.subcategoryId}
+                    onChange={(event) => handleProductField("subcategoryId", event.target.value)}
                     required
-                  />
+                  >
+                    {availableSubcategories.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 <label className="admin-field">
@@ -523,20 +615,61 @@ export default function AdminProductsManager() {
                 />
               </label>
 
-              <label className="admin-field">
-                <span>Imagem principal (URL)</span>
-                <input type="url" value={productForm.image} onChange={(event) => handleProductField("image", event.target.value)} />
-              </label>
+              <div className="admin-field">
+                <span>Imagem principal e galeria</span>
+                <div className="admin-manager-footer-actions">
+                  <label className="btn btn-surface">
+                    Imagem principal
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      hidden
+                      onChange={(event) => {
+                        void handleUploadFiles(event.target.files, { prepend: true });
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <label className="btn btn-surface">
+                    Adicionar galeria
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/png,image/jpeg,image/webp"
+                      hidden
+                      onChange={(event) => {
+                        void handleUploadFiles(event.target.files);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {isUploadingImages ? <small>Enviando imagens...</small> : null}
+                </div>
 
-              <label className="admin-field">
-                <span>Galeria de imagens (uma URL por linha)</span>
-                <textarea
-                  rows={3}
-                  value={productForm.imagesText}
-                  onChange={(event) => handleProductField("imagesText", event.target.value)}
-                  placeholder="https://.../img-1.jpg&#10;https://.../img-2.jpg"
-                />
-              </label>
+                <div className="admin-compact-list">
+                  {productImages.length > 0 ? (
+                    productImages.map((image, index) => (
+                      <article key={image.id || image.storagePath} className="admin-compact-item">
+                        <strong>{index === 0 ? "Imagem principal" : `Galeria ${index}`}</strong>
+                        <img src={image.publicUrl || image.storagePath} alt={`Imagem ${index + 1} do produto`} width="120" height="120" />
+                        <div className="admin-manager-footer-actions">
+                          <button type="button" className="btn btn-surface" onClick={() => moveImageToPrimary(index)} disabled={index === 0}>
+                            Definir como principal
+                          </button>
+                          <button type="button" className="btn btn-surface" onClick={() => void handleRemoveImage(image, index)}>
+                            Remover imagem
+                          </button>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <article className="admin-compact-item">
+                      <strong>Nenhuma imagem enviada</strong>
+                      <p>Envie ao menos uma imagem principal antes de salvar o produto.</p>
+                    </article>
+                  )}
+                </div>
+              </div>
 
               <label className="admin-field">
                 <span>Destaques do produto (uma linha por item)</span>
@@ -566,7 +699,7 @@ export default function AdminProductsManager() {
                 </label>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting || isUploadingImages}>
                 {isSubmitting ? "Salvando..." : editingProductId ? "Salvar alterações" : "Criar produto"}
               </button>
             </form>
