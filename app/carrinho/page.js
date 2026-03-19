@@ -12,13 +12,12 @@ import { buildAttendantWhatsAppLink, buildWhatsAppMessage, formatCurrency } from
 import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
 export default function CartPage() {
-  const { siteSettings } = useCatalog();
+  const { attendants, siteSettings } = useCatalog();
   const { items, total, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
-  const attendantFlow = resolveAttendantFlow();
-  const attendants = attendantFlow.attendants;
+  const attendantFlow = resolveAttendantFlow(attendants);
 
   const message = buildWhatsAppMessage(items, siteSettings);
 

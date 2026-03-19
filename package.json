@@ -11,7 +11,8 @@
     "test:integration": "vitest run --config vitest.integration.config.js",
     "test:e2e:smoke": "playwright test --config=playwright.smoke.config.js",
     "test:known-issues": "vitest run --config vitest.known-issues.config.js",
-    "test:gate": "npm run test:unit && npm run test:integration && npm run build && npm run test:e2e:smoke"
+    "test:gate": "npm run test:unit && npm run test:integration && npm run build && npm run test:e2e:smoke",
+    "supabase:seed": "node scripts/supabase-seed.cjs"
   },
   "keywords": [
     "nextjs",
@@ -22,6 +23,7 @@
   "license": "ISC",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"

@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { createCatalogFixture } from "@/tests/fixtures/catalog.fixture";
 import { CatalogProvider, useCatalog } from "@/components/providers/catalog-provider";
 
 function ContractProbe() {
   const {
-    products,
+    attendants,
     categories,
     contactChannels,
+    products,
+    saveAttendants,
     saveCategories,
     removeProduct,
-    resetCatalog,
     toggleProductVisibility,
     toggleProductAvailability,
     saveContactChannels,
@@ -29,8 +31,17 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = saveCategories(categories);
+        onClick={async () => {
+          const next = await saveCategories(
+            categories.map((category, index) => ({
+              id: `category-${index + 1}`,
+              name: category.name,
+              subs: category.subs.map((sub, subIndex) => ({
+                id: `category-${index + 1}-sub-${subIndex + 1}`,
+                name: sub,
+              })),
+            })),
+          );
           setResult(JSON.stringify(next));
         }}
       >
@@ -39,8 +50,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = saveCategories("invalid");
+        onClick={async () => {
+          const next = await saveCategories("invalid");
           setResult(JSON.stringify(next));
         }}
       >
@@ -49,8 +60,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = removeProduct(firstProduct?.id);
+        onClick={async () => {
+          const next = await removeProduct(firstProduct?.id);
           setResult(JSON.stringify(next));
         }}
       >
@@ -59,8 +70,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = removeProduct("missing-product");
+        onClick={async () => {
+          const next = await removeProduct("missing-product");
           setResult(JSON.stringify(next));
         }}
       >
@@ -69,18 +80,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = resetCatalog();
-          setResult(JSON.stringify(next));
-        }}
-      >
-        reset-catalog-success
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          const next = toggleProductVisibility(firstProduct?.id);
+        onClick={async () => {
+          const next = await toggleProductVisibility(firstProduct?.id);
           setResult(JSON.stringify(next));
         }}
       >
@@ -89,8 +90,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = toggleProductVisibility("missing-product");
+        onClick={async () => {
+          const next = await toggleProductVisibility("missing-product");
           setResult(JSON.stringify(next));
         }}
       >
@@ -99,8 +100,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = toggleProductAvailability(firstProduct?.id);
+        onClick={async () => {
+          const next = await toggleProductAvailability(firstProduct?.id);
           setResult(JSON.stringify(next));
         }}
       >
@@ -109,8 +110,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = toggleProductAvailability("missing-product");
+        onClick={async () => {
+          const next = await toggleProductAvailability("missing-product");
           setResult(JSON.stringify(next));
         }}
       >
@@ -119,8 +120,8 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = saveContactChannels(contactChannels);
+        onClick={async () => {
+          const next = await saveContactChannels(contactChannels);
           setResult(JSON.stringify(next));
         }}
       >
@@ -129,21 +130,42 @@ function ContractProbe() {
 
       <button
         type="button"
-        onClick={() => {
-          const next = saveSiteSettings({ whatsappIntro: "novo intro" });
+        onClick={async () => {
+          const next = await saveSiteSettings({ whatsappIntro: "novo intro" });
           setResult(JSON.stringify(next));
         }}
       >
         save-site-settings-success
       </button>
+
+      <button
+        type="button"
+        onClick={async () => {
+          const next = await saveAttendants(attendants);
+          setResult(JSON.stringify(next));
+        }}
+      >
+        save-attendants-success
+      </button>
     </div>
   );
 }
 
+function makeFetchResponse(payload, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: vi.fn().mockResolvedValue(payload),
+  };
+}
+
 describe("CatalogProvider admin mutator contract", () => {
   it("retorna { ok: true } em saveCategories sucesso", async () => {
+    const catalog = createCatalogFixture();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(makeFetchResponse({ catalog })));
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={catalog}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -156,8 +178,15 @@ describe("CatalogProvider admin mutator contract", () => {
   });
 
   it("retorna erro em saveCategories inválido", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        makeFetchResponse({ error: "Formato de categorias inválido." }, 400),
+      ),
+    );
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={createCatalogFixture()}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -171,8 +200,15 @@ describe("CatalogProvider admin mutator contract", () => {
   });
 
   it("retorna { ok: true } em removeProduct e diminui lista", async () => {
+    const initialCatalog = createCatalogFixture();
+    const nextCatalog = createCatalogFixture((draft) => {
+      draft.products.shift();
+    });
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(makeFetchResponse({ catalog: nextCatalog })));
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={initialCatalog}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -188,8 +224,15 @@ describe("CatalogProvider admin mutator contract", () => {
   });
 
   it("retorna erro em removeProduct ausente", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        makeFetchResponse({ error: "Produto não encontrado." }, 400),
+      ),
+    );
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={createCatalogFixture()}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -202,23 +245,23 @@ describe("CatalogProvider admin mutator contract", () => {
     });
   });
 
-  it("retorna { ok: true } em resetCatalog", async () => {
-    render(
-      <CatalogProvider>
-        <ContractProbe />
-      </CatalogProvider>,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "reset-catalog-success" }));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("result")).toHaveTextContent('{"ok":true}');
-    });
-  });
-
   it("retorna { ok: true } ao alternar visibilidade e disponibilidade", async () => {
+    const initialCatalog = createCatalogFixture();
+    const hiddenCatalog = createCatalogFixture((draft) => {
+      draft.products[0].isVisible = false;
+    });
+    const unavailableCatalog = createCatalogFixture((draft) => {
+      draft.products[0].isAvailable = false;
+    });
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(makeFetchResponse({ catalog: hiddenCatalog }))
+      .mockResolvedValueOnce(makeFetchResponse({ catalog: unavailableCatalog }));
+    vi.stubGlobal("fetch", fetchMock);
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={initialCatalog}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -241,7 +284,7 @@ describe("CatalogProvider admin mutator contract", () => {
 
   it("retorna erro ao alternar produto ausente", async () => {
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={createCatalogFixture()}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -259,9 +302,17 @@ describe("CatalogProvider admin mutator contract", () => {
     });
   });
 
-  it("retorna { ok: true } em saveContactChannels e saveSiteSettings", async () => {
+  it("retorna { ok: true } em saveContactChannels, saveSiteSettings e saveAttendants", async () => {
+    const catalog = createCatalogFixture();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(makeFetchResponse({ catalog }))
+      .mockResolvedValueOnce(makeFetchResponse({ catalog }))
+      .mockResolvedValueOnce(makeFetchResponse({ catalog }));
+    vi.stubGlobal("fetch", fetchMock);
+
     render(
-      <CatalogProvider>
+      <CatalogProvider initialCatalog={catalog}>
         <ContractProbe />
       </CatalogProvider>,
     );
@@ -272,6 +323,11 @@ describe("CatalogProvider admin mutator contract", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "save-site-settings-success" }));
+    await waitFor(() => {
+      expect(screen.getByTestId("result")).toHaveTextContent('{"ok":true}');
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "save-attendants-success" }));
     await waitFor(() => {
       expect(screen.getByTestId("result")).toHaveTextContent('{"ok":true}');
     });

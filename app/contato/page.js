@@ -11,13 +11,12 @@ import { buildAttendantWhatsAppLink, buildWhatsAppMessage } from "@/lib/store-ut
 import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
 export default function ContactPage() {
-  const { contactChannels, siteSettings } = useCatalog();
+  const { attendants, contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
-  const attendantFlow = resolveAttendantFlow();
-  const attendants = attendantFlow.attendants;
+  const attendantFlow = resolveAttendantFlow(attendants);
   const message = buildWhatsAppMessage(items, siteSettings);
 
   function handleStartContact(event) {

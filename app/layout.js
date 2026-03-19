@@ -1,6 +1,7 @@
 import { Manrope, Sora } from "next/font/google";
 import AppShell from "@/components/app-shell";
 import AppProviders from "@/components/providers/app-providers";
+import { getPublicCatalogSnapshot } from "@/lib/catalog-repository";
 import "./globals.css";
 
 const displayFont = Sora({
@@ -21,15 +22,16 @@ export const metadata = {
     "Loja Li Rilko: catálogo por categorias, carrinho multi-itens e finalização rápida via WhatsApp.",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const initialCatalog = await getPublicCatalogSnapshot();
+
   return (
     <html lang="pt-BR">
       <body className={`${displayFont.variable} ${bodyFont.variable}`}>
-        <AppProviders>
+        <AppProviders initialCatalog={initialCatalog}>
           <AppShell>{children}</AppShell>
         </AppProviders>
       </body>
     </html>
   );
 }
-

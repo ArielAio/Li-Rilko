@@ -4,15 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useToast } from "@/components/providers/toast-provider";
 
-function toTextList(value) {
-  return String(value ?? "")
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
+function createCategoryDraft(category = null) {
+  return {
+    id: category?.id || "",
+    name: category?.name || "",
+    subs: Array.isArray(category?.subs)
+      ? category.subs.map((sub) => ({
+          id: sub.id || "",
+          name: sub.name || "",
+        }))
+      : [{ id: "", name: "" }],
+  };
 }
 
 export default function AdminCategoriesManager() {
-  const { categories, saveCategories } = useCatalog();
+  const { adminCategories, saveCategories } = useCatalog();
   const { showToast } = useToast();
   const [categoryDrafts, setCategoryDrafts] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -21,8 +27,8 @@ export default function AdminCategoriesManager() {
   const editorFormRef = useRef(null);
 
   useEffect(() => {
-    setCategoryDrafts(categories.map((category) => ({ name: category.name, subsText: category.subs.join("\n") })));
-  }, [categories]);
+    setCategoryDrafts(adminCategories.map((category) => createCategoryDraft(category)));
+  }, [adminCategories]);
 
   useEffect(() => {
     if (!isEditMode || !shouldRevealEditorRef.current) {
@@ -44,16 +50,68 @@ export default function AdminCategoriesManager() {
 
   function openEditor() {
     shouldRevealEditorRef.current = true;
-    setCategoryDrafts(categories.map((category) => ({ name: category.name, subsText: category.subs.join("\n") })));
+    setCategoryDrafts(adminCategories.map((category) => createCategoryDraft(category)));
     setIsEditMode(true);
+  }
+
+  function updateCategoryField(index, field, value) {
+    setCategoryDrafts((prev) =>
+      prev.map((category, rowIndex) => (rowIndex === index ? { ...category, [field]: value } : category)),
+    );
+  }
+
+  function updateSubField(categoryIndex, subIndex, value) {
+    setCategoryDrafts((prev) =>
+      prev.map((category, rowIndex) => {
+        if (rowIndex !== categoryIndex) {
+          return category;
+        }
+
+        return {
+          ...category,
+          subs: category.subs.map((sub, currentIndex) => (currentIndex === subIndex ? { ...sub, name: value } : sub)),
+        };
+      }),
+    );
+  }
+
+  function addSubcategory(categoryIndex) {
+    setCategoryDrafts((prev) =>
+      prev.map((category, rowIndex) =>
+        rowIndex === categoryIndex ? { ...category, subs: [...category.subs, { id: "", name: "" }] } : category,
+      ),
+    );
+  }
+
+  function removeSubcategory(categoryIndex, subIndex) {
+    setCategoryDrafts((prev) =>
+      prev.map((category, rowIndex) => {
+        if (rowIndex !== categoryIndex || category.subs.length <= 1) {
+          return category;
+        }
+
+        return {
+          ...category,
+          subs: category.subs.filter((_, currentIndex) => currentIndex !== subIndex),
+        };
+      }),
+    );
   }
 
   async function handleSaveCategories(event) {
     event.preventDefault();
     const normalized = categoryDrafts
       .map((category) => ({
+        id: category.id,
         name: String(category.name || "").trim(),
-        subs: toTextList(String(category.subsText || "")),
+        subs: Array.isArray(category.subs)
+          ? category.subs
+              .map((sub) => ({
+                id: sub.id,
+                name: String(sub.name || "").trim(),
+              }))
+              .filter((sub) => sub.name)
+          : [],
       }))
       .filter((category) => category.name);
 
@@ -77,12 +135,8 @@ export default function AdminCategoriesManager() {
     }
 
     setIsSubmitting(true);
-    let result = null;
-    try {
-      result = await saveCategories(normalized);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const result = await saveCategories(normalized);
+    setIsSubmitting(false);
 
     if (!result.ok) {
       showToast({
@@ -124,47 +178,48 @@ export default function AdminCategoriesManager() {
       {isEditMode ? (
         <form className="admin-form" onSubmit={handleSaveCategories} ref={editorFormRef}>
           {categoryDrafts.map((category, index) => (
-            <div key={`${category.name}-${index}`} className="admin-category-block">
+            <div key={category.id || `category-${index}`} className="admin-category-block">
               <label className="admin-field">
                 <span>Categoria</span>
-                <input
-                  type="text"
-                  value={category.name}
-                  onChange={(event) =>
-                    setCategoryDrafts((prev) =>
-                      prev.map((item, rowIndex) => (rowIndex === index ? { ...item, name: event.target.value } : item)),
-                    )
-                  }
-                />
+                <input type="text" value={category.name} onChange={(event) => updateCategoryField(index, "name", event.target.value)} />
               </label>
-              <label className="admin-field">
-                <span>Subcategorias (uma por linha)</span>
-                <textarea
-                  rows={4}
-                  value={category.subsText}
-                  onChange={(event) =>
-                    setCategoryDrafts((prev) =>
-                      prev.map((item, rowIndex) => (rowIndex === index ? { ...item, subsText: event.target.value } : item)),
-                    )
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                className="btn btn-surface"
-                onClick={() => setCategoryDrafts((prev) => prev.filter((_, rowIndex) => rowIndex !== index))}
-              >
-                Remover categoria
-              </button>
+
+              <div className="admin-field">
+                <span>Subcategorias</span>
+                <div className="admin-form">
+                  {category.subs.map((sub, subIndex) => (
+                    <div key={sub.id || `sub-${subIndex}`} className="admin-manager-footer-actions">
+                      <input type="text" value={sub.name} onChange={(event) => updateSubField(index, subIndex, event.target.value)} />
+                      <button
+                        type="button"
+                        className="btn btn-surface"
+                        onClick={() => removeSubcategory(index, subIndex)}
+                        disabled={category.subs.length <= 1}
+                      >
+                        Remover subcategoria
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="admin-manager-footer-actions">
+                <button type="button" className="btn btn-surface" onClick={() => addSubcategory(index)}>
+                  Adicionar subcategoria
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-surface"
+                  onClick={() => setCategoryDrafts((prev) => prev.filter((_, rowIndex) => rowIndex !== index))}
+                >
+                  Remover categoria
+                </button>
+              </div>
             </div>
           ))}
 
           <div className="admin-manager-footer-actions">
-            <button
-              type="button"
-              className="btn btn-surface"
-              onClick={() => setCategoryDrafts((prev) => [...prev, { name: "", subsText: "" }])}
-            >
+            <button type="button" className="btn btn-surface" onClick={() => setCategoryDrafts((prev) => [...prev, createCategoryDraft()])}>
               Adicionar categoria
             </button>
             <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
@@ -174,10 +229,10 @@ export default function AdminCategoriesManager() {
         </form>
       ) : (
         <div className="admin-compact-list">
-          {categories.map((category) => (
-            <article key={category.name} className="admin-compact-item">
+          {adminCategories.map((category) => (
+            <article key={category.id || category.name} className="admin-compact-item">
               <strong>{category.name}</strong>
-              <p>{category.subs.join(" • ")}</p>
+              <p>{category.subs.map((sub) => sub.name).join(" • ")}</p>
             </article>
           ))}
         </div>

@@ -1,10 +1,9 @@
-import { createDefaultCatalog } from "@/lib/catalog-data";
+import { createDefaultAppCatalog } from "@/lib/app-catalog-data";
 
-export const CATALOG_STORAGE_KEY = "li-rilko-catalog-v1";
 export const CART_STORAGE_KEY = "li-rilko-cart-v1";
 
 export function createCatalogFixture(mutator) {
-  const catalog = createDefaultCatalog();
+  const catalog = createDefaultAppCatalog();
 
   if (typeof mutator === "function") {
     mutator(catalog);
@@ -14,7 +13,7 @@ export function createCatalogFixture(mutator) {
 }
 
 export function persistCatalog(catalog) {
-  window.localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalog));
+  window.__LI_RILKO_TEST_PUBLIC_CATALOG__ = catalog;
 }
 
 export function persistCart(cartMap) {
