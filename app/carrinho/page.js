@@ -24,68 +24,33 @@ export default function CartPage() {
   function handleDecrease(item) {
     if (item.qty <= 1) {
       removeItem(item.id);
-      showToast({
-        type: "warning",
-        title: "Item removido",
-        message: `${item.name} foi removido do carrinho.`,
-      });
+      showToast({ type: "warning", title: "Item removido", message: `${item.name} saiu do carrinho.` });
       return;
     }
-
     decreaseItem(item.id, 1);
   }
 
   function handleIncrease(item) {
     const added = addItem(item.id, 1);
     if (!added) {
-      showToast({
-        type: "warning",
-        title: "Produto indisponível",
-        message: `${item.name} não está disponível para aumentar quantidade agora.`,
-      });
-      return;
+      showToast({ type: "warning", title: "Produto indisponível", message: `${item.name} esgotado.` });
     }
   }
 
   function handleRemove(item) {
     removeItem(item.id);
-    showToast({
-      type: "warning",
-      title: "Item removido",
-      message: `${item.name} saiu do carrinho.`,
-    });
-  }
-
-  function handleClearCart() {
-    clearCart();
-    showToast({
-      type: "warning",
-      title: "Carrinho limpo",
-      message: "Todos os itens foram removidos.",
-    });
+    showToast({ type: "warning", title: "Item removido", message: `${item.name} saiu.` });
   }
 
   function handleCheckoutClick(event) {
     event.preventDefault();
-
-    if (items.length === 0) {
-      showToast({
-        type: "warning",
-        title: "Carrinho vazio",
-        message: "Adicione produtos antes de finalizar no WhatsApp.",
-      });
-      return;
-    }
+    if (items.length === 0) return;
 
     const checkoutMessage = buildWhatsAppMessage(items, siteSettings);
     const action = resolveWhatsAppAttendantAction(attendants, checkoutMessage);
 
     if (action.mode === "blocked") {
-      showToast({
-        type: "warning",
-        title: "Atendimento indisponível",
-        message: "Nenhum atendente com número válido foi configurado no admin.",
-      });
+      showToast({ type: "warning", title: "Indisponível", message: "Nenhum atendente configurado." });
       return;
     }
 
@@ -96,11 +61,6 @@ export default function CartPage() {
     }
 
     openWhatsAppLink(action.link);
-    showToast({
-      type: "success",
-      title: "Abrindo WhatsApp",
-      message: `Resumo pronto para finalizar com ${action.attendant.name}.`,
-    });
   }
 
   function handleClosePicker() {
@@ -110,109 +70,93 @@ export default function CartPage() {
 
   function handleSelectAttendant(attendant) {
     const link = buildAttendantWhatsAppLink(pendingMessage, attendant);
-
-    if (!link) {
-      showToast({
-        type: "warning",
-        title: "Atendimento indisponível",
-        message: "O número da atendente selecionada é inválido.",
-      });
-      return;
-    }
-
+    if (!link) return;
     openWhatsAppLink(link);
-    showToast({
-      type: "success",
-      title: "Abrindo WhatsApp",
-      message: `Resumo pronto para finalizar com ${attendant.name}.`,
-    });
     handleClosePicker();
   }
 
   return (
     <>
-      <section className="section page-hero-small">
+      <section className="vg-cart-page">
         <div className="shell-container">
-          <p className="kicker">Carrinho</p>
-          <h1>Confira seus itens e finalize seu pedido.</h1>
-          <p>Ajuste quantidades, veja o total e envie o pedido para atendimento no WhatsApp.</p>
-        </div>
-      </section>
+          <header className="vg-cart-header">
+            <h1 className="vg-cart-title">Revise seu Pedido</h1>
+            {count > 0 && <button className="vg-filter-clear" onClick={clearCart}>Limpar tudo</button>}
+          </header>
 
-      <section className="section">
-        <div className="shell-container cart-grid">
-          <article className="cart-card reveal">
-            <div className="cart-card-header">
-              <h2>Seu carrinho</h2>
-              {count > 0 && (
-                <button type="button" className="text-button danger" onClick={handleClearCart}>
-                  Limpar carrinho
-                </button>
+          <div className="vg-cart-grid">
+            <div className="vg-cart-items-col">
+              {items.length === 0 ? (
+                <div className="vg-empty-state">
+                  <p>Seu carrinho está vazio.</p>
+                  <TransitionLink className="btn btn-primary" href="/catalogo">Explorar Catálogo</TransitionLink>
+                </div>
+              ) : (
+                <ul className="vg-cart-list">
+                  {items.map((item) => (
+                    <li key={item.id} className="vg-cart-item">
+                      <TransitionLink href={`/produto/${item.id}`} className="vg-cart-item-img">
+                        <img src={item.image} alt={item.name} />
+                      </TransitionLink>
+                      
+                      <div className="vg-cart-item-info">
+                        <div className="vg-cart-item-top">
+                          <TransitionLink href={`/produto/${item.id}`} className="vg-cart-item-title">
+                            {item.name}
+                          </TransitionLink>
+                          <button className="vg-cart-item-remove" onClick={() => handleRemove(item)}>
+                            <IconTrash className="icon" />
+                          </button>
+                        </div>
+                        
+                        <div className="vg-cart-item-bottom">
+                          <div className="vg-cart-item-qty">
+                            <span>Qtd:</span>
+                            <div className="vg-qty-pill">
+                              <button aria-label="Diminuir quantidade" onClick={() => handleDecrease(item)}>−</button>
+                              <strong>{item.qty}</strong>
+                              <button aria-label="Aumentar quantidade" onClick={() => handleIncrease(item)}>+</button>
+                            </div>
+                          </div>
+                          
+                          <strong className="vg-cart-item-price">{formatCurrency(item.subtotal)}</strong>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
 
-            {items.length === 0 ? (
-              <div className="empty-block">
-                <strong>Seu carrinho está vazio.</strong>
-                <p>Volte para o catálogo e adicione os produtos que te interessam.</p>
-                <TransitionLink className="btn btn-primary" href="/catalogo">
-                  Ir para catálogo
-                </TransitionLink>
+            <div className="vg-cart-summary-col">
+              <h2 className="vg-summary-title">Prévia da Mensagem do Pedido</h2>
+              <div className="vg-mock-console">
+                <div className="vg-mock-header">
+                  <span></span><span></span><span></span>
+                </div>
+                <pre className="vg-mock-text">{message || "Seu carrinho está vazio."}</pre>
               </div>
-            ) : (
-              <ul className="cart-list">
-                {items.map((item) => (
-                  <li key={item.id}>
-                    <div className="cart-item-content">
-                      <strong>{item.name}</strong>
-                      <small>
-                        {item.category} • {formatCurrency(item.price)} cada
-                      </small>
-                    </div>
-
-                    <div className="cart-item-actions">
-                      <div className="qty-controls" role="group" aria-label={`Quantidade de ${item.name}`}>
-                        <button type="button" onClick={() => handleDecrease(item)} aria-label={`Diminuir ${item.name}`}>
-                          −
-                        </button>
-                        <strong>{item.qty}</strong>
-                        <button type="button" onClick={() => handleIncrease(item)} aria-label={`Aumentar ${item.name}`}>
-                          +
-                        </button>
-                      </div>
-
-                      <strong className="item-subtotal">{formatCurrency(item.subtotal)}</strong>
-
-                      <button type="button" className="icon-button" onClick={() => handleRemove(item)} aria-label={`Remover ${item.name}`}>
-                        <IconTrash className="icon" />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="cart-total-row">
-              <span>Total</span>
-              <strong>{formatCurrency(total)}</strong>
+              <p className="vg-summary-hint">
+                A mensagem acima será enviada diretamente para o seu Especialista via WhatsApp.
+              </p>
             </div>
-          </article>
-
-          <article className="checkout-card reveal delay-1">
-            <h2>Mensagem pronta para WhatsApp</h2>
-            <p className="checkout-help">Seu pedido já vai com os itens e o total para agilizar o atendimento.</p>
-            <p className="checkout-help">
-              Com duas ou mais atendentes, a escolha é obrigatória antes de abrir o WhatsApp.
-            </p>
-            <div className="message-box">{message}</div>
-
-            <a className="btn btn-whatsapp" href="#" onClick={handleCheckoutClick}>
-              <IconWhatsApp className="icon" />
-              {attendantFlow.mode === "blocked" ? "WhatsApp indisponível" : "Finalizar no WhatsApp"}
-            </a>
-          </article>
+          </div>
         </div>
       </section>
+
+      {count > 0 && (
+        <div className="vg-cart-sticky-bottom">
+          <div className="shell-container vg-cart-sticky-inner">
+            <div className="vg-cart-subtotal">
+              <span>Subtotal</span>
+              <strong>{formatCurrency(total)}</strong>
+            </div>
+            <button className="btn btn-primary vg-checkout-btn" onClick={handleCheckoutClick}>
+              Finalizar Compra <IconWhatsApp className="icon" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <WhatsAppAttendantPicker
         isOpen={isPickerOpen}

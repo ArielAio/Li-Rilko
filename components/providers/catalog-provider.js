@@ -219,7 +219,7 @@ async function requestJson(url, options, fallbackMessage) {
   }
 }
 
-export function CatalogProvider({ children, initialCatalog }) {
+export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
   const resolvedInitialCatalog = useMemo(
@@ -228,6 +228,23 @@ export function CatalogProvider({ children, initialCatalog }) {
   );
   const [catalog, setCatalog] = useState(() => normalizeCatalogSnapshot(resolvedInitialCatalog));
   const [isHydrated, setIsHydrated] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
+
+  const [isWhatsAppPickerOpen, setIsWhatsAppPickerOpen] = useState(false);
+  const [whatsappPendingMessage, setWhatsappPendingMessage] = useState("");
+
+  const openWhatsAppPicker = useCallback((message = "") => {
+    setWhatsappPendingMessage(message);
+    setIsWhatsAppPickerOpen(true);
+  }, []);
+
+  const closeWhatsAppPicker = useCallback(() => {
+    setIsWhatsAppPickerOpen(false);
+    setWhatsappPendingMessage("");
+  }, []);
+
+  const openEditModal = useCallback((id) => setEditingProductId(String(id || "new")), []);
+  const closeEditModal = useCallback(() => setEditingProductId(null), []);
 
   useEffect(() => {
     setCatalog(normalizeCatalogSnapshot(resolvedInitialCatalog));
@@ -495,7 +512,15 @@ export function CatalogProvider({ children, initialCatalog }) {
 
   const value = useMemo(
     () => ({
+      isAdmin,
       isHydrated,
+      editingProductId,
+      openEditModal,
+      closeEditModal,
+      isWhatsAppPickerOpen,
+      whatsappPendingMessage,
+      openWhatsAppPicker,
+      closeWhatsAppPicker,
       categories: catalog.categories,
       adminCategories: catalog.adminCategories,
       products: catalog.products,
@@ -520,6 +545,15 @@ export function CatalogProvider({ children, initialCatalog }) {
       refreshAdminCatalog,
     }),
     [
+      isAdmin,
+      isHydrated,
+      editingProductId,
+      openEditModal,
+      closeEditModal,
+      isWhatsAppPickerOpen,
+      whatsappPendingMessage,
+      openWhatsAppPicker,
+      closeWhatsAppPicker,
       addProduct,
       catalog.adminCategories,
       catalog.attendants,

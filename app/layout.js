@@ -2,6 +2,8 @@ import { Manrope, Sora } from "next/font/google";
 import AppShell from "@/components/app-shell";
 import AppProviders from "@/components/providers/app-providers";
 import { getPublicCatalogSnapshot } from "@/lib/catalog-repository";
+import { cookies } from "next/headers";
+import { ADMIN_SESSION_COOKIE, isAdminSessionValid } from "@/lib/admin-auth";
 import "./globals.css";
 
 const displayFont = Sora({
@@ -24,11 +26,14 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const initialCatalog = await getPublicCatalogSnapshot();
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(ADMIN_SESSION_COOKIE)?.value ?? "";
+  const isAdmin = isAdminSessionValid(sessionToken);
 
   return (
     <html lang="pt-BR">
       <body className={`${displayFont.variable} ${bodyFont.variable}`}>
-        <AppProviders initialCatalog={initialCatalog}>
+        <AppProviders initialCatalog={initialCatalog} isAdmin={isAdmin}>
           <AppShell>{children}</AppShell>
         </AppProviders>
       </body>

@@ -5,7 +5,6 @@ import { IconCartPlus } from "@/components/icons";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
 import TransitionLink from "@/components/transition-link";
-import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductDetailActions({ product }) {
   const [qty, setQty] = useState(1);
@@ -13,8 +12,6 @@ export default function ProductDetailActions({ product }) {
   const { showToast } = useToast();
   const isAvailable = product.isAvailable !== false;
   const qtyInCart = getItemQty(product.id);
-  const priceCash = Number(product.priceCash ?? product.price ?? 0);
-  const priceInstallment = Number(product.priceInstallment ?? product.price ?? 0);
 
   function decreaseQty() {
     setQty((prev) => Math.max(1, prev - 1));
@@ -32,36 +29,40 @@ export default function ProductDetailActions({ product }) {
         title: "Produto esgotado",
         message: `${product.name} está esgotado no momento.`,
       });
+    } else {
+      showToast({
+        type: "success",
+        title: "Adicionado",
+        message: `${qty}x ${product.name} no carrinho.`,
+      });
     }
   }
 
   return (
-    <div className="detail-action-panel">
-      <div className="detail-price">
-        <strong className="detail-price-cash">À vista: {formatCurrency(priceCash)}</strong>
-        <small className="detail-price-installment">A prazo: {formatCurrency(priceInstallment)}</small>
-        {qtyInCart > 0 ? <small className="detail-in-cart-hint">No carrinho: {qtyInCart}</small> : null}
-      </div>
+    <div className="vg-detail-actions">
+      {qtyInCart > 0 && <p className="vg-in-cart-msg">Você tem {qtyInCart} na sacola.</p>}
 
-      <div className="detail-qty" role="group" aria-label="Quantidade">
-        <button type="button" onClick={decreaseQty} aria-label="Diminuir quantidade" disabled={!isAvailable}>
-          −
-        </button>
-        <strong>{qty}</strong>
-        <button type="button" onClick={increaseQty} aria-label="Aumentar quantidade" disabled={!isAvailable}>
-          +
-        </button>
-      </div>
+      <div className="vg-action-row">
+        <div className="vg-qty-selector">
+          <button type="button" onClick={decreaseQty} disabled={!isAvailable}>−</button>
+          <strong>{qty}</strong>
+          <button type="button" onClick={increaseQty} disabled={!isAvailable}>+</button>
+        </div>
 
-      <div className="detail-buttons">
-        <button type="button" className="btn btn-primary" onClick={handleAdd} disabled={!isAvailable}>
+        <button 
+          type="button" 
+          className="btn btn-primary vg-add-btn" 
+          onClick={handleAdd} 
+          disabled={!isAvailable}
+        >
           <IconCartPlus className="icon" />
-          {isAvailable ? "Adicionar ao carrinho" : "Esgotado"}
+          {isAvailable ? "Adicionar ao Carrinho" : "Esgotado"}
         </button>
-        <TransitionLink className="btn btn-surface" href="/carrinho">
-          Ir para o carrinho
-        </TransitionLink>
       </div>
+
+      <TransitionLink className="vg-btn-secondary" href="/carrinho">
+        Ir para o carrinho
+      </TransitionLink>
     </div>
   );
 }

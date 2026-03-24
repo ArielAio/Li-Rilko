@@ -47,86 +47,95 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <section className="section page-hero-small">
-        <div className="shell-container">
-          <p className="kicker">Admin</p>
-          <h1>Painel da Li Rilko Imports</h1>
-          <p>Acesse somente o que precisa editar. Cada módulo abre em tela dedicada para manter a operação organizada.</p>
-        </div>
-      </section>
+      <div className="vg-admin-wrapper">
+        <header className="vg-admin-topbar">
+          <div className="vg-admin-brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Li Rilko / <strong>Portal Seguro</strong></span>
+          </div>
+          <div className="vg-admin-top-actions">
+            <Link href="/" className="vg-outline-btn">Ver Loja Pública</Link>
+            <form action={adminLogoutAction}>
+              <button type="submit" className="vg-logout-btn">Sair do Painel</button>
+            </form>
+          </div>
+        </header>
 
-      <section className="section">
-        <div className="shell-container admin-hub-grid">
-          <article className="admin-card reveal">
-            <h2>Resumo rápido</h2>
-            <div className="admin-overview-grid">
-              <div>
-                <strong>{summary.totalProducts}</strong>
-                <span>produtos cadastrados</span>
-              </div>
-              <div>
-                <strong>{summary.visibleProducts}</strong>
-                <span>produtos visíveis</span>
-              </div>
-              <div>
-                <strong>{summary.hiddenProducts}</strong>
-                <span>produtos ocultos</span>
-              </div>
-              <div>
-                <strong>{summary.availableProducts}</strong>
-                <span>produtos disponíveis</span>
-              </div>
-              <div>
-                <strong>{summary.unavailableProducts}</strong>
-                <span>produtos indisponíveis</span>
-              </div>
-              <div>
-                <strong>{categories.length}</strong>
-                <span>categorias ativas</span>
-              </div>
+        <main className="vg-admin-main">
+          <div className="vg-admin-hero">
+            <h1>Sistema Operacional</h1>
+            <p>Selecione um módulo abaixo para gerenciar o conteúdo da vitrine.</p>
+          </div>
+
+          <div className="vg-dashboard-summary">
+            <div className="vg-stat-card">
+              <span className="vg-stat-label">CATÁLOGO ONLINE</span>
+              <strong className="vg-stat-value">{summary.visibleProducts}</strong>
             </div>
-          </article>
-
-          <article className="admin-card reveal delay-1">
-            <h2>Operação</h2>
-            <div className="admin-module-grid">
-              <article className="admin-module-card">
-                <h3>Produtos</h3>
-                <p>Crie, edite, oculte e altere disponibilidade dos itens do catálogo.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.products)}>
-                  Editar produtos
-                </button>
-              </article>
-
-              <article className="admin-module-card">
-                <h3>Categorias</h3>
-                <p>Organize categorias e subcategorias exibidas no menu e filtros.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.categories)}>
-                  Editar categorias
-                </button>
-              </article>
-
-              <article className="admin-module-card">
-                <h3>Atendimento</h3>
-                <p>Gerencie atendentes no WhatsApp, canais adicionais e mensagens padrão em um único módulo.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setActivePanel(PANELS.service)}>
-                  Editar atendimento
-                </button>
-              </article>
+            <div className="vg-stat-card">
+              <span className="vg-stat-label">ESTOQUE ESGOTADO</span>
+              <strong className="vg-stat-value">{summary.unavailableProducts}</strong>
             </div>
-            <div className="admin-actions">
-              <Link className="btn btn-surface" href="/catalogo">
-                Ver site público
-              </Link>
-              <form action={adminLogoutAction} className="admin-logout-form">
-                <button type="submit" className="btn btn-primary">
-                  Sair do painel
-                </button>
-              </form>
+            <div className="vg-stat-card">
+              <span className="vg-stat-label">RASCUNHOS / OCULTOS</span>
+              <strong className="vg-stat-value">{summary.hiddenProducts}</strong>
             </div>
-          </article>
-        </div>
-      </section>
+            <div className="vg-stat-card">
+              <span className="vg-stat-label">DEPARTAMENTOS ATIVOS</span>
+              <strong className="vg-stat-value">{categories.length}</strong>
+            </div>
+          </div>
+
+          <h2 className="vg-section-label">MÓDULOS DISPONÍVEIS</h2>
+          
+          <div className="vg-modules-grid">
+            <button className="vg-module-card" onClick={() => setActivePanel(PANELS.products)}>
+              <div className="vg-module-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <div className="vg-module-content">
+                <h3>Gestão de Produtos</h3>
+                <p>Criar, precificar e gerenciar a disponibilidade do inventário.</p>
+              </div>
+            </button>
+
+            <button className="vg-module-card" onClick={() => setActivePanel(PANELS.categories)}>
+              <div className="vg-module-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </div>
+              <div className="vg-module-content">
+                <h3>Departamentos</h3>
+                <p>Configurar a estrutura de navegação e filtros da loja.</p>
+              </div>
+            </button>
+
+            <button className="vg-module-card" onClick={() => setActivePanel(PANELS.service)}>
+              <div className="vg-module-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+              </div>
+              <div className="vg-module-content">
+                <h3>Atendimento Especializado</h3>
+                <p>Conectar números do WhatsApp e equipe de Personal Shoppers.</p>
+              </div>
+            </button>
+          </div>
+        </main>
+      </div>
 
       <AdminModal
         isOpen={activePanel === PANELS.products}

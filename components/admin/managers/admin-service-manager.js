@@ -76,28 +76,6 @@ export default function AdminServiceManager() {
     setAttendantsDraft(nextDrafts.length > 0 ? nextDrafts : [createEmptyAttendant()]);
   }, [attendants]);
 
-  function handleSaveChannels(event) {
-    event.preventDefault();
-
-    void (async () => {
-      const result = await saveContactChannels(channelDrafts);
-      if (!result.ok) {
-        showToast({
-          type: "warning",
-          title: "Erro ao salvar canais",
-          message: result.error || "Não foi possível salvar os canais agora.",
-        });
-        return;
-      }
-
-      showToast({
-        type: "success",
-        title: "Canais atualizados",
-        message: "Dados da página de contato foram salvos.",
-      });
-    })();
-  }
-
   function handleSaveMessages(event) {
     event.preventDefault();
 
@@ -230,27 +208,29 @@ export default function AdminServiceManager() {
 
         <form className="admin-form" onSubmit={handleSaveAttendants}>
           {attendantsDraft.map((attendant, index) => (
-            <div key={attendant.id || `attendant-${index}`} className="admin-channel-block">
-              <label className="admin-field">
-                <span>Nome do atendente</span>
-                <input
-                  type="text"
-                  value={attendant.name}
-                  placeholder="Maria"
-                  onChange={(event) => updateAttendantField(index, "name", event.target.value)}
-                />
-              </label>
+            <div key={attendant.id || `attendant-${index}`} className="admin-channel-block" style={{ paddingBottom: "1.25rem", borderBottom: "1px solid var(--line)" }}>
+              <div className="admin-manager-split">
+                <label className="admin-field" style={{ margin: 0 }}>
+                  <span>Nome do atendente</span>
+                  <input
+                    type="text"
+                    value={attendant.name}
+                    placeholder="Maria"
+                    onChange={(event) => updateAttendantField(index, "name", event.target.value)}
+                  />
+                </label>
 
-              <label className="admin-field">
-                <span>Número com DDD</span>
-                <input
-                  type="text"
-                  inputMode="tel"
-                  value={attendant.phone}
-                  placeholder="(17) 99999-9999"
-                  onChange={(event) => updateAttendantField(index, "phone", event.target.value)}
-                />
-              </label>
+                <label className="admin-field" style={{ margin: 0 }}>
+                  <span>Número com DDD</span>
+                  <input
+                    type="text"
+                    inputMode="tel"
+                    value={attendant.phone}
+                    placeholder="(17) 99999-9999"
+                    onChange={(event) => updateAttendantField(index, "phone", event.target.value)}
+                  />
+                </label>
+              </div>
 
               <div className="admin-product-actions">
                 <button type="button" className="btn btn-surface" onClick={() => moveAttendant(index, -1)} disabled={index === 0}>
@@ -291,84 +271,9 @@ export default function AdminServiceManager() {
         </form>
       </section>
 
-      <section className="admin-manager-panel">
+      <section className="admin-manager-panel" style={{ marginTop: "2rem" }}>
         <div className="admin-manager-title-row">
-          <h4>Outros canais de contato</h4>
-        </div>
-
-        <form className="admin-form" onSubmit={handleSaveChannels}>
-          {channelDrafts.map((channel, index) => (
-            <div key={`${channel.id}-${index}`} className="admin-channel-block">
-              <label className="admin-field">
-                <span>Título</span>
-                <input
-                  type="text"
-                  value={channel.title}
-                  onChange={(event) =>
-                    setChannelDrafts((prev) =>
-                      prev.map((item, rowIndex) => (rowIndex === index ? { ...item, title: event.target.value } : item)),
-                    )
-                  }
-                />
-              </label>
-
-              <label className="admin-field">
-                <span>Texto</span>
-                <input
-                  type="text"
-                  value={channel.value}
-                  onChange={(event) =>
-                    setChannelDrafts((prev) =>
-                      prev.map((item, rowIndex) => (rowIndex === index ? { ...item, value: event.target.value } : item)),
-                    )
-                  }
-                />
-              </label>
-
-              <label className="admin-field">
-                <span>Link</span>
-                <input
-                  type="text"
-                  value={channel.href}
-                  onChange={(event) =>
-                    setChannelDrafts((prev) =>
-                      prev.map((item, rowIndex) => (rowIndex === index ? { ...item, href: event.target.value } : item)),
-                    )
-                  }
-                />
-              </label>
-
-              <button
-                type="button"
-                className="btn btn-surface"
-                onClick={() => setChannelDrafts((prev) => prev.filter((_, rowIndex) => rowIndex !== index))}
-              >
-                Remover canal
-              </button>
-            </div>
-          ))}
-
-          <div className="admin-manager-footer-actions">
-            <button
-              type="button"
-              className="btn btn-surface"
-              onClick={() =>
-                setChannelDrafts((prev) => [...prev, { id: `channel-${Date.now()}`, title: "", value: "", href: "#" }])
-              }
-            >
-              Adicionar canal
-            </button>
-
-            <button type="submit" className="btn btn-primary">
-              Salvar canais
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="admin-manager-panel">
-        <div className="admin-manager-title-row">
-          <h4>Mensagens padrão do WhatsApp</h4>
+          <h4>Padrão de mensagens no WhatsApp</h4>
         </div>
 
         <form className="admin-form" onSubmit={handleSaveMessages}>

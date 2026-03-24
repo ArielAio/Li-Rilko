@@ -4,12 +4,6 @@ import ProductCard from "@/components/product-card";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import TransitionLink from "@/components/transition-link";
 
-const buyingSteps = [
-  "1. Escolha a categoria",
-  "2. Adicione os itens no carrinho",
-  "3. Finalize o pedido no WhatsApp",
-];
-
 function buildCatalogLink(categoryName, subName) {
   const query = new URLSearchParams();
   query.set("categoria", categoryName);
@@ -21,114 +15,109 @@ function buildCatalogLink(categoryName, subName) {
 
 export default function HomePage() {
   const { categories, publicProducts } = useCatalog();
+  
   return (
     <>
-      <section className="section hero-section">
-        <div className="shell-container hero-grid">
-          <article className="hero-main reveal">
-            <p className="kicker-light">Fernandópolis - SP | Li Rilko Imports</p>
-            <h1>Importados, eletrônicos e acessórios com pedido rápido pelo WhatsApp.</h1>
-            <p>
-              Explore o catálogo, compare preços à vista e a prazo, monte seu carrinho e conclua direto no atendimento
-              da loja.
+      <section className="vg-hero-section">
+        <div className="shell-container vg-hero-inner reveal">
+          <div className="vg-hero-text">
+            <span className="vg-kicker">NOVA COLEÇÃO {new Date().getFullYear()}</span>
+            <h1 className="vg-title">
+              Li Rilko
+            </h1>
+            <p className="vg-desc">
+              Seu destino para uma curadoria e estética impecáveis. 
+              Encontre eletrônicos e importados selecionados com atendimento personalizado.
             </p>
-            <div className="hero-actions">
+            <div className="vg-hero-actions">
               <TransitionLink className="btn btn-primary" href="/catalogo">
-                Ver catálogo
+                Ver Catálogo &gt;
               </TransitionLink>
-              <TransitionLink className="hero-inline-link" href="/contato">
-                Atendimento no WhatsApp
+              <TransitionLink className="btn btn-surface" href="/contato">
+                Falar com Especialista
               </TransitionLink>
             </div>
-          </article>
-
-          <aside className="hero-side reveal delay-1">
-            <h2>Compra rápida, sem checkout complicado</h2>
-            <ul>
-              {buyingSteps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ul>
-            <TransitionLink className="btn btn-surface" href="/carrinho">
-              Revisar carrinho
-            </TransitionLink>
-          </aside>
+          </div>
+          
+          <div className="vg-hero-image-wrap">
+            <div className="vg-hero-image">
+              <img src="/logo-li-rilko-imports.png" alt="Inverno 24 Lookbook" style={{ objectFit: 'contain', width: '100%', height: '100%', padding: '2rem' }} />
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="section">
+      <section className="vg-section vg-categories-section">
         <div className="shell-container">
-          <div className="section-head reveal">
-            <p className="kicker">Categorias</p>
-            <h2>Entre pela categoria certa e encontre mais rápido o que precisa.</h2>
+          <div className="vg-section-head reveal">
+            <h2>Categorias</h2>
+            <p>Encontre exatamente o que você procura no nosso catálogo.</p>
           </div>
-          <div className="category-grid">
-            {categories.map((category) => (
-              <article key={category.name} className="category-card reveal">
-                <TransitionLink
-                  className="category-card-overlay"
-                  href={buildCatalogLink(category.name)}
-                  aria-label={`Ver categoria ${category.name}`}
-                />
-                <div className="category-card-content">
-                  <h3>
-                    <TransitionLink className="category-title-link" href={buildCatalogLink(category.name)}>
+          
+          <div className="vg-category-list">
+            {categories.map((category) => {
+              const capLetter = category.name.charAt(0).toUpperCase();
+              return (
+                <article key={category.name} className="vg-category-card reveal">
+                  <div className="vg-category-header">
+                    <span className="vg-category-icon">{capLetter}</span>
+                    <TransitionLink className="vg-category-title" href={buildCatalogLink(category.name)}>
                       {category.name}
                     </TransitionLink>
-                  </h3>
-
-                  <ul className="category-sub-links">
-                    {category.subs.slice(0, 4).map((sub) => (
+                    <span className="vg-category-arrow">›</span>
+                  </div>
+                  <ul className="vg-category-subs">
+                    {category.subs.slice(0, 3).map((sub) => (
                       <li key={sub}>
-                        <TransitionLink className="category-sub-link" href={buildCatalogLink(category.name, sub)}>
-                          {sub}
+                        <TransitionLink href={buildCatalogLink(category.name, sub)}>
+                          • {sub}
                         </TransitionLink>
                       </li>
                     ))}
                   </ul>
-
-                  <span className="category-card-link-label">Explorar categoria</span>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      <section className="section">
+      <section className="vg-section vg-destaques-section">
         <div className="shell-container">
-          <div className="section-head reveal">
-            <p className="kicker">Mais procurados</p>
-            <h2>Produtos com maior saída para acelerar sua decisão de compra.</h2>
+          <div className="vg-section-head center reveal">
+            <h2>DESTAQUES</h2>
+            <div className="vg-divider"></div>
+            <p>Os produtos mais desejados da loja, selecionados para agradar o seu estilo e curadoria.</p>
           </div>
+          
           <div className="product-grid">
-            {publicProducts.slice(0, 8).map((product, index) => (
+            {publicProducts.slice(0, 4).map((product, index) => (
               <div key={product.id} className="reveal">
-                <ProductCard product={product} highlight={index < 4} />
+                <ProductCard product={product} highlight={index === 0} />
               </div>
             ))}
           </div>
-          <div className="section-cta-row">
-            <TransitionLink className="btn btn-primary" href="/catalogo">
-              Ver catálogo completo
+          
+          <div className="vg-center-action">
+            <TransitionLink className="btn btn-surface" href="/catalogo">
+              Ver Catálogo Completo
             </TransitionLink>
           </div>
         </div>
       </section>
 
-      <section className="section">
-        <div className="shell-container bottom-cta reveal">
-          <div>
-            <p className="kicker">Pronto para finalizar?</p>
-            <h2>Abra o WhatsApp e conclua seu pedido com atendimento direto da loja.</h2>
-          </div>
-          <div className="bottom-cta-actions">
+      <section className="vg-section">
+        <div className="shell-container reveal">
+          <div className="vg-banner-shopper">
+            <h3>Gostou de algo?<br/>Fale agora com um Especialista.</h3>
+            <p>
+              Tire suas dúvidas, consulte tamanhos e tenha a experiência de um 
+              atendimento exclusivo da Li Rilko direto no seu WhatsApp.
+            </p>
             <TransitionLink className="btn btn-whatsapp" href="/contato">
-              Finalizar no WhatsApp
+              Comprar via WhatsApp
             </TransitionLink>
-            <TransitionLink className="bottom-cta-link" href="/catalogo">
-              Ver produtos
-            </TransitionLink>
+            <p className="vg-banner-subtext">Tempo médio de resposta: 2 min</p>
           </div>
         </div>
       </section>

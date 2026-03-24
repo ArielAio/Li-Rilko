@@ -6,56 +6,24 @@ import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import { useToast } from "@/components/providers/toast-provider";
-import { resolveAttendantFlow } from "@/lib/attendants-data";
 import { buildAttendantWhatsAppLink } from "@/lib/store-utils";
-import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
+import { openWhatsAppLink } from "@/lib/whatsapp-attendant-flow";
 
 export default function WhatsAppFloatWidget() {
   const [isCardVisible, setIsCardVisible] = useState(true);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [pendingMessage, setPendingMessage] = useState("");
-  const { attendants, siteSettings } = useCatalog();
+  const { 
+    attendants, 
+    siteSettings,
+    isWhatsAppPickerOpen,
+    whatsappPendingMessage,
+    openWhatsAppPicker,
+    closeWhatsAppPicker
+  } = useCatalog();
   const { count } = useCart();
   const { showToast } = useToast();
-  const attendantFlow = resolveAttendantFlow(attendants);
-  const directAttendant = attendantFlow.mode === "direct" ? attendantFlow.attendant : null;
-
-  function handleClick(event) {
-    event.preventDefault();
-
-    const message = siteSettings.whatsappFloatingMessage;
-    const action = resolveWhatsAppAttendantAction(attendants, message);
-
-    if (action.mode === "blocked") {
-      showToast({
-        type: "warning",
-        title: "Atendimento indisponível",
-        message: "Nenhum atendente com número válido foi configurado no admin.",
-      });
-      return;
-    }
-
-    if (action.mode === "picker") {
-      setPendingMessage(message);
-      setIsPickerOpen(true);
-      return;
-    }
-
-    openWhatsAppLink(action.link);
-    showToast({
-      type: "success",
-      title: "Atendimento rápido",
-      message: `Abrindo WhatsApp com mensagem pronta para ${action.attendant.name}.`,
-    });
-  }
-
-  function handleClosePicker() {
-    setIsPickerOpen(false);
-    setPendingMessage("");
-  }
 
   function handleSelectAttendant(attendant) {
-    const link = buildAttendantWhatsAppLink(pendingMessage, attendant);
+    const link = buildAttendantWhatsAppLink(whatsappPendingMessage, attendant);
 
     if (!link) {
       showToast({
@@ -72,43 +40,38 @@ export default function WhatsAppFloatWidget() {
       title: "Atendimento rápido",
       message: `Abrindo WhatsApp com mensagem pronta para ${attendant.name}.`,
     });
-    handleClosePicker();
+    closeWhatsAppPicker();
   }
 
   return (
     <>
-      <div className={`whatsapp-widget ${count > 0 ? "with-cart" : ""}`}>
+      <div className={`vg-whatsapp-widget ${count > 0 ? "with-cart" : ""}`}>
         {isCardVisible && (
-          <article className="whatsapp-widget-card" aria-live="polite">
+          <div className="vg-widget-tooltip">
             <button
               type="button"
-              className="whatsapp-widget-close"
+              className="vg-widget-close"
               onClick={() => setIsCardVisible(false)}
               aria-label="Fechar popup do WhatsApp"
             >
               ×
             </button>
-            <strong>Precisa de ajuda?</strong>
-            <p>{siteSettings.whatsappFloatingMessage}</p>
-            <a className="whatsapp-widget-link" href="#" onClick={handleClick}>
-              {attendantFlow.mode === "blocked"
-                ? "WhatsApp indisponível"
-                : directAttendant
-                  ? `Falar com ${directAttendant.name}`
-                  : "Escolher atendente"}
-            </a>
-          </article>
+            <div className="vg-widget-content" onClick={() => openWhatsAppPicker(siteSettings.whatsappFloatingMessage)} role="button" tabIndex={0}>
+              <strong>Precisa de ajuda?</strong>
+              <p>{siteSettings.whatsappFloatingMessage}</p>
+            </div>
+          </div>
         )}
 
-        <a className="whatsapp-widget-fab" href="#" aria-label="Abrir WhatsApp" onClick={handleClick}>
+        <button className="vg-widget-fab" onClick={() => openWhatsAppPicker(siteSettings.whatsappFloatingMessage)} aria-label="Abrir WhatsApp">
           <IconWhatsApp className="icon" />
-        </a>
+        </button>
       </div>
 
       <WhatsAppAttendantPicker
-        isOpen={isPickerOpen}
+        isOpen={isWhatsAppPickerOpen}
         attendants={attendants}
-        onClose={handleClosePicker}
+        onClose={closeWhatsAppPicker}
         onSelect={handleSelectAttendant}
       />
     </>

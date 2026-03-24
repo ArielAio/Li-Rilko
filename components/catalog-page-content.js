@@ -8,8 +8,8 @@ import TransitionLink from "@/components/transition-link";
 
 const SORT_OPTIONS = [
   { value: "relevancia", label: "Relevância" },
-  { value: "menor-preco-vista", label: "Menor preço à vista" },
-  { value: "maior-preco-vista", label: "Maior preço à vista" },
+  { value: "menor-preco-vista", label: "Menor preço" },
+  { value: "maior-preco-vista", label: "Maior preço" },
 ];
 
 function normalizeSort(value) {
@@ -44,11 +44,9 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
   useEffect(() => {
     setSortBy(normalizeSort(initialSort));
   }, [initialSort]);
-  const selectedCategoryData = useMemo(() => {
-    if (selectedCategory === "Todos") {
-      return null;
-    }
 
+  const selectedCategoryData = useMemo(() => {
+    if (selectedCategory === "Todos") return null;
     return categories.find((category) => category.name === selectedCategory) || null;
   }, [categories, selectedCategory]);
 
@@ -58,17 +56,9 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
     const query = searchTerm.trim().toLowerCase();
 
     let products = publicProducts.filter((product) => {
-      if (selectedCategory !== "Todos" && product.category !== selectedCategory) {
-        return false;
-      }
-
-      if (selectedSub && product.sub !== selectedSub) {
-        return false;
-      }
-
-      if (!query) {
-        return true;
-      }
+      if (selectedCategory !== "Todos" && product.category !== selectedCategory) return false;
+      if (selectedSub && product.sub !== selectedSub) return false;
+      if (!query) return true;
 
       return (
         product.name.toLowerCase().includes(query) ||
@@ -89,12 +79,7 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
     return products;
   }, [publicProducts, searchTerm, selectedCategory, selectedSub, sortBy]);
 
-  const transitionStageKey = useMemo(
-    () => `${selectedCategory}::${selectedSub}::${sortBy}::${searchTerm.trim().toLowerCase()}`,
-    [searchTerm, selectedCategory, selectedSub, sortBy],
-  );
-  const hasActiveFilters =
-    selectedCategory !== "Todos" || Boolean(selectedSub) || sortBy !== "relevancia" || Boolean(searchTerm.trim());
+  const hasActiveFilters = selectedCategory !== "Todos" || Boolean(selectedSub) || sortBy !== "relevancia" || Boolean(searchTerm.trim());
 
   function clearFilters() {
     setSearchTerm("");
@@ -110,62 +95,51 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
 
   return (
     <>
-      <section className="section page-hero-small">
+      <section className="vg-catalog-header">
         <div className="shell-container">
-          <p className="kicker">Catálogo</p>
-          <h1>Encontre o produto ideal para você.</h1>
-          <p>Use categorias, subcategorias, busca e ordenação para chegar mais rápido ao item certo.</p>
+          <h1 className="vg-catalog-title">
+            Catálogo<br/><span className="accent">Li Rilko</span>
+          </h1>
+          <p className="vg-catalog-desc">
+            Essenciais com curadoria para a vanguarda moderna. Estética de precisão alinhada à qualidade impecável.
+          </p>
         </div>
       </section>
 
-      <section className="section">
+      <section className="vg-catalog-filters">
         <div className="shell-container">
-          <div className="catalog-toolbar catalog-toolbar-sticky">
-            <div className="search-wrap">
-              <label htmlFor="catalog-search">Buscar produto</label>
-              <div className="search-input-wrap">
-                <span className="search-icon">
-                  <IconSearch className="icon" />
-                </span>
-                <input
-                  id="catalog-search"
-                  type="text"
-                  placeholder="Digite nome, subcategoria ou categoria"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                />
-              </div>
-            </div>
-
-            <label className="catalog-sort-wrap" htmlFor="catalog-sort">
-              <span>Ordenar por</span>
-              <select id="catalog-sort" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <TransitionLink className="btn btn-surface" href="/carrinho">
-              Ir para o carrinho
-            </TransitionLink>
+          <div className="vg-search-bar">
+            <IconSearch className="icon" />
+            <input
+              type="text"
+              placeholder="Buscar produtos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
-          <div className="chip-row">
+          <div className="vg-sort-bar">
+            <span>ORDENAR POR</span>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="vg-pill-scroll">
             <button
               type="button"
-              className={`chip ${selectedCategory === "Todos" ? "active" : ""}`}
+              className={`vg-pill ${selectedCategory === "Todos" ? "active" : ""}`}
               onClick={() => handleCategorySelect("Todos")}
             >
-              Todos
+              All Items
             </button>
             {categories.map((category) => (
               <button
                 type="button"
                 key={category.name}
-                className={`chip ${selectedCategory === category.name ? "active" : ""}`}
+                className={`vg-pill ${selectedCategory === category.name ? "active" : ""}`}
                 onClick={() => handleCategorySelect(category.name)}
               >
                 {category.name}
@@ -173,111 +147,45 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
             ))}
           </div>
 
-          {availableSubs.length > 0 ? (
-            <div className="chip-row sub-chip-row">
-              <button
-                type="button"
-                className={`chip ${selectedSub === "" ? "active" : ""}`}
-                onClick={() => setSelectedSub("")}
-              >
-                Todas subcategorias
-              </button>
-              {availableSubs.map((sub) => (
-                <button
-                  type="button"
-                  key={sub}
-                  className={`chip ${selectedSub === sub ? "active" : ""}`}
-                  onClick={() => setSelectedSub(sub)}
-                >
-                  {sub}
+          {hasActiveFilters && (
+            <div className="vg-active-filters">
+              {selectedCategory !== "Todos" && (
+                <button className="vg-filter-tag" onClick={() => { setSelectedCategory("Todos"); setSelectedSub(""); }}>
+                  CATEGORIA: {selectedCategory.toUpperCase()} ×
                 </button>
+              )}
+              {selectedSub && (
+                <button className="vg-filter-tag" onClick={() => setSelectedSub("")}>
+                  SUB: {selectedSub.toUpperCase()} ×
+                </button>
+              )}
+              {searchTerm.trim() && (
+                <button className="vg-filter-tag" onClick={() => setSearchTerm("")}>
+                  BUSCA: {searchTerm.trim().toUpperCase()} ×
+                </button>
+              )}
+              <button className="vg-filter-clear" onClick={clearFilters}>Limpar tudo</button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="vg-catalog-results">
+        <div className="shell-container">
+          {filteredProducts.length === 0 ? (
+            <div className="vg-empty-state">
+              <p>Nenhum produto encontrado para os filtros atuais.</p>
+              <button className="btn btn-primary" onClick={clearFilters}>Limpar Filtros</button>
+            </div>
+          ) : (
+            <div className="vg-stacked-grid">
+              {filteredProducts.map((product) => (
+                <div key={product.id}>
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
-          ) : null}
-
-          <div className="active-filters-row" aria-live="polite">
-            {selectedCategory !== "Todos" ? (
-              <button
-                type="button"
-                className="active-filter-pill removable"
-                onClick={() => {
-                  setSelectedCategory("Todos");
-                  setSelectedSub("");
-                }}
-              >
-                <span>Categoria: {selectedCategory}</span>
-                <span className="pill-close" aria-hidden>
-                  ×
-                </span>
-              </button>
-            ) : null}
-
-            {selectedSub ? (
-              <button type="button" className="active-filter-pill removable" onClick={() => setSelectedSub("")}>
-                <span>Sub: {selectedSub}</span>
-                <span className="pill-close" aria-hidden>
-                  ×
-                </span>
-              </button>
-            ) : null}
-
-            {sortBy !== "relevancia" ? (
-              <button type="button" className="active-filter-pill removable" onClick={() => setSortBy("relevancia")}>
-                <span>Ordenação: {SORT_OPTIONS.find((item) => item.value === sortBy)?.label}</span>
-                <span className="pill-close" aria-hidden>
-                  ×
-                </span>
-              </button>
-            ) : null}
-
-            {searchTerm.trim() ? (
-              <button type="button" className="active-filter-pill removable" onClick={() => setSearchTerm("")}>
-                <span>Busca: {searchTerm.trim()}</span>
-                <span className="pill-close" aria-hidden>
-                  ×
-                </span>
-              </button>
-            ) : null}
-
-            {hasActiveFilters ? (
-              <button type="button" className="text-button" onClick={clearFilters}>
-                Limpar tudo
-              </button>
-            ) : (
-              <span className="active-filter-pill is-neutral">Sem filtros ativos</span>
-            )}
-          </div>
-
-          <div className="catalog-headline-row">
-            <h2>{filteredProducts.length} produto(s) encontrado(s)</h2>
-          </div>
-
-          <div key={transitionStageKey} className="catalog-results-stage">
-            {filteredProducts.length === 0 ? (
-              <article className="empty-block">
-                <strong>Nenhum produto para os filtros atuais.</strong>
-                <p>Tente remover um filtro ou volte para o catálogo completo.</p>
-                <div className="empty-block-suggestions">
-                  {categories.slice(0, 3).map((category) => (
-                    <button key={category.name} type="button" className="chip" onClick={() => handleCategorySelect(category.name)}>
-                      Ver {category.name}
-                    </button>
-                  ))}
-                </div>
-                <button type="button" className="btn btn-primary" onClick={clearFilters}>
-                  Mostrar todos os produtos
-                </button>
-              </article>
-            ) : (
-              <div className="product-grid">
-                {filteredProducts.map((product) => (
-                  <div key={product.id} className="reveal">
-                    <ProductCard product={product} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </section>
     </>
