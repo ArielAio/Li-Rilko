@@ -51,14 +51,19 @@ test.describe("Smoke: jornada de compra", () => {
     await page.goto("/catalogo");
 
     await addFirstCatalogItemToCart(page);
-    await page.getByRole("link", { name: "Ir para o carrinho" }).first().click();
 
-    await expect(page.getByRole("heading", { name: "Seu carrinho" })).toBeVisible();
+    // Navigate via client-side link to preserve React context state (productMap)
+    // page.goto() causes a full reload which creates a race with catalog hydration
+    await page.getByRole("link", { name: "Carrinho" }).first().click();
+    await page.waitForURL("**/carrinho");
 
-    const increaseButton = page.getByRole("button", { name: /Aumentar/ }).first();
-    await expect(increaseButton).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Revise seu Pedido" })).toBeVisible();
+
+    // Wait for cart items to render (they depend on both localStorage AND productMap)
+    const increaseButton = page.getByRole("button", { name: "Aumentar quantidade" }).first();
+    await expect(increaseButton).toBeVisible({ timeout: 15000 });
     await increaseButton.click();
-    await page.getByRole("link", { name: "Finalizar no WhatsApp" }).click();
+    await page.getByRole("button", { name: /Finalizar Compra/ }).click();
 
     const links = await getOpenedLinks(page);
     expect(links).toHaveLength(1);
@@ -77,9 +82,10 @@ test.describe("Smoke: jornada de compra", () => {
     });
 
     await page.goto("/carrinho");
-    await page.getByRole("link", { name: "Finalizar no WhatsApp" }).click();
 
-    await expect(page.getByText("Carrinho vazio")).toBeVisible();
+    // When the cart is empty, the checkout button is not rendered at all
+    await expect(page.getByText("Seu carrinho está vazio")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Finalizar Compra/ })).not.toBeVisible();
 
     const links = await getOpenedLinks(page);
     expect(links).toHaveLength(0);

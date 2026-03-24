@@ -104,9 +104,9 @@ export default function SiteHeader() {
     <>
       <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <div className="shell-container header-inner">
-          <TransitionLink href="/" className="brand" aria-label="Li Rilko Imports">
+          <TransitionLink href="/" className="brand" aria-label="Li Rilko">
             <span className="brand-mark">
-              <img src="/logo-li-rilko-imports.png" alt="Logo Li Rilko Imports" className="brand-logo" />
+              Li Rilko
             </span>
           </TransitionLink>
 
@@ -136,10 +136,7 @@ export default function SiteHeader() {
             {!isAdminRoute && (
               <TransitionLink href="/carrinho" className={`header-cart ${isPulsing ? "pulse" : ""}`} aria-label={cartLabel}>
                 <IconCart className="icon" />
-                <span className="header-cart-text">
-                  <small>{count} item(ns)</small>
-                  <strong>{formatCurrency(totalCash)}</strong>
-                </span>
+                {count > 0 && <span className="header-cart-badge">{count}</span>}
               </TransitionLink>
             )}
           </div>
@@ -148,31 +145,33 @@ export default function SiteHeader() {
 
       <button
         type="button"
-        className={`mobile-menu-backdrop ${isMenuOpen ? "is-open" : ""}`}
+        className={`vg-drawer-backdrop ${isMenuOpen ? "is-open" : ""}`}
         aria-label="Fechar menu"
         onClick={() => setIsMenuOpen(false)}
       />
 
       <aside
         id="mobile-menu-drawer"
-        className={`mobile-menu-drawer ${isMenuOpen ? "is-open" : ""}`}
+        className={`vg-mobile-drawer ${isMenuOpen ? "is-open" : ""}`}
         aria-hidden={!isMenuOpen}
       >
-        <div className="mobile-menu-header">
-          <strong>Menu</strong>
-          <button type="button" className="mobile-menu-close" aria-label="Fechar menu" onClick={() => setIsMenuOpen(false)}>
+        <div className="vg-drawer-header">
+          <TransitionLink href="/" className="vg-drawer-brand">
+            Li Rilko
+          </TransitionLink>
+          <button type="button" className="vg-drawer-close" aria-label="Fechar menu" onClick={() => setIsMenuOpen(false)}>
             <IconClose className="icon" />
           </button>
         </div>
 
-        <nav className="mobile-menu-links" aria-label="Navegação mobile">
+        <nav className="vg-drawer-nav" aria-label="Navegação mobile">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <TransitionLink
                 key={item.href}
                 href={item.href}
-                className={isActive ? "is-active" : ""}
+                className={isActive ? "active" : ""}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
@@ -181,17 +180,17 @@ export default function SiteHeader() {
           })}
         </nav>
 
-        <div className="mobile-menu-categories">
-          <p>Categorias</p>
+        <div className="vg-drawer-categories">
+          <p className="vg-drawer-subtitle">Categorias</p>
           {categories.map((category) => {
             const isExpanded = expandedCategory === category.name;
             const triggerId = `menu-category-${slugify(category.name)}`;
 
             return (
-              <article key={category.name} className={`mobile-category ${isExpanded ? "is-open" : ""}`}>
+              <article key={category.name} className={`vg-drawer-category ${isExpanded ? "expanded" : ""}`}>
                 <button
                   type="button"
-                  className="mobile-category-trigger"
+                  className="vg-drawer-cat-trigger"
                   aria-expanded={isExpanded}
                   aria-controls={triggerId}
                   onClick={() => toggleCategory(category.name)}
@@ -199,9 +198,9 @@ export default function SiteHeader() {
                   <span>{category.name}</span>
                   <IconChevronDown className="icon" />
                 </button>
-                <div id={triggerId} className="mobile-submenu">
+                <div id={triggerId} className="vg-drawer-submenu">
                   <TransitionLink href={buildCatalogLink(category.name)} onClick={() => setIsMenuOpen(false)}>
-                    Ver todos
+                    Ver Todos
                   </TransitionLink>
                   {category.subs.map((sub) => (
                     <TransitionLink key={sub} href={buildCatalogLink(category.name, sub)} onClick={() => setIsMenuOpen(false)}>

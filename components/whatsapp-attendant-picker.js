@@ -3,27 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { IconWhatsApp } from "@/components/icons";
 
-function shuffleAttendants(attendants) {
-  const next = [...attendants];
-
-  for (let index = next.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [next[index], next[randomIndex]] = [next[randomIndex], next[index]];
-  }
-
-  return next;
-}
-
 function formatPhoneLabel(phone) {
   const digits = String(phone || "").replace(/\D/g, "");
   let normalizedDigits = digits;
-
-  if (!normalizedDigits) {
-    return "";
-  }
+  if (!normalizedDigits) return "";
 
   if (normalizedDigits.startsWith("55") && (normalizedDigits.length === 12 || normalizedDigits.length === 13)) {
-    // Already in international format.
+    // Already correct
   } else if (normalizedDigits.length === 10 || normalizedDigits.length === 11) {
     normalizedDigits = `55${normalizedDigits}`;
   } else {
@@ -33,11 +19,9 @@ function formatPhoneLabel(phone) {
   if (normalizedDigits.length === 13) {
     return `+55 (${normalizedDigits.slice(2, 4)}) ${normalizedDigits.slice(4, 9)}-${normalizedDigits.slice(9)}`;
   }
-
   if (normalizedDigits.length === 12) {
     return `+55 (${normalizedDigits.slice(2, 4)}) ${normalizedDigits.slice(4, 8)}-${normalizedDigits.slice(8)}`;
   }
-
   return `+${normalizedDigits}`;
 }
 
@@ -54,68 +38,63 @@ export default function WhatsAppAttendantPicker({ isOpen = false, attendants = [
   const [displayAttendants, setDisplayAttendants] = useState([]);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    setDisplayAttendants(shuffleAttendants(normalizedAttendants));
+    if (!isOpen) return;
+    // Just display them instead of shuffling so order is consistent 
+    setDisplayAttendants([...normalizedAttendants]);
   }, [isOpen, normalizedAttendants]);
 
   useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
+    if (!isOpen) return undefined;
 
     function handleEscape(event) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     }
 
-    document.body.classList.add("modal-open");
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || normalizedAttendants.length === 0) {
-    return null;
-  }
+  if (!isOpen || normalizedAttendants.length === 0) return null;
 
   return (
-    <div className="whatsapp-picker-backdrop" role="presentation" onClick={onClose}>
+    <div className="vg-picker-backdrop" role="presentation" onClick={onClose}>
       <section
-        className="whatsapp-picker-modal"
+        className="vg-picker-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Escolher atendente do WhatsApp"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="whatsapp-picker-header">
+        <header className="vg-picker-header">
           <h2>Escolha a atendente</h2>
-          <button type="button" className="whatsapp-picker-close" onClick={onClose} aria-label="Fechar seleção">
+          <button type="button" className="vg-picker-close" onClick={onClose} aria-label="Fechar seleção">
             ×
           </button>
         </header>
 
-        <p className="whatsapp-picker-intro">
+        <p className="vg-picker-intro">
           Todas atendem com o mesmo padrão. Escolha com quem você prefere falar agora.
         </p>
 
-        <div className="whatsapp-picker-grid">
+        <div className="vg-picker-grid">
           {displayAttendants.map((attendant) => (
             <button
               key={attendant.id || `${attendant.name}-${attendant.phone}`}
               type="button"
-              className="whatsapp-picker-card"
+              className="vg-picker-card"
               onClick={() => onSelect(attendant)}
             >
-              <span className="whatsapp-picker-card-label">Atendente</span>
-              <strong>{attendant.name}</strong>
-              <small>{formatPhoneLabel(attendant.phone)}</small>
-              <span className="whatsapp-picker-card-action">
+              <div className="vg-picker-info">
+                <span className="vg-picker-label">Atendente</span>
+                <strong>{attendant.name}</strong>
+                <small>{formatPhoneLabel(attendant.phone)}</small>
+              </div>
+              <span className="vg-picker-action">
                 <IconWhatsApp className="icon" />
                 Iniciar conversa
               </span>

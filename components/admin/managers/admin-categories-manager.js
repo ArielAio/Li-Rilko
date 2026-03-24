@@ -20,222 +20,217 @@ function createCategoryDraft(category = null) {
 export default function AdminCategoriesManager() {
   const { adminCategories, saveCategories } = useCatalog();
   const { showToast } = useToast();
-  const [categoryDrafts, setCategoryDrafts] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
+  
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [categoryDraft, setCategoryDraft] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const shouldRevealEditorRef = useRef(false);
-  const editorFormRef = useRef(null);
+  const editorRef = useRef(null);
 
   useEffect(() => {
-    setCategoryDrafts(adminCategories.map((category) => createCategoryDraft(category)));
-  }, [adminCategories]);
-
-  useEffect(() => {
-    if (!isEditMode || !shouldRevealEditorRef.current) {
-      return undefined;
+    if (editingIndex !== null && editorRef.current) {
+      editorRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  }, [editingIndex]);
 
-    shouldRevealEditorRef.current = false;
+  function startCreateCategory() {
+    setCategoryDraft(createCategoryDraft());
+    setEditingIndex(adminCategories.length); // new at end
+  }
 
-    const frame = window.requestAnimationFrame(() => {
-      editorFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      const firstField = editorFormRef.current?.querySelector("input, textarea, select");
-      if (firstField && typeof firstField.focus === "function") {
-        firstField.focus();
-      }
+  function startEditCategory(category, index) {
+    setCategoryDraft(createCategoryDraft(category));
+    setEditingIndex(index);
+  }
+
+  function cancelEdit() {
+    setCategoryDraft(null);
+    setEditingIndex(null);
+  }
+
+  function updateDraftField(field, value) {
+    setCategoryDraft((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function updateSubField(subIndex, value) {
+    setCategoryDraft((prev) => ({
+      ...prev,
+      subs: prev.subs.map((sub, idx) => (idx === subIndex ? { ...sub, name: value } : sub)),
+    }));
+  }
+
+  function addSubcategory() {
+    setCategoryDraft((prev) => ({
+      ...prev,
+      subs: [...prev.subs, { id: "", name: "" }],
+    }));
+  }
+
+  function removeSubcategory(subIndex) {
+    setCategoryDraft((prev) => {
+      if (prev.subs.length <= 1) return prev;
+      return {
+        ...prev,
+        subs: prev.subs.filter((_, idx) => idx !== subIndex),
+      };
     });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [isEditMode]);
-
-  function openEditor() {
-    shouldRevealEditorRef.current = true;
-    setCategoryDrafts(adminCategories.map((category) => createCategoryDraft(category)));
-    setIsEditMode(true);
   }
 
-  function updateCategoryField(index, field, value) {
-    setCategoryDrafts((prev) =>
-      prev.map((category, rowIndex) => (rowIndex === index ? { ...category, [field]: value } : category)),
-    );
+  async function handleDeleteCategory(index) {
+    if (!window.confirm("Apagar esta categoria permanentemente? Produtos vinculados podem ficar sem departamento.")) return;
+    
+    const newCategories = [...adminCategories];
+    newCategories.splice(index, 1);
+    
+    setIsSubmitting(true);
+    const result = await saveCategories(newCategories);
+    setIsSubmitting(false);
+
+    if (result.ok) {
+      showToast({ type: "success", title: "Categoria removida", message: "Catálogo atualizado." });
+    } else {
+      showToast({ type: "warning", title: "Erro", message: result.error });
+    }
   }
 
-  function updateSubField(categoryIndex, subIndex, value) {
-    setCategoryDrafts((prev) =>
-      prev.map((category, rowIndex) => {
-        if (rowIndex !== categoryIndex) {
-          return category;
-        }
-
-        return {
-          ...category,
-          subs: category.subs.map((sub, currentIndex) => (currentIndex === subIndex ? { ...sub, name: value } : sub)),
-        };
-      }),
-    );
-  }
-
-  function addSubcategory(categoryIndex) {
-    setCategoryDrafts((prev) =>
-      prev.map((category, rowIndex) =>
-        rowIndex === categoryIndex ? { ...category, subs: [...category.subs, { id: "", name: "" }] } : category,
-      ),
-    );
-  }
-
-  function removeSubcategory(categoryIndex, subIndex) {
-    setCategoryDrafts((prev) =>
-      prev.map((category, rowIndex) => {
-        if (rowIndex !== categoryIndex || category.subs.length <= 1) {
-          return category;
-        }
-
-        return {
-          ...category,
-          subs: category.subs.filter((_, currentIndex) => currentIndex !== subIndex),
-        };
-      }),
-    );
-  }
-
-  async function handleSaveCategories(event) {
+  async function handleSaveDraft(event) {
     event.preventDefault();
-    const normalized = categoryDrafts
-      .map((category) => ({
-        id: category.id,
-        name: String(category.name || "").trim(),
-        subs: Array.isArray(category.subs)
-          ? category.subs
-              .map((sub) => ({
-                id: sub.id,
-                name: String(sub.name || "").trim(),
-              }))
-              .filter((sub) => sub.name)
-          : [],
-      }))
-      .filter((category) => category.name);
+    if (!categoryDraft.name.trim()) {
+      showToast({ type: "warning", title: "Nome vazio", message: "Dê um nome ao departamento." });
+      return;
+    }
+    
+    const cleanedSubs = categoryDraft.subs
+      .map(s => ({ id: s.id, name: s.name.trim() }))
+      .filter(s => s.name);
 
-    if (normalized.length === 0) {
-      showToast({
-        type: "warning",
-        title: "Categorias inválidas",
-        message: "Cadastre pelo menos uma categoria antes de salvar.",
-      });
+    if (cleanedSubs.length === 0) {
+      showToast({ type: "warning", title: "Sem subcategorias", message: "Adicione pelo menos uma subcategoria válida." });
       return;
     }
 
-    const hasCategoryWithoutSub = normalized.some((category) => category.subs.length === 0);
-    if (hasCategoryWithoutSub) {
-      showToast({
-        type: "warning",
-        title: "Subcategorias pendentes",
-        message: "Cada categoria precisa ter ao menos uma subcategoria.",
-      });
-      return;
+    const finalDraft = { ...categoryDraft, name: categoryDraft.name.trim(), subs: cleanedSubs };
+    const newCategories = [...adminCategories];
+    
+    if (editingIndex >= newCategories.length) {
+      newCategories.push(finalDraft);
+    } else {
+      newCategories[editingIndex] = finalDraft;
     }
 
     setIsSubmitting(true);
-    const result = await saveCategories(normalized);
+    const result = await saveCategories(newCategories);
     setIsSubmitting(false);
 
-    if (!result.ok) {
-      showToast({
-        type: "warning",
-        title: "Erro ao salvar",
-        message: result.error || "Não foi possível salvar as categorias.",
-      });
-      return;
+    if (result.ok) {
+      showToast({ type: "success", title: "Salvo com sucesso", message: "Departamento atualizado." });
+      cancelEdit();
+    } else {
+      showToast({ type: "warning", title: "Erro ao salvar", message: result.error });
     }
-
-    setIsEditMode(false);
-    showToast({
-      type: "success",
-      title: "Categorias salvas",
-      message: "Menu de categorias atualizado no catálogo.",
-    });
   }
 
   return (
     <div className="admin-manager">
       <div className="admin-manager-toolbar">
         <div>
-          <h3>Categorias e subcategorias</h3>
-          <p>Organize o menu principal e os grupos de produtos da loja.</p>
+          <h3>Departamentos da Loja</h3>
+          <p>Organize categorias e subcategorias.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
-          {!isEditMode ? (
-            <button type="button" className="btn btn-primary" onClick={openEditor}>
-              Editar categorias
-            </button>
-          ) : (
-            <button type="button" className="btn btn-surface" onClick={() => setIsEditMode(false)}>
-              Fechar editor
+          {editingIndex === null && (
+            <button type="button" className="btn btn-primary" onClick={startCreateCategory}>
+              Adicionar departamento
             </button>
           )}
         </div>
       </div>
 
-      {isEditMode ? (
-        <form className="admin-form" onSubmit={handleSaveCategories} ref={editorFormRef}>
-          {categoryDrafts.map((category, index) => (
-            <div key={category.id || `category-${index}`} className="admin-category-block">
-              <label className="admin-field">
-                <span>Categoria</span>
-                <input type="text" value={category.name} onChange={(event) => updateCategoryField(index, "name", event.target.value)} />
-              </label>
+      <div className="admin-compact-list">
+        {adminCategories.length === 0 && editingIndex === null && (
+          <article className="admin-compact-item">
+            <strong>Sem departamentos</strong>
+            <p>Cadastre departamentos para iniciar a curadoria.</p>
+          </article>
+        )}
 
-              <div className="admin-field">
-                <span>Subcategorias</span>
-                <div className="admin-form">
-                  {category.subs.map((sub, subIndex) => (
-                    <div key={sub.id || `sub-${subIndex}`} className="admin-manager-footer-actions">
-                      <input type="text" value={sub.name} onChange={(event) => updateSubField(index, subIndex, event.target.value)} />
-                      <button
-                        type="button"
-                        className="btn btn-surface"
-                        onClick={() => removeSubcategory(index, subIndex)}
-                        disabled={category.subs.length <= 1}
-                      >
-                        Remover subcategoria
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        {/* Current list */}
+        {editingIndex === null && adminCategories.map((category, index) => (
+          <article key={category.id || index} className="admin-compact-item">
+            <div>
+              <strong>{category.name}</strong>
+              <p>{category.subs.map(s => s.name).join(" • ")}</p>
+            </div>
+            <div className="admin-product-actions">
+              <button type="button" className="btn btn-surface" onClick={() => startEditCategory(category, index)}>
+                Editar
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => handleDeleteCategory(index)}>
+                Remover
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
 
-              <div className="admin-manager-footer-actions">
-                <button type="button" className="btn btn-surface" onClick={() => addSubcategory(index)}>
-                  Adicionar subcategoria
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-surface"
-                  onClick={() => setCategoryDrafts((prev) => prev.filter((_, rowIndex) => rowIndex !== index))}
-                >
-                  Remover categoria
-                </button>
+      {/* Editor Modal/Panel */}
+      {editingIndex !== null && (
+        <section className="admin-manager-panel" ref={editorRef} style={{ marginTop: "1rem" }}>
+          <div className="admin-manager-title-row">
+            <h4>{editingIndex >= adminCategories.length ? "Novo Departamento" : "Editando Departamento"}</h4>
+          </div>
+          
+          <form className="admin-form" onSubmit={handleSaveDraft}>
+            <label className="admin-field">
+              <span>Nome do Departamento Principal</span>
+              <input 
+                type="text" 
+                value={categoryDraft.name} 
+                onChange={(e) => updateDraftField("name", e.target.value)} 
+                placeholder="Ex Roupas" 
+                autoFocus 
+              />
+            </label>
+
+            <div className="admin-field">
+              <span>Subcategorias (Tags de filtro)</span>
+              <div className="admin-form">
+                {categoryDraft.subs.map((sub, idx) => (
+                  <div key={idx} className="admin-manager-footer-actions">
+                    <input 
+                      type="text" 
+                      value={sub.name} 
+                      onChange={(e) => updateSubField(idx, e.target.value)} 
+                      placeholder="Ex Calças" 
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-surface"
+                      onClick={() => removeSubcategory(idx)}
+                      disabled={categoryDraft.subs.length <= 1}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
 
-          <div className="admin-manager-footer-actions">
-            <button type="button" className="btn btn-surface" onClick={() => setCategoryDrafts((prev) => [...prev, createCategoryDraft()])}>
-              Adicionar categoria
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? "Salvando..." : "Salvar categorias"}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="admin-compact-list">
-          {adminCategories.map((category) => (
-            <article key={category.id || category.name} className="admin-compact-item">
-              <strong>{category.name}</strong>
-              <p>{category.subs.map((sub) => sub.name).join(" • ")}</p>
-            </article>
-          ))}
-        </div>
+            <div className="admin-manager-footer-actions">
+              <button type="button" className="btn btn-surface" onClick={addSubcategory}>
+                + Adicionar Tag de Filtro
+              </button>
+            </div>
+
+            <div className="admin-manager-footer-actions" style={{ marginTop: "2rem" }}>
+              <button type="button" className="btn btn-surface" onClick={cancelEdit}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? "Salvando..." : "Salvar Departamento"}
+              </button>
+            </div>
+          </form>
+        </section>
       )}
     </div>
   );

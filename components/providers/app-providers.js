@@ -5,10 +5,10 @@ import { CartProvider } from "@/components/providers/cart-provider";
 import PageTransitionProvider from "@/components/providers/page-transition-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 
-export default function AppProviders({ children, initialCatalog }) {
+export default function AppProviders({ children, initialCatalog, isAdmin = false }) {
   return (
     <ToastProvider>
-      <CatalogProvider initialCatalog={initialCatalog}>
+      <CatalogProvider initialCatalog={initialCatalog} isAdmin={isAdmin}>
         <CartProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>
         </CartProvider>
