@@ -7,9 +7,11 @@ import { useCatalog } from "@/components/providers/catalog-provider";
 import TransitionLink from "@/components/transition-link";
 
 const SORT_OPTIONS = [
-  { value: "relevancia", label: "Relevância" },
-  { value: "menor-preco-vista", label: "Menor preço" },
-  { value: "maior-preco-vista", label: "Maior preço" },
+  { value: "relevancia", label: "Destaques" },
+  { value: "menor-preco", label: "Menor Preço" },
+  { value: "maior-preco", label: "Maior Preço" },
+  { value: "nome-az", label: "Nome: A-Z" },
+  { value: "nome-za", label: "Nome: Z-A" },
 ];
 
 function normalizeSort(value) {
@@ -68,12 +70,20 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
       );
     });
 
-    if (sortBy === "menor-preco-vista") {
+    if (sortBy === "menor-preco") {
       products = [...products].sort((a, b) => Number(a.priceCash ?? a.price ?? 0) - Number(b.priceCash ?? b.price ?? 0));
     }
 
-    if (sortBy === "maior-preco-vista") {
+    if (sortBy === "maior-preco") {
       products = [...products].sort((a, b) => Number(b.priceCash ?? b.price ?? 0) - Number(a.priceCash ?? a.price ?? 0));
+    }
+
+    if (sortBy === "nome-az") {
+      products = [...products].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    if (sortBy === "nome-za") {
+      products = [...products].sort((a, b) => b.name.localeCompare(a.name));
     }
 
     return products;

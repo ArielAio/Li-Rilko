@@ -141,8 +141,19 @@ export default function AdminProductModal() {
   function handlePriceFieldBlur(field) {
     setProductForm((prev) => {
       const rawValue = String(prev[field] ?? "").trim();
-      if (!rawValue) return { ...prev, [field]: "" };
-      return { ...prev, [field]: formatCurrencyInput(prev[field]) };
+      const nextValue = rawValue ? formatCurrencyInput(rawValue) : "";
+
+      const otherField = field === "priceCash" ? "priceInstallment" : "priceCash";
+      const otherValue = String(prev[otherField] ?? "").trim();
+
+      const nextForm = { ...prev, [field]: nextValue };
+
+      // Se preencheu um e o outro tá vazio, espelha pra facilitar
+      if (nextValue && !otherValue) {
+        nextForm[otherField] = nextValue;
+      }
+
+      return nextForm;
     });
   }
 
@@ -168,6 +179,7 @@ export default function AdminProductModal() {
 
   function validatePayload(payload) {
     if (!payload.name || !payload.categoryId || !payload.subcategoryId) return "Nome, categoria e subcategoria são obrigatórios.";
+    if (payload.priceCash <= 0 || payload.priceInstallment <= 0) return "Preços à vista e a prazo devem ser maiores que zero.";
     if (!Array.isArray(payload.imageItems) || payload.imageItems.length === 0) return "Adicione ao menos uma imagem na galeria.";
     return "";
   }
@@ -270,7 +282,18 @@ export default function AdminProductModal() {
               </select>
             </div>
             <div className="vg-slideover-field">
-              <label>PREÇO (R$)</label>
+              <label>SUBCATEGORIA</label>
+              <select value={productForm.subcategoryId} onChange={(e) => handleProductField("subcategoryId", e.target.value)} required>
+                {availableSubcategories.map((sub) => (
+                  <option key={sub.id} value={sub.id}>{sub.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="vg-slideover-row">
+            <div className="vg-slideover-field">
+              <label>PREÇO À VISTA (R$)</label>
               <input 
                 type="text" 
                 inputMode="decimal"
@@ -281,19 +304,42 @@ export default function AdminProductModal() {
                 required 
               />
             </div>
+            <div className="vg-slideover-field">
+              <label>PREÇO A PRAZO (R$)</label>
+              <input 
+                type="text" 
+                inputMode="decimal"
+                value={productForm.priceInstallment}
+                onChange={(e) => handlePriceFieldChange("priceInstallment", e.target.value)}
+                onFocus={() => handlePriceFieldFocus("priceInstallment")}
+                onBlur={() => handlePriceFieldBlur("priceInstallment")}
+                required 
+              />
+            </div>
           </div>
 
           <div className="vg-slideover-field">
-            <label>SUBCATEGORIA</label>
-            <select value={productForm.subcategoryId} onChange={(e) => handleProductField("subcategoryId", e.target.value)} required>
-              {availableSubcategories.map((sub) => (
-                <option key={sub.id} value={sub.id}>{sub.name}</option>
-              ))}
-            </select>
+            <label>BADGE / ETIQUETA (EX: MAIS VENDIDO)</label>
+            <input 
+              type="text" 
+              value={productForm.badge} 
+              onChange={(e) => handleProductField("badge", e.target.value)} 
+              placeholder="Ex: Novo, Oferta, Destaque..."
+            />
           </div>
 
           <div className="vg-slideover-field">
-            <label>DESCRIÇÃO</label>
+            <label>DESTAQUES DO PRODUTO (UM POR LINHA)</label>
+            <textarea 
+              rows={3} 
+              value={productForm.highlightsText} 
+              onChange={(e) => handleProductField("highlightsText", e.target.value)} 
+              placeholder="Ex: Couro Legítimo&#10;Acabamento Premium&#10;Garantia de 1 ano"
+            />
+          </div>
+
+          <div className="vg-slideover-field">
+            <label>DESCRIÇÃO COMPLETA</label>
             <textarea 
               rows={4} 
               value={productForm.shortDescription} 
