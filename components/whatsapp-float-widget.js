@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { IconWhatsApp } from "@/components/icons";
 import WhatsAppAttendantPicker from "@/components/whatsapp-attendant-picker";
 import { useCatalog } from "@/components/providers/catalog-provider";
@@ -19,8 +20,13 @@ export default function WhatsAppFloatWidget() {
     openWhatsAppPicker,
     closeWhatsAppPicker
   } = useCatalog();
+  const pathname = usePathname();
   const { count } = useCart();
   const { showToast } = useToast();
+
+  if (pathname?.startsWith("/carrinho")) {
+    return null;
+  }
 
   function handleSelectAttendant(attendant) {
     const link = buildAttendantWhatsAppLink(whatsappPendingMessage, attendant);

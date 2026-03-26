@@ -157,7 +157,7 @@ export default function SiteHeader() {
       >
         <div className="vg-drawer-header">
           <TransitionLink href="/" className="vg-drawer-brand">
-            Li Rilko
+            <img src="/logo-li-rilko-header.png" alt="Li Rilko Imports" style={{ height: '32px', width: 'auto' }} />
           </TransitionLink>
           <button type="button" className="vg-drawer-close" aria-label="Fechar menu" onClick={() => setIsMenuOpen(false)}>
             <IconClose className="icon" />
