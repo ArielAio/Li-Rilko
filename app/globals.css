@@ -60,7 +60,7 @@
 
   --z-admin-modal: 140;
   --z-whatsapp-modal: 2200;
-  --z-toast: 3000;
+  --z-toast: 11000;
 }
 
 * {
@@ -5261,16 +5261,17 @@ body.modal-open {
   position: fixed;
   top: 0;
   bottom: 0;
-  left: 0;
+  right: 0;
   width: 85vw;
   max-width: 320px;
   background: var(--surface);
   z-index: 1001;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  box-shadow: 20px 0 40px rgba(0,0,0,0.1);
+  box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+  overflow-y: auto;
 }
 
 .vg-mobile-drawer.is-open {
@@ -5327,8 +5328,6 @@ body.modal-open {
 
 .vg-drawer-categories {
   padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
 }
 
 .vg-drawer-subtitle {
