@@ -76,7 +76,7 @@ export default function AdminCategoriesManager() {
   }
 
   async function handleDeleteCategory(index) {
-    if (!window.confirm("Apagar esta categoria permanentemente? Produtos vinculados podem ficar sem departamento.")) return;
+    if (!window.confirm("Apagar esta categoria permanentemente? Produtos vinculados podem ficar sem categoria.")) return;
     
     const newCategories = [...adminCategories];
     newCategories.splice(index, 1);
@@ -95,7 +95,7 @@ export default function AdminCategoriesManager() {
   async function handleSaveDraft(event) {
     event.preventDefault();
     if (!categoryDraft.name.trim()) {
-      showToast({ type: "warning", title: "Nome vazio", message: "Dê um nome ao departamento." });
+      showToast({ type: "warning", title: "Nome vazio", message: "Dê um nome à categoria." });
       return;
     }
     
@@ -122,7 +122,7 @@ export default function AdminCategoriesManager() {
     setIsSubmitting(false);
 
     if (result.ok) {
-      showToast({ type: "success", title: "Salvo com sucesso", message: "Departamento atualizado." });
+      showToast({ type: "success", title: "Salvo com sucesso", message: "categoria atualizado." });
       cancelEdit();
     } else {
       showToast({ type: "warning", title: "Erro ao salvar", message: result.error });
@@ -133,13 +133,13 @@ export default function AdminCategoriesManager() {
     <div className="admin-manager">
       <div className="admin-manager-toolbar">
         <div>
-          <h3>Departamentos da Loja</h3>
+          <h3>categorias da Loja</h3>
           <p>Organize categorias e subcategorias.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           {editingIndex === null && (
             <button type="button" className="btn btn-primary" onClick={startCreateCategory}>
-              Adicionar departamento
+              Adicionar categoria
             </button>
           )}
         </div>
@@ -148,8 +148,8 @@ export default function AdminCategoriesManager() {
       <div className="admin-compact-list">
         {adminCategories.length === 0 && editingIndex === null && (
           <article className="admin-compact-item">
-            <strong>Sem departamentos</strong>
-            <p>Cadastre departamentos para iniciar a curadoria.</p>
+            <strong>Sem categorias</strong>
+            <p>Cadastre categorias para iniciar a curadoria.</p>
           </article>
         )}
 
@@ -176,12 +176,12 @@ export default function AdminCategoriesManager() {
       {editingIndex !== null && (
         <section className="admin-manager-panel" ref={editorRef} style={{ marginTop: "1rem" }}>
           <div className="admin-manager-title-row">
-            <h4>{editingIndex >= adminCategories.length ? "Novo Departamento" : "Editando Departamento"}</h4>
+            <h4>{editingIndex >= adminCategories.length ? "Nova categoria" : "Editando categoria"}</h4>
           </div>
           
           <form className="admin-form" onSubmit={handleSaveDraft}>
             <label className="admin-field">
-              <span>Nome do Departamento Principal</span>
+              <span>Nome da categoria Principal</span>
               <input 
                 type="text" 
                 value={categoryDraft.name} 
@@ -226,7 +226,7 @@ export default function AdminCategoriesManager() {
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                {isSubmitting ? "Salvando..." : "Salvar Departamento"}
+                {isSubmitting ? "Salvando..." : "Salvar categoria"}
               </button>
             </div>
           </form>

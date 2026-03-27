@@ -6958,7 +6958,7 @@ body.modal-open {
   .vg-cart-page,
   .vg-product-inner-page,
   .vg-footer {
-    padding-bottom: 1rem;
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
   }
 
   .product-meta-strip {

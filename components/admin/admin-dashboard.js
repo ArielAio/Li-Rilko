@@ -117,8 +117,8 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div className="vg-module-content">
-                <h3>Departamentos</h3>
-                <p>Configurar a estrutura de navegação e filtros da loja.</p>
+                <h3>Categorias</h3>
+                <p>Configurar as categorias dos produtos da loja.</p>
               </div>
             </button>
 
