@@ -27,8 +27,10 @@ export default function HomePage() {
         <div className="shell-container home-hero-grid reveal">
           <div className="home-hero-copy">
             <span className="home-kicker">Catálogo Li Rilko</span>
-            <h1>Encontre seu produto e finalize pelo WhatsApp.</h1>
-            <p>Categorias claras, carrinho rápido e atendimento direto com a loja.</p>
+            <h1>
+              Novidades <span className="home-store-name">Li Rilko</span> para renovar seu estilo.
+            </h1>
+            <p>Escolhas selecionadas da loja para você comprar com praticidade e atendimento próximo.</p>
 
             <div className="home-hero-actions">
               <TransitionLink className="btn btn-primary" href="/catalogo">
@@ -39,32 +41,14 @@ export default function HomePage() {
               </TransitionLink>
             </div>
 
-            <div className="home-proof-list">
-              <span>Categorias organizadas</span>
-              <span>Carrinho simples</span>
-              <span>Pedido no WhatsApp</span>
-            </div>
           </div>
 
-          <div className="home-hero-panel">
-            <div className="home-brand-card">
-              <img src="/logo-li-rilko-imports.png" alt="Logo Li Rilko Imports" />
-            </div>
-
-            <div className="home-metrics-grid">
-              <div className="home-metric-card">
-                <strong>{publicProducts.length}</strong>
-                <span>produtos ativos</span>
-              </div>
-              <div className="home-metric-card">
-                <strong>{categories.length}</strong>
-                <span>categorias organizadas</span>
-              </div>
-              <div className="home-metric-card">
-                <strong>WhatsApp</strong>
-                <span>atendimento direto</span>
-              </div>
-            </div>
+          <div className="home-hero-panel" aria-hidden="true">
+            <img
+              className="home-hero-logo"
+              src="/logo-li-rilko-imports.png"
+              alt="Logo Li Rilko Imports"
+            />
           </div>
         </div>
       </section>
@@ -78,11 +62,9 @@ export default function HomePage() {
 
           <div className="home-category-grid">
             {categoryCards.map((category) => {
-              const capLetter = category.name.charAt(0).toUpperCase();
               return (
                 <article key={category.name} className="home-category-card reveal">
                   <div className="home-category-top">
-                    <span className="home-category-icon">{capLetter}</span>
                     <span className="home-category-count">{category.count} itens</span>
                   </div>
                   <TransitionLink className="home-category-title" href={buildCatalogLink(category.name)}>
