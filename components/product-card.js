@@ -15,6 +15,10 @@ export default function ProductCard({ product, highlight = false }) {
   const isAvailable = product.isAvailable !== false;
   const qtyInCart = getItemQty(product.id);
   const priceCash = Number(product.priceCash ?? product.price ?? 0);
+  const imageSrc =
+    typeof product.image === "string" && product.image.trim()
+      ? product.image.trim()
+      : "/li-rilko-icon-page.png";
 
   function handleAddToCart() {
     const added = addItem(product.id, 1);
@@ -81,7 +85,7 @@ export default function ProductCard({ product, highlight = false }) {
 
       <TransitionLink className="vg-product-media" href={`/produto/${product.id}`} aria-label={`Ver ${product.name}`}>
         <img
-          src={product.image}
+          src={imageSrc}
           alt={product.name}
           loading="lazy"
           decoding="async"

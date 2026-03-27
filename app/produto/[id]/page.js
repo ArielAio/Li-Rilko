@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ProductDetailActions from "@/components/product-detail-actions";
 import { useCatalog } from "@/components/providers/catalog-provider";
 import TransitionLink from "@/components/transition-link";
@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/store-utils";
 
 export default function ProductPage() {
   const params = useParams();
+  const router = useRouter();
   const { publicProductMap, isAdmin, openEditModal } = useCatalog();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const product = publicProductMap.get(id);
@@ -23,6 +24,15 @@ export default function ProductPage() {
     if (!product) return;
     setSelectedImage(gallery[0] || "");
   }, [gallery, product]);
+
+  function handleBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/catalogo");
+  }
 
   if (!product) {
     return (
@@ -43,6 +53,13 @@ export default function ProductPage() {
 
   return (
     <section className="vg-product-inner-page">
+      <div className="shell-container vg-product-back-row">
+        <button type="button" className="vg-product-back-btn" onClick={handleBack}>
+          <span aria-hidden="true">&larr;</span>
+          Voltar
+        </button>
+      </div>
+
       <div className="shell-container vg-product-grid">
         <div className="vg-product-gallery-col reveal">
           <div className="vg-product-main-img" style={{ position: "relative" }}>
@@ -124,9 +141,6 @@ export default function ProductPage() {
             <button className={activeTab === "shipping" ? "active" : ""} onClick={() => setActiveTab("shipping")}>
               Compra e entrega
             </button>
-            <button className={activeTab === "specs" ? "active" : ""} onClick={() => setActiveTab("specs")}>
-              Diferenciais
-            </button>
           </div>
 
           <div className="vg-product-tab-content">
@@ -138,20 +152,12 @@ export default function ProductPage() {
             {activeTab === "shipping" && (
               <>
                 <p className="text-muted">
-                  Finalize pelo WhatsApp. A loja confirma disponibilidade, entrega ou retirada e conclui o pedido com você.
+                  Finalize pelo WhatsApp. A loja confirma disponibilidade e conclui o pedido com você.
                 </p>
                 <ul className="vg-product-features">
                   <li>Confirmação de disponibilidade antes do fechamento</li>
                   <li>Suporte para dúvidas pelo WhatsApp</li>
                   <li>Atendimento rápido para reserva e finalização</li>
-                </ul>
-              </>
-            )}
-            {activeTab === "specs" && (
-              <>
-                <p className="text-muted">Principais destaques do produto:</p>
-                <ul className="vg-product-features">
-                  {product.highlights?.map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </>
             )}

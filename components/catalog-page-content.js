@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { IconSearch } from "@/components/icons";
 import ProductCard from "@/components/product-card";
 import { useCatalog } from "@/components/providers/catalog-provider";
-import TransitionLink from "@/components/transition-link";
 
 const SORT_OPTIONS = [
   { value: "relevancia", label: "Destaques" },
@@ -197,7 +196,7 @@ export default function CatalogPageContent({
             <IconSearch className="icon" />
             <input
               type="text"
-              placeholder="Buscar por produto, categoria ou característica"
+              placeholder="Buscar"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
@@ -296,9 +295,6 @@ export default function CatalogPageContent({
                   : `Mostrando itens de ${selectedCategory}${selectedSub ? ` / ${selectedSub}` : ""}.`}
               </p>
             </div>
-            <TransitionLink className="catalog-contact-link" href="/contato">
-              Atendimento
-            </TransitionLink>
           </div>
 
           {filteredProducts.length === 0 ? (
