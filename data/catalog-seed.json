@@ -1,11 +1,48 @@
 {
   "categories": [
-    { "name": "Smartphones", "subs": ["iPhone", "Celular (outros)"] },
-    { "name": "Apple", "subs": ["Apple Watch", "iPad e MacBook"] },
-    { "name": "Acessórios", "subs": ["Capinhas", "Películas", "Cabos e carregadores"] },
-    { "name": "Importados", "subs": ["Perfumes", "Maquiagem", "Bijuterias", "Mochilas"] },
-    { "name": "Mobilidade", "subs": ["Moto elétrica"] },
-    { "name": "Outros", "subs": ["Itens variados"] }
+    {
+      "name": "Smartphones",
+      "subs": [
+        "iPhone",
+        "Celular (outros)"
+      ]
+    },
+    {
+      "name": "Apple",
+      "subs": [
+        "Apple Watch",
+        "iPad e MacBook"
+      ]
+    },
+    {
+      "name": "Acessórios",
+      "subs": [
+        "Capinhas",
+        "Películas",
+        "Cabos e carregadores"
+      ]
+    },
+    {
+      "name": "Importados",
+      "subs": [
+        "Perfumes",
+        "Maquiagem",
+        "Bijuterias",
+        "Mochilas"
+      ]
+    },
+    {
+      "name": "Mobilidade",
+      "subs": [
+        "Moto elétrica"
+      ]
+    },
+    {
+      "name": "Outros",
+      "subs": [
+        "Itens variados"
+      ]
+    }
   ],
   "products": [
     {
@@ -18,7 +55,11 @@
       "oldPrice": 3149,
       "badge": "Oferta da semana",
       "shortDescription": "Desempenho premium, câmeras avançadas e design elegante.",
-      "highlights": ["Tela Super Retina", "Chip A15 Bionic", "Excelente revenda"],
+      "highlights": [
+        "Tela Super Retina",
+        "Chip A15 Bionic",
+        "Excelente revenda"
+      ],
       "images": [
         "https://picsum.photos/seed/smartphone-premium-red-1/1200/1200",
         "https://picsum.photos/seed/smartphone-premium-red-2/1200/1200",
@@ -35,7 +76,11 @@
       "oldPrice": 2799,
       "badge": "Últimas unidades",
       "shortDescription": "Excelente custo-benefício para quem busca iPhone original.",
-      "highlights": ["Face ID", "5G", "Ótima performance"],
+      "highlights": [
+        "Face ID",
+        "5G",
+        "Ótima performance"
+      ],
       "images": [
         "https://picsum.photos/seed/smartphone-minimal-black-1/1200/1200",
         "https://picsum.photos/seed/smartphone-minimal-black-2/1200/1200",
@@ -52,7 +97,11 @@
       "oldPrice": 2450,
       "badge": "Mais vendido",
       "shortDescription": "Monitoramento completo de saúde e estilo para o dia a dia.",
-      "highlights": ["Saúde e treino", "GPS", "Acabamento premium"],
+      "highlights": [
+        "Saúde e treino",
+        "GPS",
+        "Acabamento premium"
+      ],
       "images": [
         "https://picsum.photos/seed/watch-tech-modern-1/1200/1200",
         "https://picsum.photos/seed/watch-tech-modern-2/1200/1200",
@@ -69,7 +118,11 @@
       "oldPrice": 2890,
       "badge": "Novo lote",
       "shortDescription": "Tela ampla e fluida para produtividade e entretenimento.",
-      "highlights": ["Tela de 10,2\"", "Chip A13", "Ideal para estudos"],
+      "highlights": [
+        "Tela de 10,2\"",
+        "Chip A13",
+        "Ideal para estudos"
+      ],
       "images": [
         "https://picsum.photos/seed/tablet-clean-desk-1/1200/1200",
         "https://picsum.photos/seed/tablet-clean-desk-2/1200/1200",
@@ -86,7 +139,11 @@
       "oldPrice": 49.9,
       "badge": "Leve 2 com desconto",
       "shortDescription": "Proteção reforçada e acabamento transparente de alta qualidade.",
-      "highlights": ["Cobertura 3D", "Alta transparência", "Toque preciso"],
+      "highlights": [
+        "Cobertura 3D",
+        "Alta transparência",
+        "Toque preciso"
+      ],
       "images": [
         "https://picsum.photos/seed/accessory-glass-shield-1/1200/1200",
         "https://picsum.photos/seed/accessory-glass-shield-2/1200/1200",
@@ -103,7 +160,11 @@
       "oldPrice": 59.9,
       "badge": "Proteção reforçada",
       "shortDescription": "Absorção de impacto com visual moderno e premium.",
-      "highlights": ["Bordas reforçadas", "Leve", "Design elegante"],
+      "highlights": [
+        "Bordas reforçadas",
+        "Leve",
+        "Design elegante"
+      ],
       "images": [
         "https://picsum.photos/seed/phone-case-texture-1/1200/1200",
         "https://picsum.photos/seed/phone-case-texture-2/1200/1200",
@@ -120,7 +181,11 @@
       "oldPrice": 289,
       "badge": "Linha premium",
       "shortDescription": "Fragrância marcante com alta fixação e excelente projeção.",
-      "highlights": ["Alta fixação", "Assinatura sofisticada", "100ml"],
+      "highlights": [
+        "Alta fixação",
+        "Assinatura sofisticada",
+        "100ml"
+      ],
       "images": [
         "https://picsum.photos/seed/perfume-luxury-bottle-1/1200/1200",
         "https://picsum.photos/seed/perfume-luxury-bottle-2/1200/1200",
@@ -137,7 +202,11 @@
       "oldPrice": 149,
       "badge": "Acabamento profissional",
       "shortDescription": "Seleção completa para looks do básico ao sofisticado.",
-      "highlights": ["Paleta versátil", "Ótima pigmentação", "Uso diário"],
+      "highlights": [
+        "Paleta versátil",
+        "Ótima pigmentação",
+        "Uso diário"
+      ],
       "images": [
         "https://picsum.photos/seed/makeup-kit-color-1/1200/1200",
         "https://picsum.photos/seed/makeup-kit-color-2/1200/1200",
@@ -154,7 +223,11 @@
       "oldPrice": 229,
       "badge": "Visual executivo",
       "shortDescription": "Mochila resistente com compartimentos inteligentes.",
-      "highlights": ["Compartimento notebook", "Design urbano", "Material resistente"],
+      "highlights": [
+        "Compartimento notebook",
+        "Design urbano",
+        "Material resistente"
+      ],
       "images": [
         "https://picsum.photos/seed/urban-backpack-style-1/1200/1200",
         "https://picsum.photos/seed/urban-backpack-style-2/1200/1200",
@@ -171,7 +244,11 @@
       "oldPrice": 7590,
       "badge": "Pré-venda",
       "shortDescription": "Mobilidade urbana com economia e visual moderno.",
-      "highlights": ["Baixo consumo", "Visual premium", "Uso urbano"],
+      "highlights": [
+        "Baixo consumo",
+        "Visual premium",
+        "Uso urbano"
+      ],
       "images": [
         "https://picsum.photos/seed/electric-bike-city-1/1200/1200",
         "https://picsum.photos/seed/electric-bike-city-2/1200/1200",
@@ -188,7 +265,11 @@
       "oldPrice": 89.9,
       "badge": "Destaque da semana",
       "shortDescription": "Mantém temperatura por horas com design elegante.",
-      "highlights": ["1 litro", "Vedação segura", "Acabamento premium"],
+      "highlights": [
+        "1 litro",
+        "Vedação segura",
+        "Acabamento premium"
+      ],
       "images": [
         "https://picsum.photos/seed/thermal-bottle-clean-1/1200/1200",
         "https://picsum.photos/seed/thermal-bottle-clean-2/1200/1200",
@@ -205,12 +286,458 @@
       "oldPrice": 149,
       "badge": "Coleção nova",
       "shortDescription": "Peças sofisticadas para elevar o visual de qualquer produção.",
-      "highlights": ["Brilho intenso", "Leve e confortável", "Mix versátil"],
+      "highlights": [
+        "Brilho intenso",
+        "Leve e confortável",
+        "Mix versátil"
+      ],
       "images": [
         "https://picsum.photos/seed/jewelry-premium-light-1/1200/1200",
         "https://picsum.photos/seed/jewelry-premium-light-2/1200/1200",
         "https://picsum.photos/seed/jewelry-premium-light-3/1200/1200"
       ]
+    },
+    {
+      "id": "ip-13-128-lacrado",
+      "name": "IP 13 128 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 2999,
+      "priceInstallment": 2999,
+      "oldPrice": 2999,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-14-128-lacrado",
+      "name": "IP 14 128 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 3499,
+      "priceInstallment": 3499,
+      "oldPrice": 3499,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-15-128-lacrado",
+      "name": "IP 15 128 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 3899,
+      "priceInstallment": 3899,
+      "oldPrice": 3899,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-15-pro-max-256-lacrado",
+      "name": "IP 15 PRO MAX 256 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 5999,
+      "priceInstallment": 5999,
+      "oldPrice": 5999,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-16-128-lacrado",
+      "name": "IP 16 128 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 4599,
+      "priceInstallment": 4599,
+      "oldPrice": 4599,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-17-256-lacrado",
+      "name": "IP 17 256 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 5499,
+      "priceInstallment": 5499,
+      "oldPrice": 5499,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "ip-17-pro-max-256-lacrado",
+      "name": "IP 17 PRO MAX 256 LACRADO",
+      "category": "Smartphones",
+      "sub": "iPhone",
+      "priceCash": 8699,
+      "priceInstallment": 8699,
+      "oldPrice": 8699,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-note-60x-64",
+      "name": "REALME NOTE 60X 64",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 699,
+      "priceInstallment": 699,
+      "oldPrice": 699,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-note-60x-128",
+      "name": "REALME NOTE 60X 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 799,
+      "priceInstallment": 799,
+      "oldPrice": 799,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-note-60-3-64",
+      "name": "REALME NOTE 60 3/64",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 699,
+      "priceInstallment": 699,
+      "oldPrice": 699,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-note-60-128",
+      "name": "REALME NOTE 60 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 799,
+      "priceInstallment": 799,
+      "oldPrice": 799,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-note-70-256",
+      "name": "REALME NOTE 70 256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 999,
+      "priceInstallment": 999,
+      "oldPrice": 999,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c67-128",
+      "name": "REALME C67 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1199,
+      "priceInstallment": 1199,
+      "oldPrice": 1199,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c71-128",
+      "name": "REALME C71 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 949,
+      "priceInstallment": 949,
+      "oldPrice": 949,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c71-4-256",
+      "name": "REALME C71 4/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1049,
+      "priceInstallment": 1049,
+      "oldPrice": 1049,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c71-8-256",
+      "name": "REALME C71 8/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1199,
+      "priceInstallment": 1199,
+      "oldPrice": 1199,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c75-256",
+      "name": "REALME C75 256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1599,
+      "priceInstallment": 1599,
+      "oldPrice": 1599,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c85-8-256",
+      "name": "REALME C85 8/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1699,
+      "priceInstallment": 1699,
+      "oldPrice": 1699,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c75-6-128",
+      "name": "REALME C75 6/128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1299,
+      "priceInstallment": 1299,
+      "oldPrice": 1299,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "realme-c75x-8-256",
+      "name": "REALME C75X 8/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1499,
+      "priceInstallment": 1499,
+      "oldPrice": 1499,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "infinix-hot50i-256",
+      "name": "INFINIX HOT50I 256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 899,
+      "priceInstallment": 899,
+      "oldPrice": 899,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "xm-rd-a5-64",
+      "name": "XM RD A5 64",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 699,
+      "priceInstallment": 699,
+      "oldPrice": 699,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "xm-rd-a5-128",
+      "name": "XM RD A5 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 799,
+      "priceInstallment": 799,
+      "oldPrice": 799,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "xm-rd-15c-128",
+      "name": "XM RD 15C 128",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 999,
+      "priceInstallment": 999,
+      "oldPrice": 999,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "xm-rd-15c-4-256",
+      "name": "XM RD 15C 4/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1099,
+      "priceInstallment": 1099,
+      "oldPrice": 1099,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
+    },
+    {
+      "id": "xm-rd-15c-8-256",
+      "name": "XM RD 15C 8/256",
+      "category": "Smartphones",
+      "sub": "Celular (outros)",
+      "priceCash": 1199,
+      "priceInstallment": 1199,
+      "oldPrice": 1199,
+      "badge": "Destaque",
+      "shortDescription": "Produto disponível na vitrine da loja.",
+      "highlights": [
+        "Atendimento via WhatsApp"
+      ],
+      "images": [],
+      "isVisible": true,
+      "isAvailable": true
     }
   ],
   "contactChannels": [
@@ -229,7 +756,7 @@
     {
       "id": "endereco",
       "title": "Endereço",
-      "value": "Fernandópolis - SP",
+      "value": "Av. Amadeu Bizelli, 1225 - Centro, Fernandópolis - SP, 15600-064",
       "href": "#"
     }
   ],

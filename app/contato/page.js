@@ -96,23 +96,16 @@ export default function ContactPage() {
       <section className="section page-hero-small">
         <div className="shell-container">
           <p className="kicker">Contato</p>
-          <h1>Atendimento direto para tirar dúvidas e finalizar pedidos.</h1>
-          <p>Fale com a equipe da loja, confirme disponibilidade e finalize com atendimento humano no WhatsApp.</p>
+          <h1>Fale com a loja</h1>
+          <p>Tire dúvidas, confirme disponibilidade e finalize seu pedido no WhatsApp.</p>
         </div>
       </section>
 
       <section className="section">
         <div className="shell-container contact-layout">
           <article className="contact-main-card reveal">
-            <h2>Fale agora com a Li Rilko</h2>
-            <p>
-              O WhatsApp é o principal canal de atendimento comercial. Se você já montou seu carrinho, o resumo do pedido
-              segue automaticamente na mensagem.
-            </p>
-            <p>
-              Você pode usar esta tela para falar com a loja mesmo antes de escolher um item. Quando houver mais de uma
-              atendente ativa, você escolhe com quem deseja falar.
-            </p>
+            <h2>Atendimento no WhatsApp</h2>
+            <p>Se você já montou seu carrinho, o resumo do pedido segue automaticamente na mensagem.</p>
 
             <a className="btn btn-whatsapp contact-primary-button" href="#" onClick={handleStartContact}>
               <IconWhatsApp className="icon" />
@@ -149,7 +142,7 @@ export default function ContactPage() {
               ) : (
                 <li>
                   <strong>Sem atendentes cadastrados</strong>
-                  <span>Peça para o admin configurar ao menos 1 atendente no painel.</span>
+                  <span>Peça para a loja configurar ao menos um número de atendimento.</span>
                 </li>
               )}
             </ul>

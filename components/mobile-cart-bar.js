@@ -23,7 +23,7 @@ export default function MobileCartBar() {
   return (
     <TransitionLink href="/carrinho" className="mobile-cart-bar" aria-label={`Abrir carrinho com ${count} itens`}>
       <IconCart className="icon" />
-      <span>{count} item(ns) no pedido • {formatCurrency(totalCash)}</span>
+      <span>{count} item{count > 1 ? "s" : ""} no pedido • {formatCurrency(totalCash)}</span>
       <strong>Revisar</strong>
     </TransitionLink>
   );

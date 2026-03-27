@@ -13,6 +13,8 @@
     "test:known-issues": "vitest run --config vitest.known-issues.config.js",
     "test:gate": "npm run test:unit && npm run test:integration && npm run build && npm run test:e2e:smoke",
     "supabase:seed": "node scripts/supabase-seed.cjs",
+    "products:import:csv": "node scripts/import-products-csv.cjs",
+    "products:sync:csv": "node scripts/import-products-csv.cjs --publish",
     "generate:favicon": "node scripts/create-svg-favicon.js"
   },
   "keywords": [

@@ -9,8 +9,8 @@ import TransitionLink from "@/components/transition-link";
 
 const SORT_OPTIONS = [
   { value: "relevancia", label: "Destaques" },
-  { value: "menor-preco", label: "Menor preco" },
-  { value: "maior-preco", label: "Maior preco" },
+  { value: "menor-preco", label: "Menor preço" },
+  { value: "maior-preco", label: "Maior preço" },
   { value: "nome-az", label: "Nome: A-Z" },
   { value: "nome-za", label: "Nome: Z-A" },
 ];
@@ -55,6 +55,7 @@ export default function CatalogPageContent({
   const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [urlSearchTerm, setUrlSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSub, setSelectedSub] = useState(initialSub);
   const [sortBy, setSortBy] = useState(normalizeSort(initialSort));
@@ -82,7 +83,16 @@ export default function CatalogPageContent({
 
   useEffect(() => {
     setSearchTerm(initialSearch);
+    setUrlSearchTerm(initialSearch);
   }, [initialSearch]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setUrlSearchTerm(searchTerm);
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
 
   const selectedCategoryData = useMemo(() => {
     if (selectedCategory === "Todos") return null;
@@ -143,7 +153,7 @@ export default function CatalogPageContent({
       category: selectedCategory,
       sub: selectedSub,
       sort: sortBy,
-      search: searchTerm.trim(),
+      search: urlSearchTerm.trim(),
     });
 
     const currentUrl = searchParams?.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
@@ -155,7 +165,7 @@ export default function CatalogPageContent({
     startTransition(() => {
       router.replace(nextUrl, { scroll: false });
     });
-  }, [pathname, router, searchParams, searchTerm, selectedCategory, selectedSub, sortBy]);
+  }, [pathname, router, searchParams, selectedCategory, selectedSub, sortBy, urlSearchTerm]);
 
   function clearFilters() {
     setSearchTerm("");
@@ -174,29 +184,9 @@ export default function CatalogPageContent({
       <section className="vg-catalog-header">
         <div className="shell-container">
           <div className="catalog-hero-copy">
-            <span className="catalog-kicker">Catalogo organizado para vender melhor</span>
-            <h1 className="vg-catalog-title">
-              Catalogo<br />
-              <span className="accent">Li Rilko</span>
-            </h1>
-            <p className="vg-catalog-desc">
-              Navegue com mais clareza, compare produtos com rapidez e monte o pedido para finalizar direto no WhatsApp.
-            </p>
-          </div>
-
-          <div className="catalog-summary-grid">
-            <div className="catalog-summary-card">
-              <strong>{publicProducts.length}</strong>
-              <span>produtos na vitrine</span>
-            </div>
-            <div className="catalog-summary-card">
-              <strong>{categories.length}</strong>
-              <span>categorias ativas</span>
-            </div>
-            <div className="catalog-summary-card">
-              <strong>WhatsApp</strong>
-              <span>finalizacao assistida</span>
-            </div>
+            <span className="catalog-kicker">Catálogo</span>
+            <h1 className="vg-catalog-title">Catálogo Li Rilko</h1>
+            <p className="vg-catalog-desc">Busque, filtre e monte seu pedido.</p>
           </div>
         </div>
       </section>
@@ -207,7 +197,7 @@ export default function CatalogPageContent({
             <IconSearch className="icon" />
             <input
               type="text"
-              placeholder="Buscar por produto, categoria ou caracteristica"
+              placeholder="Buscar por produto, categoria ou característica"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
@@ -254,7 +244,7 @@ export default function CatalogPageContent({
                   className={`catalog-subfilter ${!selectedSub ? "active" : ""}`}
                   onClick={() => setSelectedSub("")}
                 >
-                  Ver tudo
+                  Todos
                 </button>
                 {availableSubs.map((sub) => (
                   <button
@@ -302,19 +292,19 @@ export default function CatalogPageContent({
               <strong>{filteredProducts.length} produtos</strong>
               <p>
                 {selectedCategory === "Todos"
-                  ? "Mostrando toda a vitrine atual."
+                  ? "Todos os produtos disponíveis."
                   : `Mostrando itens de ${selectedCategory}${selectedSub ? ` / ${selectedSub}` : ""}.`}
               </p>
             </div>
             <TransitionLink className="catalog-contact-link" href="/contato">
-              Precisa de ajuda para escolher?
+              Atendimento
             </TransitionLink>
           </div>
 
           {filteredProducts.length === 0 ? (
             <div className="vg-empty-state">
               <p>Nenhum produto encontrado para os filtros atuais.</p>
-              <span>Remova filtros ou volte para a vitrine completa.</span>
+              <span>Remova os filtros para ver mais opções.</span>
               <button type="button" className="btn btn-primary" onClick={clearFilters}>
                 Limpar filtros
               </button>

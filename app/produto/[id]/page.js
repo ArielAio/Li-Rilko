@@ -28,10 +28,10 @@ export default function ProductPage() {
     return (
       <section className="vg-product-page-empty">
         <div className="shell-container text-center">
-          <h1>Produto nao encontrado</h1>
-          <p>Esse item nao esta disponivel na vitrine atual.</p>
+          <h1>Produto não encontrado</h1>
+          <p>Esse item não está disponível no catálogo atual.</p>
           <TransitionLink href="/catalogo" className="btn btn-primary">
-            Voltar ao catalogo
+            Voltar ao catálogo
           </TransitionLink>
         </div>
       </section>
@@ -46,7 +46,7 @@ export default function ProductPage() {
       <div className="shell-container vg-product-grid">
         <div className="vg-product-gallery-col reveal">
           <div className="vg-product-main-img" style={{ position: "relative" }}>
-            <span className="vg-gallery-badge">{product.isAvailable === false ? "Produto indisponivel" : product.badge}</span>
+            <span className="vg-gallery-badge">{product.isAvailable === false ? "Produto indisponível" : product.badge}</span>
             {isAdmin && (
               <button
                 type="button"
@@ -96,7 +96,7 @@ export default function ProductPage() {
 
           <div className="product-meta-strip">
             <span className={`product-availability ${product.isAvailable === false ? "is-unavailable" : ""}`}>
-              {product.isAvailable === false ? "Esgotado no momento" : "Disponivel para atendimento"}
+              {product.isAvailable === false ? "Esgotado no momento" : "Disponível para atendimento"}
             </span>
             <span>{product.category}</span>
             <span>{product.sub}</span>
@@ -108,20 +108,18 @@ export default function ProductPage() {
 
           <div className="vg-product-prices">
             <span className="vg-price-main">
-              {formatCurrency(priceCash)} <small>a vista</small>
+              {formatCurrency(priceCash)} <small>à vista</small>
             </span>
             {priceInstallment > 0 && priceInstallment !== priceCash && (
               <span className="vg-price-alt">ou {formatCurrency(priceInstallment)} a prazo</span>
             )}
           </div>
 
-          <p className="product-summary-text">
-            {product.shortDescription} Atendimento por WhatsApp para confirmar disponibilidade, prazo e fechamento do pedido.
-          </p>
+          <p className="product-summary-text">{product.shortDescription}</p>
 
           <div className="vg-product-tabs">
             <button className={activeTab === "description" ? "active" : ""} onClick={() => setActiveTab("description")}>
-              Descricao
+              Descrição
             </button>
             <button className={activeTab === "shipping" ? "active" : ""} onClick={() => setActiveTab("shipping")}>
               Compra e entrega
@@ -135,26 +133,23 @@ export default function ProductPage() {
             {activeTab === "description" && (
               <>
                 <p>{product.shortDescription}</p>
-                <p className="text-muted">
-                  Produto exibido em uma vitrine mais objetiva, pensada para consulta rapida e decisao comercial sem atrito.
-                </p>
               </>
             )}
             {activeTab === "shipping" && (
               <>
                 <p className="text-muted">
-                  Finalize pelo WhatsApp com atendimento humano. A equipe confirma disponibilidade, combina retirada ou envio e orienta o fechamento.
+                  Finalize pelo WhatsApp. A loja confirma disponibilidade, entrega ou retirada e conclui o pedido com você.
                 </p>
                 <ul className="vg-product-features">
-                  <li>Confirmacao de disponibilidade antes do fechamento</li>
-                  <li>Suporte para duvidas e combinacoes pelo WhatsApp</li>
-                  <li>Atendimento rapido para reserva e finalizacao</li>
+                  <li>Confirmação de disponibilidade antes do fechamento</li>
+                  <li>Suporte para dúvidas pelo WhatsApp</li>
+                  <li>Atendimento rápido para reserva e finalização</li>
                 </ul>
               </>
             )}
             {activeTab === "specs" && (
               <>
-                <p className="text-muted">Os principais pontos de valor deste item na vitrine atual:</p>
+                <p className="text-muted">Principais destaques do produto:</p>
                 <ul className="vg-product-features">
                   {product.highlights?.map((item) => <li key={item}>{item}</li>)}
                 </ul>

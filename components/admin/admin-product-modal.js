@@ -180,7 +180,6 @@ export default function AdminProductModal() {
   function validatePayload(payload) {
     if (!payload.name || !payload.categoryId || !payload.subcategoryId) return "Nome, categoria e subcategoria são obrigatórios.";
     if (payload.priceCash <= 0 || payload.priceInstallment <= 0) return "Preços à vista e a prazo devem ser maiores que zero.";
-    if (!Array.isArray(payload.imageItems) || payload.imageItems.length === 0) return "Adicione ao menos uma imagem na galeria.";
     return "";
   }
 

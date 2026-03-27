@@ -83,7 +83,7 @@ export default function SiteHeader() {
     if (count <= 0) {
       return "Carrinho vazio";
     }
-    return `${count} item(ns) no carrinho`;
+    return `${count} item${count > 1 ? "s" : ""} no carrinho`;
   }, [count]);
 
   function toggleCategory(categoryName) {
@@ -104,9 +104,7 @@ export default function SiteHeader() {
       <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`}>
         <div className="shell-container header-inner">
           <TransitionLink href="/" className="brand" aria-label="Li Rilko">
-            <span className="brand-mark">
-              Li Rilko
-            </span>
+            <img src="/logo-li-rilko-header.png" alt="Li Rilko Imports" className="brand-logo" />
           </TransitionLink>
 
           <nav className="header-nav" aria-label="Navegação principal">
@@ -156,7 +154,7 @@ export default function SiteHeader() {
       >
         <div className="vg-drawer-header">
           <TransitionLink href="/" className="vg-drawer-brand">
-            <img src="/logo-li-rilko-header.png" alt="Li Rilko Imports" style={{ height: '32px', width: 'auto' }} />
+            <img src="/logo-li-rilko-header.png" alt="Li Rilko Imports" className="vg-drawer-brand-logo" />
           </TransitionLink>
           <button type="button" className="vg-drawer-close" aria-label="Fechar menu" onClick={() => setIsMenuOpen(false)}>
             <IconClose className="icon" />
@@ -199,7 +197,7 @@ export default function SiteHeader() {
                 </button>
                 <div id={triggerId} className="vg-drawer-submenu">
                   <TransitionLink href={buildCatalogLink(category.name)} onClick={() => setIsMenuOpen(false)}>
-                    Ver Todos
+                    Ver tudo
                   </TransitionLink>
                   {category.subs.map((sub) => (
                     <TransitionLink key={sub} href={buildCatalogLink(category.name, sub)} onClick={() => setIsMenuOpen(false)}>

@@ -32,7 +32,7 @@ export default function ProductDetailActions({ product }) {
       showToast({
         type: "warning",
         title: "Produto esgotado",
-        message: `${product.name} esta esgotado no momento.`,
+        message: `${product.name} está esgotado no momento.`,
       });
       return;
     }
@@ -46,14 +46,14 @@ export default function ProductDetailActions({ product }) {
 
   function handleWhatsAppPurchase() {
     const label = qty > 1 ? `${qty} unidades de ${product.name}` : product.name;
-    const message = `Ola! Tenho interesse em ${label} (${formatCurrency(priceCash)} a vista). Pode me ajudar com a compra?`;
+    const message = `Olá! Tenho interesse em ${label} (${formatCurrency(priceCash)} à vista). Pode me ajudar com a compra?`;
     const action = resolveWhatsAppAttendantAction(attendants, message);
 
     if (action.mode === "blocked") {
       showToast({
         type: "warning",
-        title: "Atendimento indisponivel",
-        message: "Nenhum atendente de WhatsApp esta configurado neste momento.",
+        title: "Atendimento indisponível",
+        message: "Nenhum atendente de WhatsApp está configurado neste momento.",
       });
       return;
     }
@@ -67,13 +67,13 @@ export default function ProductDetailActions({ product }) {
     showToast({
       type: "success",
       title: "Abrindo WhatsApp",
-      message: `Voce sera atendido por ${action.attendant.name}.`,
+      message: `Você será atendido por ${action.attendant.name}.`,
     });
   }
 
   return (
     <div className="vg-detail-actions">
-      {qtyInCart > 0 && <p className="vg-in-cart-msg">Voce tem {qtyInCart} na sacola.</p>}
+      {qtyInCart > 0 && <p className="vg-in-cart-msg">Você tem {qtyInCart} no carrinho.</p>}
 
       <div className="vg-action-row">
         <div className="vg-qty-selector">

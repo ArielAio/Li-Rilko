@@ -35,8 +35,8 @@ export default function WhatsAppFloatWidget() {
     if (action.mode === "blocked") {
       showToast({
         type: "warning",
-        title: "Atendimento indisponivel",
-        message: "Nenhum canal de WhatsApp esta configurado no momento.",
+        title: "Atendimento indisponível",
+        message: "Nenhum canal de WhatsApp está configurado no momento.",
       });
       return;
     }
@@ -49,7 +49,7 @@ export default function WhatsAppFloatWidget() {
     openWhatsAppLink(action.link);
     showToast({
       type: "success",
-      title: "Atendimento rapido",
+      title: "Atendimento rápido",
       message: `Abrindo WhatsApp com ${action.attendant.name}.`,
     });
   }
@@ -60,8 +60,8 @@ export default function WhatsAppFloatWidget() {
     if (!link) {
       showToast({
         type: "warning",
-        title: "Atendimento indisponivel",
-        message: "O numero da atendente selecionada e invalido.",
+        title: "Atendimento indisponível",
+        message: "O número da atendente selecionada é inválido.",
       });
       return;
     }
@@ -69,7 +69,7 @@ export default function WhatsAppFloatWidget() {
     openWhatsAppLink(link);
     showToast({
       type: "success",
-      title: "Atendimento rapido",
+      title: "Atendimento rápido",
       message: `Abrindo WhatsApp com ${attendant.name}.`,
     });
     closeWhatsAppPicker();

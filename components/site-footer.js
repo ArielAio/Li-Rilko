@@ -17,10 +17,7 @@ export default function SiteFooter() {
       <div className="shell-container">
         <div className="vg-footer-brand">
           <span className="brand-mark">Li Rilko</span>
-          <p>
-            Catalogo organizado para apresentar melhor os produtos, facilitar comparacao e conduzir o fechamento com
-            atendimento humano no WhatsApp.
-          </p>
+          <p>Catálogo com pedido rápido pelo WhatsApp.</p>
           <TransitionLink href="/contato" className="footer-contact-link">
             Falar com a loja
           </TransitionLink>
@@ -28,9 +25,9 @@ export default function SiteFooter() {
 
         <div className="vg-footer-grid">
           <div className="vg-footer-col">
-            <strong>Links rapidos</strong>
-            <TransitionLink href="/">Inicio</TransitionLink>
-            <TransitionLink href="/catalogo">Catalogo</TransitionLink>
+            <strong>Links rápidos</strong>
+            <TransitionLink href="/">Início</TransitionLink>
+            <TransitionLink href="/catalogo">Catálogo</TransitionLink>
             <TransitionLink href="/carrinho">Carrinho</TransitionLink>
             <TransitionLink href="/contato">Contato</TransitionLink>
           </div>

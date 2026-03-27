@@ -12,7 +12,7 @@ import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp
 
 export default function CartPage() {
   const { attendants, siteSettings } = useCatalog();
-  const { items, total, totalCash, totalInstallment, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
+  const { items, totalCash, totalInstallment, count, addItem, decreaseItem, removeItem, clearCart } = useCart();
   const { showToast } = useToast();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
@@ -79,8 +79,8 @@ export default function CartPage() {
         <div className="shell-container">
           <header className="vg-cart-header">
             <div>
-              <h1 className="vg-cart-title">Revise seu Pedido</h1>
-              <p className="cart-page-subtitle">Confira itens, ajuste quantidades e envie o resumo para atendimento no WhatsApp.</p>
+              <h1 className="vg-cart-title">Revise seu pedido</h1>
+              <p className="cart-page-subtitle">Ajuste os itens e envie o pedido no WhatsApp.</p>
             </div>
             {count > 0 && (
               <button type="button" className="vg-filter-clear" onClick={clearCart}>
@@ -94,9 +94,9 @@ export default function CartPage() {
               {items.length === 0 ? (
                 <div className="vg-empty-state">
                   <p>Seu carrinho está vazio.</p>
-                  <span>Explore a vitrine, adicione itens e volte aqui para finalizar.</span>
+                  <span>Adicione produtos para continuar.</span>
                   <TransitionLink className="btn btn-primary" href="/catalogo">
-                    Explorar Catálogo
+                    Explorar catálogo
                   </TransitionLink>
                 </div>
               ) : (
@@ -152,7 +152,7 @@ export default function CartPage() {
                   <strong>{count}</strong>
                 </div>
                 <div className="cart-summary-row">
-                  <span>Total a vista</span>
+                  <span>Total à vista</span>
                   <strong>{formatCurrency(totalCash)}</strong>
                 </div>
                 <div className="cart-summary-row">
@@ -160,10 +160,10 @@ export default function CartPage() {
                   <strong>{formatCurrency(totalInstallment)}</strong>
                 </div>
                 <div className="cart-summary-note">
-                  O resumo abaixo sera enviado para a loja no WhatsApp para acelerar o atendimento.
+                  Este resumo será enviado para a loja no WhatsApp.
                 </div>
                 <div className="cart-message-preview">
-                  <pre className="vg-mock-text">{message || "Seu carrinho esta vazio."}</pre>
+                  <pre className="vg-mock-text">{message || "Seu carrinho está vazio."}</pre>
                 </div>
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function CartPage() {
         <div className="vg-cart-sticky-bottom">
           <div className="shell-container vg-cart-sticky-inner">
             <div className="vg-cart-subtotal">
-              <span>Total a vista</span>
+              <span>Total à vista</span>
               <strong>{formatCurrency(totalCash)}</strong>
             </div>
             <button className="btn btn-primary vg-checkout-btn" onClick={handleCheckoutClick}>

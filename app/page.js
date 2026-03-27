@@ -14,7 +14,7 @@ function buildCatalogLink(categoryName, subName) {
 }
 
 export default function HomePage() {
-  const { categories, publicProducts, homeHighlights } = useCatalog();
+  const { categories, publicProducts } = useCatalog();
 
   const categoryCards = categories.map((category) => ({
     ...category,
@@ -26,16 +26,13 @@ export default function HomePage() {
       <section className="home-hero-section">
         <div className="shell-container home-hero-grid reveal">
           <div className="home-hero-copy">
-            <span className="home-kicker">Catalogo organizado para vender melhor</span>
-            <h1>Produtos por categoria, carrinho objetivo e fechamento direto no WhatsApp.</h1>
-            <p>
-              A Li Rilko apresenta a vitrine com mais clareza, menos ruido visual e uma jornada simples para o cliente
-              descobrir, comparar e pedir atendimento.
-            </p>
+            <span className="home-kicker">Catálogo Li Rilko</span>
+            <h1>Encontre seu produto e finalize pelo WhatsApp.</h1>
+            <p>Categorias claras, carrinho rápido e atendimento direto com a loja.</p>
 
             <div className="home-hero-actions">
               <TransitionLink className="btn btn-primary" href="/catalogo">
-                Ver catalogo
+                Ver catálogo
               </TransitionLink>
               <TransitionLink className="btn btn-surface" href="/contato">
                 Falar com a loja
@@ -43,9 +40,9 @@ export default function HomePage() {
             </div>
 
             <div className="home-proof-list">
-              <span>Atendimento humano</span>
-              <span>Pedido organizado no carrinho</span>
-              <span>Finalizacao por WhatsApp</span>
+              <span>Categorias organizadas</span>
+              <span>Carrinho simples</span>
+              <span>Pedido no WhatsApp</span>
             </div>
           </div>
 
@@ -65,27 +62,9 @@ export default function HomePage() {
               </div>
               <div className="home-metric-card">
                 <strong>WhatsApp</strong>
-                <span>canal de fechamento</span>
+                <span>atendimento direto</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-highlight-section">
-        <div className="shell-container">
-          <div className="home-section-head reveal">
-            <span className="home-kicker">Por que a experiencia melhorou</span>
-            <h2>Uma vitrine mais clara para o cliente e mais operavel para a loja.</h2>
-          </div>
-
-          <div className="home-highlight-grid">
-            {homeHighlights.map((item) => (
-              <article key={item.title} className="home-highlight-card reveal">
-                <strong>{item.title}</strong>
-                <p>{item.text}</p>
-              </article>
-            ))}
           </div>
         </div>
       </section>
@@ -93,8 +72,8 @@ export default function HomePage() {
       <section className="vg-section vg-categories-section">
         <div className="shell-container">
           <div className="home-section-head reveal">
-            <span className="home-kicker">Navegacao por categoria</span>
-            <h2>Entre pelo caminho certo e chegue mais rapido ao produto.</h2>
+            <span className="home-kicker">Categorias</span>
+            <h2>Acesse o catálogo pelo caminho mais rápido.</h2>
           </div>
 
           <div className="home-category-grid">
@@ -109,7 +88,7 @@ export default function HomePage() {
                   <TransitionLink className="home-category-title" href={buildCatalogLink(category.name)}>
                     {category.name}
                   </TransitionLink>
-                  <p className="home-category-description">Subcategorias mais acessadas:</p>
+                  <p className="home-category-description">Subcategorias</p>
                   <ul className="home-category-subs">
                     {category.subs.slice(0, 3).map((sub) => (
                       <li key={sub}>
@@ -130,9 +109,8 @@ export default function HomePage() {
       <section className="vg-section vg-destaques-section">
         <div className="shell-container">
           <div className="home-section-head center reveal">
-            <span className="home-kicker">Vitrine principal</span>
-            <h2>Produtos em evidencia para acelerar a decisao de compra.</h2>
-            <p>Uma amostra da vitrine atual com acesso direto ao detalhe do item e ao carrinho.</p>
+            <span className="home-kicker">Destaques</span>
+            <h2>Produtos em destaque</h2>
           </div>
 
           <div className="product-grid">
@@ -145,28 +123,7 @@ export default function HomePage() {
 
           <div className="vg-center-action">
             <TransitionLink className="btn btn-surface" href="/catalogo">
-              Ver catalogo completo
-            </TransitionLink>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-process-section">
-        <div className="shell-container reveal">
-          <div className="home-process-card">
-            <div>
-              <span className="home-kicker">Como funciona</span>
-              <h3>Escolha no site, revise no carrinho e feche com a loja no WhatsApp.</h3>
-            </div>
-
-            <div className="home-process-steps">
-              <span>1. Navegue por categoria</span>
-              <span>2. Adicione os itens ao pedido</span>
-              <span>3. Finalize com atendimento humano</span>
-            </div>
-
-            <TransitionLink className="btn btn-whatsapp" href="/contato">
-              Iniciar atendimento
+              Ver catálogo completo
             </TransitionLink>
           </div>
         </div>
