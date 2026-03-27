@@ -632,7 +632,23 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
 export function useCatalog() {
   const context = useContext(CatalogContext);
   if (!context) {
-    throw new Error("useCatalog precisa ser usado dentro de CatalogProvider.");
+    console.warn("useCatalog foi chamado fora de CatalogProvider. Usando fallback.");
+    return {
+      adminCategories: [],
+      attendants: [],
+      categories: [],
+      contactChannels: [],
+      homeHighlights: [],
+      products: [],
+      publicProducts: [],
+      productMap: new Map(),
+      publicProductMap: new Map(),
+      isAdmin: false,
+      isHydrated: false,
+      addItem: () => false,
+      openEditModal: () => {},
+      openWhatsAppPicker: () => {},
+    };
   }
   return context;
 }
