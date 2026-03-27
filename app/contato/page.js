@@ -10,6 +10,21 @@ import { resolveAttendantFlow } from "@/lib/attendants-data";
 import { buildAttendantWhatsAppLink, buildWhatsAppMessage } from "@/lib/store-utils";
 import { openWhatsAppLink, resolveWhatsAppAttendantAction } from "@/lib/whatsapp-attendant-flow";
 
+function formatPhoneLabel(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (digits.length === 13) {
+    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  }
+
+  if (digits.length === 12) {
+    return `+55 (${digits.slice(2, 4)}) ${digits.slice(4, 8)}-${digits.slice(8)}`;
+  }
+
+  return phone;
+}
+
 export default function ContactPage() {
   const { attendants, contactChannels, siteSettings } = useCatalog();
   const { items } = useCart();
@@ -17,13 +32,15 @@ export default function ContactPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
   const attendantFlow = resolveAttendantFlow(attendants);
-  const message = buildWhatsAppMessage(items, siteSettings);
+  const message =
+    items.length > 0
+      ? buildWhatsAppMessage(items, siteSettings)
+      : "Olá! Vim pelo site da Li Rilko e gostaria de atendimento para tirar dúvidas e finalizar uma compra.";
 
   function handleStartContact(event) {
     event.preventDefault();
 
-    const contactMessage = buildWhatsAppMessage(items, siteSettings);
-    const action = resolveWhatsAppAttendantAction(attendants, contactMessage);
+    const action = resolveWhatsAppAttendantAction(attendants, message);
 
     if (action.mode === "blocked") {
       showToast({
@@ -35,7 +52,7 @@ export default function ContactPage() {
     }
 
     if (action.mode === "picker") {
-      setPendingMessage(contactMessage);
+      setPendingMessage(message);
       setIsPickerOpen(true);
       return;
     }
@@ -80,7 +97,7 @@ export default function ContactPage() {
         <div className="shell-container">
           <p className="kicker">Contato</p>
           <h1>Atendimento direto para tirar dúvidas e finalizar pedidos.</h1>
-          <p>Fale com nossa equipe e receba suporte rápido para escolher o melhor produto.</p>
+          <p>Fale com a equipe da loja, confirme disponibilidade e finalize com atendimento humano no WhatsApp.</p>
         </div>
       </section>
 
@@ -89,14 +106,24 @@ export default function ContactPage() {
           <article className="contact-main-card reveal">
             <h2>Fale agora com a Li Rilko</h2>
             <p>
-              O WhatsApp é nosso principal canal de atendimento. Se você já montou seu carrinho, o resumo do pedido já
+              O WhatsApp é o principal canal de atendimento comercial. Se você já montou seu carrinho, o resumo do pedido
               segue automaticamente na mensagem.
             </p>
-            <p>Com duas ou mais atendentes disponíveis, você escolhe com quem falar em cada clique.</p>
-            <a className="btn btn-whatsapp" href="#" onClick={handleStartContact}>
+            <p>
+              Você pode usar esta tela para falar com a loja mesmo antes de escolher um item. Quando houver mais de uma
+              atendente ativa, você escolhe com quem deseja falar.
+            </p>
+
+            <a className="btn btn-whatsapp contact-primary-button" href="#" onClick={handleStartContact}>
               <IconWhatsApp className="icon" />
               {attendantFlow.mode === "blocked" ? "WhatsApp indisponível" : "Iniciar conversa no WhatsApp"}
             </a>
+
+            <div className="contact-benefit-list">
+              <span>Atendimento humano</span>
+              <span>Confirmação de disponibilidade</span>
+              <span>Fechamento pelo WhatsApp</span>
+            </div>
           </article>
 
           <aside className="contact-side-card reveal delay-1">
@@ -111,7 +138,7 @@ export default function ContactPage() {
                       <strong>{attendant.name}</strong>
                       {link ? (
                         <a href={link} target="_blank" rel="noreferrer">
-                          {attendant.phone}
+                          {formatPhoneLabel(attendant.phone)}
                         </a>
                       ) : (
                         <span>Número inválido</span>

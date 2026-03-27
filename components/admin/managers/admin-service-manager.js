@@ -22,6 +22,15 @@ function createChannelDraft(channel, index) {
   };
 }
 
+function createEmptyChannel() {
+  return {
+    id: "",
+    title: "",
+    value: "",
+    href: "#",
+  };
+}
+
 function createSettingsDraft(settings) {
   return {
     whatsappIntro: settings?.whatsappIntro || "",
@@ -62,6 +71,8 @@ export default function AdminServiceManager() {
   const [attendantsDraft, setAttendantsDraft] = useState([createEmptyAttendant()]);
   const [isLoadingAttendants, setIsLoadingAttendants] = useState(false);
   const [isSavingAttendants, setIsSavingAttendants] = useState(false);
+  const [isSavingChannels, setIsSavingChannels] = useState(false);
+  const [isSavingMessages, setIsSavingMessages] = useState(false);
 
   useEffect(() => {
     setChannelDrafts(contactChannels.map(createChannelDraft));
@@ -76,30 +87,34 @@ export default function AdminServiceManager() {
     setAttendantsDraft(nextDrafts.length > 0 ? nextDrafts : [createEmptyAttendant()]);
   }, [attendants]);
 
-  function handleSaveMessages(event) {
+  async function handleSaveMessages(event) {
     event.preventDefault();
 
-    void (async () => {
-      const result = await saveSiteSettings({
-        whatsappIntro: settingsDraft.whatsappIntro,
-        whatsappFloatingMessage: settingsDraft.whatsappFloatingMessage,
-      });
+    if (isSavingMessages) {
+      return;
+    }
 
-      if (!result.ok) {
-        showToast({
-          type: "warning",
-          title: "Erro ao salvar mensagens",
-          message: result.error || "Não foi possível salvar as mensagens agora.",
-        });
-        return;
-      }
+    setIsSavingMessages(true);
+    const result = await saveSiteSettings({
+      whatsappIntro: settingsDraft.whatsappIntro,
+      whatsappFloatingMessage: settingsDraft.whatsappFloatingMessage,
+    });
+    setIsSavingMessages(false);
 
+    if (!result.ok) {
       showToast({
-        type: "success",
-        title: "Mensagens atualizadas",
-        message: "Textos padrão do WhatsApp foram salvos.",
+        type: "warning",
+        title: "Erro ao salvar mensagens",
+        message: result.error || "Nao foi possivel salvar as mensagens agora.",
       });
-    })();
+      return;
+    }
+
+    showToast({
+      type: "success",
+      title: "Mensagens atualizadas",
+      message: "Textos padrao do WhatsApp foram salvos.",
+    });
   }
 
   async function handleRefreshAttendants() {
@@ -111,7 +126,7 @@ export default function AdminServiceManager() {
       showToast({
         type: "warning",
         title: "Falha ao atualizar",
-        message: result.error || "Não foi possível atualizar a lista agora. Tente novamente em instantes.",
+        message: result.error || "Nao foi possivel atualizar a lista agora. Tente novamente em instantes.",
       });
       return;
     }
@@ -138,7 +153,7 @@ export default function AdminServiceManager() {
       showToast({
         type: "warning",
         title: "Falha ao salvar atendentes",
-        message: result.error || "Não foi possível salvar os atendentes agora.",
+        message: result.error || "Nao foi possivel salvar os atendentes agora.",
       });
       return;
     }
@@ -147,6 +162,33 @@ export default function AdminServiceManager() {
       type: "success",
       title: "Atendentes salvos",
       message: "Os atendentes foram atualizados com sucesso.",
+    });
+  }
+
+  async function handleSaveChannels(event) {
+    event.preventDefault();
+
+    if (isSavingChannels) {
+      return;
+    }
+
+    setIsSavingChannels(true);
+    const result = await saveContactChannels(channelDrafts);
+    setIsSavingChannels(false);
+
+    if (!result.ok) {
+      showToast({
+        type: "warning",
+        title: "Falha ao salvar canais",
+        message: result.error || "Nao foi possivel salvar os canais agora.",
+      });
+      return;
+    }
+
+    showToast({
+      type: "success",
+      title: "Canais atualizados",
+      message: "Os canais exibidos na vitrine foram atualizados.",
     });
   }
 
@@ -159,6 +201,19 @@ export default function AdminServiceManager() {
               [field]: field === "phone" ? formatBrazilPhoneInput(value) : value,
             }
           : attendant,
+      ),
+    );
+  }
+
+  function updateChannelField(index, field, value) {
+    setChannelDrafts((prev) =>
+      prev.map((channel, rowIndex) =>
+        rowIndex === index
+          ? {
+              ...channel,
+              [field]: value,
+            }
+          : channel,
       ),
     );
   }
@@ -186,12 +241,20 @@ export default function AdminServiceManager() {
     });
   }
 
+  function addChannel() {
+    setChannelDrafts((prev) => [...prev, createEmptyChannel()]);
+  }
+
+  function removeChannel(index) {
+    setChannelDrafts((prev) => prev.filter((_, rowIndex) => rowIndex !== index));
+  }
+
   return (
     <div className="admin-manager">
       <div className="admin-manager-toolbar">
         <div>
           <h3>Atendimento</h3>
-          <p>Gerencie atendentes e ajuste mensagens/canais exibidos no site.</p>
+          <p>Gerencie atendentes, canais exibidos na vitrine e mensagens do WhatsApp.</p>
         </div>
         <div className="admin-manager-toolbar-actions">
           <button type="button" className="btn btn-surface" onClick={handleRefreshAttendants} disabled={isLoadingAttendants}>
@@ -203,7 +266,7 @@ export default function AdminServiceManager() {
       <section className="admin-manager-panel">
         <div className="admin-manager-title-row">
           <h4>Atendentes no WhatsApp</h4>
-          <small>Com 2 ou mais atendentes, o cliente escolhe a atendente antes de abrir o WhatsApp.</small>
+          <small>Com 2 ou mais atendentes, o cliente escolhe com quem deseja falar antes de abrir o WhatsApp.</small>
         </div>
 
         <form className="admin-form" onSubmit={handleSaveAttendants}>
@@ -221,7 +284,7 @@ export default function AdminServiceManager() {
                 </label>
 
                 <label className="admin-field" style={{ margin: 0 }}>
-                  <span>Número com DDD</span>
+                  <span>Numero com DDD</span>
                   <input
                     type="text"
                     inputMode="tel"
@@ -257,11 +320,7 @@ export default function AdminServiceManager() {
           ))}
 
           <div className="admin-manager-footer-actions">
-            <button
-              type="button"
-              className="btn btn-surface"
-              onClick={() => setAttendantsDraft((prev) => [...prev, createEmptyAttendant()])}
-            >
+            <button type="button" className="btn btn-surface" onClick={() => setAttendantsDraft((prev) => [...prev, createEmptyAttendant()])}>
               Adicionar atendente
             </button>
             <button type="submit" className="btn btn-primary" disabled={isSavingAttendants}>
@@ -273,12 +332,74 @@ export default function AdminServiceManager() {
 
       <section className="admin-manager-panel" style={{ marginTop: "2rem" }}>
         <div className="admin-manager-title-row">
-          <h4>Padrão de mensagens no WhatsApp</h4>
+          <h4>Canais exibidos na vitrine</h4>
+          <small>Esses dados aparecem nas telas publicas e no rodape.</small>
+        </div>
+
+        <form className="admin-form" onSubmit={handleSaveChannels}>
+          {channelDrafts.map((channel, index) => (
+            <div key={channel.id || `channel-${index}`} className="admin-channel-block">
+              <div className="admin-manager-split">
+                <label className="admin-field" style={{ margin: 0 }}>
+                  <span>Titulo</span>
+                  <input
+                    type="text"
+                    value={channel.title}
+                    placeholder="Instagram"
+                    onChange={(event) => updateChannelField(index, "title", event.target.value)}
+                  />
+                </label>
+
+                <label className="admin-field" style={{ margin: 0 }}>
+                  <span>Valor</span>
+                  <input
+                    type="text"
+                    value={channel.value}
+                    placeholder="@lirilkoimportscentro"
+                    onChange={(event) => updateChannelField(index, "value", event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="admin-manager-split single-column">
+                <label className="admin-field" style={{ margin: 0 }}>
+                  <span>Link</span>
+                  <input
+                    type="text"
+                    value={channel.href}
+                    placeholder="https://..."
+                    onChange={(event) => updateChannelField(index, "href", event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="admin-product-actions">
+                <button type="button" className="btn btn-surface" onClick={() => removeChannel(index)}>
+                  Remover canal
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <div className="admin-manager-footer-actions">
+            <button type="button" className="btn btn-surface" onClick={addChannel}>
+              Adicionar canal
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={isSavingChannels}>
+              {isSavingChannels ? "Salvando..." : "Salvar canais"}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="admin-manager-panel" style={{ marginTop: "2rem" }}>
+        <div className="admin-manager-title-row">
+          <h4>Padrao de mensagens no WhatsApp</h4>
         </div>
 
         <form className="admin-form" onSubmit={handleSaveMessages}>
           <label className="admin-field">
-            <span>Mensagem de finalização do carrinho</span>
+            <span>Mensagem de finalizacao do carrinho</span>
             <textarea
               rows={4}
               value={settingsDraft.whatsappIntro}
@@ -287,7 +408,7 @@ export default function AdminServiceManager() {
           </label>
 
           <label className="admin-field">
-            <span>Mensagem do botão flutuante</span>
+            <span>Mensagem do botao flutuante</span>
             <textarea
               rows={3}
               value={settingsDraft.whatsappFloatingMessage}
@@ -295,8 +416,8 @@ export default function AdminServiceManager() {
             />
           </label>
 
-          <button type="submit" className="btn btn-primary">
-            Salvar mensagens
+          <button type="submit" className="btn btn-primary" disabled={isSavingMessages}>
+            {isSavingMessages ? "Salvando..." : "Salvar mensagens"}
           </button>
         </form>
       </section>

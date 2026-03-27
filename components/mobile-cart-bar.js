@@ -10,17 +10,21 @@ export default function MobileCartBar() {
   const pathname = usePathname();
   const { count, totalCash } = useCart();
 
-  if (count === 0 || pathname === "/carrinho") {
+  if (
+    count === 0 ||
+    pathname === "/carrinho" ||
+    pathname?.startsWith("/produto/") ||
+    pathname?.startsWith("/contato") ||
+    pathname?.startsWith("/admin")
+  ) {
     return null;
   }
 
   return (
     <TransitionLink href="/carrinho" className="mobile-cart-bar" aria-label={`Abrir carrinho com ${count} itens`}>
       <IconCart className="icon" />
-      <span>
-        {count} item(ns) • {formatCurrency(totalCash)}
-      </span>
-      <strong>Ver carrinho</strong>
+      <span>{count} item(ns) no pedido • {formatCurrency(totalCash)}</span>
+      <strong>Revisar</strong>
     </TransitionLink>
   );
 }

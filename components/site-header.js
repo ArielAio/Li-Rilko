@@ -6,7 +6,6 @@ import { IconCart, IconChevronDown, IconClose, IconMenu } from "@/components/ico
 import { useCatalog } from "@/components/providers/catalog-provider";
 import { useCart } from "@/components/providers/cart-provider";
 import TransitionLink from "@/components/transition-link";
-import { formatCurrency } from "@/lib/store-utils";
 
 const navItems = [
   { href: "/", label: "Início" },
@@ -28,7 +27,7 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
   const { categories } = useCatalog();
-  const { count, totalCash } = useCart();
+  const { count } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

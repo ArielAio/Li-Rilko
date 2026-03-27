@@ -19,9 +19,9 @@ const bodyFont = Manrope({
 });
 
 export const metadata = {
-  title: "Li Rilko Imports | Catálogo com WhatsApp",
+  title: "Li Rilko Imports | Catalogo com WhatsApp",
   description:
-    "Loja Li Rilko: catálogo por categorias, carrinho multi-itens e finalização rápida via WhatsApp.",
+    "Loja Li Rilko: catalogo por categorias, carrinho multi-itens e finalizacao rapida via WhatsApp.",
 };
 
 export default async function RootLayout({ children }) {
