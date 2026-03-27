@@ -338,6 +338,27 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
     return okResult();
   }, []);
 
+  const removeProducts = useCallback(async (productIds) => {
+    const result = await requestJson(
+      "/api/admin/products/bulk-delete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productIds }),
+      },
+      "NÃ£o foi possÃ­vel remover os produtos selecionados.",
+    );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult({ removedCount: Number(result.payload?.removedCount ?? 0) });
+  }, []);
+
   const toggleProductVisibility = useCallback(
     async (productId) => {
       const product = productMap.get(productId);
@@ -510,6 +531,27 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
     return okResult();
   }, []);
 
+  const importProductsCsv = useCallback(async (file) => {
+    const formData = new FormData();
+    formData.set("file", file);
+
+    const result = await requestJson(
+      "/api/admin/products/import-csv",
+      {
+        method: "POST",
+        body: formData,
+      },
+      "Nao foi possivel importar o CSV.",
+    );
+
+    if (!result.ok) {
+      return result;
+    }
+
+    setCatalog(normalizeCatalogSnapshot(result.payload?.catalog));
+    return okResult({ summary: result.payload?.summary || null });
+  }, []);
+
   const value = useMemo(
     () => ({
       isAdmin,
@@ -534,6 +576,7 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
       addProduct,
       updateProduct,
       removeProduct,
+      removeProducts,
       toggleProductVisibility,
       toggleProductAvailability,
       saveCategories,
@@ -542,6 +585,7 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
       saveAttendants,
       uploadProductImage,
       deleteProductImage,
+      importProductsCsv,
       refreshAdminCatalog,
     }),
     [
@@ -563,12 +607,14 @@ export function CatalogProvider({ children, initialCatalog, isAdmin = false }) {
       catalog.products,
       catalog.siteSettings,
       deleteProductImage,
+      importProductsCsv,
       isHydrated,
       productMap,
       publicProductMap,
       publicProducts,
       refreshAdminCatalog,
       removeProduct,
+      removeProducts,
       saveAttendants,
       saveCategories,
       saveContactChannels,

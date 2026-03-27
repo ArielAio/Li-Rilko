@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { IconSearch } from "@/components/icons";
 import ProductCard from "@/components/product-card";
 import { useCatalog } from "@/components/providers/catalog-provider";
@@ -8,8 +9,8 @@ import TransitionLink from "@/components/transition-link";
 
 const SORT_OPTIONS = [
   { value: "relevancia", label: "Destaques" },
-  { value: "menor-preco", label: "Menor Preço" },
-  { value: "maior-preco", label: "Maior Preço" },
+  { value: "menor-preco", label: "Menor preço" },
+  { value: "maior-preco", label: "Maior preço" },
   { value: "nome-az", label: "Nome: A-Z" },
   { value: "nome-za", label: "Nome: Z-A" },
 ];
@@ -19,13 +20,46 @@ function normalizeSort(value) {
   return allowed.has(value) ? value : "relevancia";
 }
 
-export default function CatalogPageContent({ initialCategory = "Todos", initialSub = "", initialSort = "relevancia" }) {
-  const { categories, publicProducts } = useCatalog();
+function buildCatalogUrl(pathname, { category, sub, sort, search }) {
+  const params = new URLSearchParams();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  if (category && category !== "Todos") {
+    params.set("categoria", category);
+  }
+
+  if (sub) {
+    params.set("sub", sub);
+  }
+
+  if (sort && sort !== "relevancia") {
+    params.set("ordem", sort);
+  }
+
+  if (search) {
+    params.set("busca", search);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `${pathname}?${queryString}` : pathname;
+}
+
+export default function CatalogPageContent({
+  initialCategory = "Todos",
+  initialSub = "",
+  initialSort = "relevancia",
+  initialSearch = "",
+}) {
+  const { categories, publicProducts } = useCatalog();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [urlSearchTerm, setUrlSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedSub, setSelectedSub] = useState(initialSub);
   const [sortBy, setSortBy] = useState(normalizeSort(initialSort));
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => {
     const categoryExists = categories.some((category) => category.name === initialCategory);
@@ -47,6 +81,19 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
     setSortBy(normalizeSort(initialSort));
   }, [initialSort]);
 
+  useEffect(() => {
+    setSearchTerm(initialSearch);
+    setUrlSearchTerm(initialSearch);
+  }, [initialSearch]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setUrlSearchTerm(searchTerm);
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
+
   const selectedCategoryData = useMemo(() => {
     if (selectedCategory === "Todos") return null;
     return categories.find((category) => category.name === selectedCategory) || null;
@@ -55,7 +102,7 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
   const availableSubs = useMemo(() => selectedCategoryData?.subs || [], [selectedCategoryData]);
 
   const filteredProducts = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
+    const query = deferredSearchTerm.trim().toLowerCase();
 
     let products = publicProducts.filter((product) => {
       if (selectedCategory !== "Todos" && product.category !== selectedCategory) return false;
@@ -87,9 +134,38 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
     }
 
     return products;
-  }, [publicProducts, searchTerm, selectedCategory, selectedSub, sortBy]);
+  }, [deferredSearchTerm, publicProducts, selectedCategory, selectedSub, sortBy]);
 
-  const hasActiveFilters = selectedCategory !== "Todos" || Boolean(selectedSub) || sortBy !== "relevancia" || Boolean(searchTerm.trim());
+  const categoryCounts = useMemo(
+    () =>
+      categories.map((category) => ({
+        name: category.name,
+        count: publicProducts.filter((product) => product.category === category.name).length,
+      })),
+    [categories, publicProducts],
+  );
+
+  const hasActiveFilters =
+    selectedCategory !== "Todos" || Boolean(selectedSub) || sortBy !== "relevancia" || Boolean(searchTerm.trim());
+
+  useEffect(() => {
+    const nextUrl = buildCatalogUrl(pathname, {
+      category: selectedCategory,
+      sub: selectedSub,
+      sort: sortBy,
+      search: urlSearchTerm.trim(),
+    });
+
+    const currentUrl = searchParams?.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+
+    if (nextUrl === currentUrl) {
+      return;
+    }
+
+    startTransition(() => {
+      router.replace(nextUrl, { scroll: false });
+    });
+  }, [pathname, router, searchParams, selectedCategory, selectedSub, sortBy, urlSearchTerm]);
 
   function clearFilters() {
     setSearchTerm("");
@@ -107,12 +183,11 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
     <>
       <section className="vg-catalog-header">
         <div className="shell-container">
-          <h1 className="vg-catalog-title">
-            Catálogo<br/><span className="accent">Li Rilko</span>
-          </h1>
-          <p className="vg-catalog-desc">
-            Essenciais com curadoria para a vanguarda moderna. Estética de precisão alinhada à qualidade impecável.
-          </p>
+          <div className="catalog-hero-copy">
+            <span className="catalog-kicker">Catálogo</span>
+            <h1 className="vg-catalog-title">Catálogo Li Rilko</h1>
+            <p className="vg-catalog-desc">Busque, filtre e monte seu pedido.</p>
+          </div>
         </div>
       </section>
 
@@ -122,17 +197,19 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
             <IconSearch className="icon" />
             <input
               type="text"
-              placeholder="Buscar produtos..."
+              placeholder="Buscar por produto, categoria ou característica"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
           </div>
 
           <div className="vg-sort-bar">
-            <span>ORDENAR POR</span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <span>Ordenar por</span>
+            <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
               ))}
             </select>
           </div>
@@ -143,9 +220,9 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
               className={`vg-pill ${selectedCategory === "Todos" ? "active" : ""}`}
               onClick={() => handleCategorySelect("Todos")}
             >
-              All Items
+              Todos os itens
             </button>
-            {categories.map((category) => (
+            {categoryCounts.map((category) => (
               <button
                 type="button"
                 key={category.name}
@@ -153,28 +230,56 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
                 onClick={() => handleCategorySelect(category.name)}
               >
                 {category.name}
+                <span>{category.count}</span>
               </button>
             ))}
           </div>
 
+          {selectedCategory !== "Todos" && availableSubs.length > 0 && (
+            <div className="catalog-subfilters">
+              <span>Subcategorias</span>
+              <div className="catalog-subfilter-list">
+                <button
+                  type="button"
+                  className={`catalog-subfilter ${!selectedSub ? "active" : ""}`}
+                  onClick={() => setSelectedSub("")}
+                >
+                  Todos
+                </button>
+                {availableSubs.map((sub) => (
+                  <button
+                    type="button"
+                    key={sub}
+                    className={`catalog-subfilter ${selectedSub === sub ? "active" : ""}`}
+                    onClick={() => setSelectedSub(sub)}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {hasActiveFilters && (
             <div className="vg-active-filters">
               {selectedCategory !== "Todos" && (
-                <button className="vg-filter-tag" onClick={() => { setSelectedCategory("Todos"); setSelectedSub(""); }}>
-                  CATEGORIA: {selectedCategory.toUpperCase()} ×
+                <button type="button" className="vg-filter-tag" onClick={() => { setSelectedCategory("Todos"); setSelectedSub(""); }}>
+                  Categoria: {selectedCategory} x
                 </button>
               )}
               {selectedSub && (
-                <button className="vg-filter-tag" onClick={() => setSelectedSub("")}>
-                  SUB: {selectedSub.toUpperCase()} ×
+                <button type="button" className="vg-filter-tag" onClick={() => setSelectedSub("")}>
+                  Subcategoria: {selectedSub} x
                 </button>
               )}
               {searchTerm.trim() && (
-                <button className="vg-filter-tag" onClick={() => setSearchTerm("")}>
-                  BUSCA: {searchTerm.trim().toUpperCase()} ×
+                <button type="button" className="vg-filter-tag" onClick={() => setSearchTerm("")}>
+                  Busca: {searchTerm.trim()} x
                 </button>
               )}
-              <button className="vg-filter-clear" onClick={clearFilters}>Limpar tudo</button>
+              <button type="button" className="vg-filter-clear" onClick={clearFilters}>
+                Limpar tudo
+              </button>
             </div>
           )}
         </div>
@@ -182,10 +287,27 @@ export default function CatalogPageContent({ initialCategory = "Todos", initialS
 
       <section className="vg-catalog-results">
         <div className="shell-container">
+          <div className="catalog-results-head">
+            <div>
+              <strong>{filteredProducts.length} produtos</strong>
+              <p>
+                {selectedCategory === "Todos"
+                  ? "Todos os produtos disponíveis."
+                  : `Mostrando itens de ${selectedCategory}${selectedSub ? ` / ${selectedSub}` : ""}.`}
+              </p>
+            </div>
+            <TransitionLink className="catalog-contact-link" href="/contato">
+              Atendimento
+            </TransitionLink>
+          </div>
+
           {filteredProducts.length === 0 ? (
             <div className="vg-empty-state">
               <p>Nenhum produto encontrado para os filtros atuais.</p>
-              <button className="btn btn-primary" onClick={clearFilters}>Limpar Filtros</button>
+              <span>Remova os filtros para ver mais opções.</span>
+              <button type="button" className="btn btn-primary" onClick={clearFilters}>
+                Limpar filtros
+              </button>
             </div>
           ) : (
             <div className="vg-stacked-grid">

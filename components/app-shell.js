@@ -12,14 +12,23 @@ export default function AppShell({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
 
+  if (isAdminRoute) {
+    return (
+      <>
+        <main className="admin-route-shell">{children}</main>
+        <AdminProductModal />
+      </>
+    );
+  }
+
   return (
     <>
       <SiteHeader />
-      <main className={`app-shell ${!isAdminRoute ? "has-bottom-nav" : ""}`}>{children}</main>
+      <main className="app-shell has-bottom-nav">{children}</main>
       <SiteFooter />
-      {!isAdminRoute && <MobileCartBar />}
-      {!isAdminRoute && <WhatsAppFloatWidget />}
-      {!isAdminRoute && <BottomTabBar />}
+      <MobileCartBar />
+      <WhatsAppFloatWidget />
+      <BottomTabBar />
       <AdminProductModal />
     </>
   );

@@ -28,9 +28,11 @@ export default function ProductPage() {
     return (
       <section className="vg-product-page-empty">
         <div className="shell-container text-center">
-          <h1>Product Not Found</h1>
-          <p>This item is currently unavailable.</p>
-          <TransitionLink href="/catalogo" className="btn btn-primary">Return to Collection</TransitionLink>
+          <h1>Produto não encontrado</h1>
+          <p>Esse item não está disponível no catálogo atual.</p>
+          <TransitionLink href="/catalogo" className="btn btn-primary">
+            Voltar ao catálogo
+          </TransitionLink>
         </div>
       </section>
     );
@@ -44,11 +46,11 @@ export default function ProductPage() {
       <div className="shell-container vg-product-grid">
         <div className="vg-product-gallery-col reveal">
           <div className="vg-product-main-img" style={{ position: "relative" }}>
-            <span className="vg-gallery-badge">Produto Exclusivo</span>
+            <span className="vg-gallery-badge">{product.isAvailable === false ? "Produto indisponível" : product.badge}</span>
             {isAdmin && (
-              <button 
-                type="button" 
-                className="vg-inline-edit-btn" 
+              <button
+                type="button"
+                className="vg-inline-edit-btn"
                 aria-label="Editar Produto"
                 onClick={() => openEditModal(product.id)}
                 style={{ top: "1rem", right: "1rem" }}
@@ -77,7 +79,7 @@ export default function ProductPage() {
                 className={`vg-thumb ${selectedImage === imageUrl ? "active" : ""}`}
                 onClick={() => setSelectedImage(imageUrl)}
               >
-                <img src={imageUrl} alt={`Thumbnail ${idx + 1}`} />
+                <img src={imageUrl} alt={`Miniatura ${idx + 1}`} />
               </button>
             ))}
           </div>
@@ -87,52 +89,71 @@ export default function ProductPage() {
           <div className="vg-product-breadcrumbs">
             <TransitionLink href="/">Home</TransitionLink>
             <span>/</span>
-            <TransitionLink href="/catalogo">{product.category}</TransitionLink>
+            <TransitionLink href={`/catalogo?categoria=${encodeURIComponent(product.category)}`}>{product.category}</TransitionLink>
             <span>/</span>
             <strong>{product.name}</strong>
           </div>
 
-          <p className="vg-badge neutral mb-1">{product.isAvailable === false ? "ESGOTADO" : product.badge}</p>
+          <div className="product-meta-strip">
+            <span className={`product-availability ${product.isAvailable === false ? "is-unavailable" : ""}`}>
+              {product.isAvailable === false ? "Esgotado no momento" : "Disponível para atendimento"}
+            </span>
+            <span>{product.category}</span>
+            <span>{product.sub}</span>
+          </div>
+
           <h1 className="vg-product-h1" style={{ viewTransitionName: `product-title-${product.id}` }}>
             {product.name}
           </h1>
 
           <div className="vg-product-prices">
-            <span className="vg-price-main">{formatCurrency(priceCash)} <small>à vista</small></span>
+            <span className="vg-price-main">
+              {formatCurrency(priceCash)} <small>à vista</small>
+            </span>
             {priceInstallment > 0 && priceInstallment !== priceCash && (
               <span className="vg-price-alt">ou {formatCurrency(priceInstallment)} a prazo</span>
             )}
           </div>
 
+          <p className="product-summary-text">{product.shortDescription}</p>
+
           <div className="vg-product-tabs">
-            <button 
-              className={activeTab === "description" ? "active" : ""} 
-              onClick={() => setActiveTab("description")}
-            >Descrição</button>
-            <button 
-              className={activeTab === "specs" ? "active" : ""} 
-              onClick={() => setActiveTab("specs")}
-            >Especificações</button>
-            <button 
-              className={activeTab === "shipping" ? "active" : ""} 
-              onClick={() => setActiveTab("shipping")}
-            >Envio</button>
+            <button className={activeTab === "description" ? "active" : ""} onClick={() => setActiveTab("description")}>
+              Descrição
+            </button>
+            <button className={activeTab === "shipping" ? "active" : ""} onClick={() => setActiveTab("shipping")}>
+              Compra e entrega
+            </button>
+            <button className={activeTab === "specs" ? "active" : ""} onClick={() => setActiveTab("specs")}>
+              Diferenciais
+            </button>
           </div>
 
           <div className="vg-product-tab-content">
             {activeTab === "description" && (
               <>
                 <p>{product.shortDescription}</p>
+              </>
+            )}
+            {activeTab === "shipping" && (
+              <>
+                <p className="text-muted">
+                  Finalize pelo WhatsApp. A loja confirma disponibilidade, entrega ou retirada e conclui o pedido com você.
+                </p>
                 <ul className="vg-product-features">
-                  {product.highlights?.map((item) => <li key={item}>{item}</li>)}
+                  <li>Confirmação de disponibilidade antes do fechamento</li>
+                  <li>Suporte para dúvidas pelo WhatsApp</li>
+                  <li>Atendimento rápido para reserva e finalização</li>
                 </ul>
               </>
             )}
             {activeTab === "specs" && (
-              <p className="text-muted">Materiais de alta qualidade adaptados para {product.sub}. Curadoria por Li Rilko no Brasil.</p>
-            )}
-            {activeTab === "shipping" && (
-              <p className="text-muted">Enviamos para todo o Brasil via Sedex. Frete grátis em pedidos acima de R$ 999. Fale com seu Especialista para opções de entrega expressa na nossa região.</p>
+              <>
+                <p className="text-muted">Principais destaques do produto:</p>
+                <ul className="vg-product-features">
+                  {product.highlights?.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </>
             )}
           </div>
 

@@ -99,7 +99,7 @@ export default function ProductCard({ product, highlight = false }) {
 
         <p className="vg-product-desc">{product.shortDescription}</p>
 
-        {qtyInCart > 0 && <p className="vg-product-in-cart">{qtyInCart} na sacola</p>}
+        {qtyInCart > 0 && <p className="vg-product-in-cart">{qtyInCart} no carrinho</p>}
 
         <div className="vg-product-actions">
           <button type="button" className="btn btn-primary btn-full" onClick={handleAddToCart} disabled={!isAvailable}>

@@ -15,33 +15,55 @@ function buildCatalogLink(categoryName, subName) {
 
 export default function HomePage() {
   const { categories, publicProducts } = useCatalog();
-  
+
+  const categoryCards = categories.map((category) => ({
+    ...category,
+    count: publicProducts.filter((product) => product.category === category.name).length,
+  }));
+
   return (
     <>
-      <section className="vg-hero-section">
-        <div className="shell-container vg-hero-inner reveal">
-          <div className="vg-hero-text">
-            <span className="vg-kicker">NOVA COLEÇÃO {new Date().getFullYear()}</span>
-            <h1 className="vg-title">
-              Li Rilko
-            </h1>
-            <p className="vg-desc">
-              Seu destino para uma curadoria e estética impecáveis. 
-              Encontre eletrônicos e importados selecionados com atendimento personalizado.
-            </p>
-            <div className="vg-hero-actions">
+      <section className="home-hero-section">
+        <div className="shell-container home-hero-grid reveal">
+          <div className="home-hero-copy">
+            <span className="home-kicker">Catálogo Li Rilko</span>
+            <h1>Encontre seu produto e finalize pelo WhatsApp.</h1>
+            <p>Categorias claras, carrinho rápido e atendimento direto com a loja.</p>
+
+            <div className="home-hero-actions">
               <TransitionLink className="btn btn-primary" href="/catalogo">
-                Ver Catálogo &gt;
+                Ver catálogo
               </TransitionLink>
               <TransitionLink className="btn btn-surface" href="/contato">
-                Falar com Especialista
+                Falar com a loja
               </TransitionLink>
             </div>
+
+            <div className="home-proof-list">
+              <span>Categorias organizadas</span>
+              <span>Carrinho simples</span>
+              <span>Pedido no WhatsApp</span>
+            </div>
           </div>
-          
-          <div className="vg-hero-image-wrap">
-            <div className="vg-hero-image">
-              <img src="/logo-li-rilko-imports.png" alt="Inverno 24 Lookbook" style={{ objectFit: 'contain', width: '100%', height: '100%', padding: '2rem' }} />
+
+          <div className="home-hero-panel">
+            <div className="home-brand-card">
+              <img src="/logo-li-rilko-imports.png" alt="Logo Li Rilko Imports" />
+            </div>
+
+            <div className="home-metrics-grid">
+              <div className="home-metric-card">
+                <strong>{publicProducts.length}</strong>
+                <span>produtos ativos</span>
+              </div>
+              <div className="home-metric-card">
+                <strong>{categories.length}</strong>
+                <span>categorias organizadas</span>
+              </div>
+              <div className="home-metric-card">
+                <strong>WhatsApp</strong>
+                <span>atendimento direto</span>
+              </div>
             </div>
           </div>
         </div>
@@ -49,32 +71,34 @@ export default function HomePage() {
 
       <section className="vg-section vg-categories-section">
         <div className="shell-container">
-          <div className="vg-section-head reveal">
-            <h2>Categorias</h2>
-            <p>Encontre exatamente o que você procura no nosso catálogo.</p>
+          <div className="home-section-head reveal">
+            <span className="home-kicker">Categorias</span>
+            <h2>Acesse o catálogo pelo caminho mais rápido.</h2>
           </div>
-          
-          <div className="vg-category-list">
-            {categories.map((category) => {
+
+          <div className="home-category-grid">
+            {categoryCards.map((category) => {
               const capLetter = category.name.charAt(0).toUpperCase();
               return (
-                <article key={category.name} className="vg-category-card reveal">
-                  <div className="vg-category-header">
-                    <span className="vg-category-icon">{capLetter}</span>
-                    <TransitionLink className="vg-category-title" href={buildCatalogLink(category.name)}>
-                      {category.name}
-                    </TransitionLink>
-                    <span className="vg-category-arrow">›</span>
+                <article key={category.name} className="home-category-card reveal">
+                  <div className="home-category-top">
+                    <span className="home-category-icon">{capLetter}</span>
+                    <span className="home-category-count">{category.count} itens</span>
                   </div>
-                  <ul className="vg-category-subs">
+                  <TransitionLink className="home-category-title" href={buildCatalogLink(category.name)}>
+                    {category.name}
+                  </TransitionLink>
+                  <p className="home-category-description">Subcategorias</p>
+                  <ul className="home-category-subs">
                     {category.subs.slice(0, 3).map((sub) => (
                       <li key={sub}>
-                        <TransitionLink href={buildCatalogLink(category.name, sub)}>
-                          • {sub}
-                        </TransitionLink>
+                        <TransitionLink href={buildCatalogLink(category.name, sub)}>{sub}</TransitionLink>
                       </li>
                     ))}
                   </ul>
+                  <TransitionLink className="home-category-link" href={buildCatalogLink(category.name)}>
+                    Ver categoria
+                  </TransitionLink>
                 </article>
               );
             })}
@@ -84,12 +108,11 @@ export default function HomePage() {
 
       <section className="vg-section vg-destaques-section">
         <div className="shell-container">
-          <div className="vg-section-head center reveal">
-            <h2>DESTAQUES</h2>
-            <div className="vg-divider"></div>
-            <p>Os produtos mais desejados da loja, selecionados para agradar o seu estilo e curadoria.</p>
+          <div className="home-section-head center reveal">
+            <span className="home-kicker">Destaques</span>
+            <h2>Produtos em destaque</h2>
           </div>
-          
+
           <div className="product-grid">
             {publicProducts.slice(0, 4).map((product, index) => (
               <div key={product.id} className="reveal">
@@ -97,27 +120,11 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          
+
           <div className="vg-center-action">
             <TransitionLink className="btn btn-surface" href="/catalogo">
-              Ver Catálogo Completo
+              Ver catálogo completo
             </TransitionLink>
-          </div>
-        </div>
-      </section>
-
-      <section className="vg-section">
-        <div className="shell-container reveal">
-          <div className="vg-banner-shopper">
-            <h3>Gostou de algo?<br/>Fale agora com um Especialista.</h3>
-            <p>
-              Tire suas dúvidas, consulte tamanhos e tenha a experiência de um 
-              atendimento exclusivo da Li Rilko direto no seu WhatsApp.
-            </p>
-            <TransitionLink className="btn btn-whatsapp" href="/contato">
-              Comprar via WhatsApp
-            </TransitionLink>
-            <p className="vg-banner-subtext">Tempo médio de resposta: 2 min</p>
           </div>
         </div>
       </section>
