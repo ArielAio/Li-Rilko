@@ -141,9 +141,6 @@ export default function ProductPage() {
             <button className={activeTab === "shipping" ? "active" : ""} onClick={() => setActiveTab("shipping")}>
               Compra e entrega
             </button>
-            <button className={activeTab === "specs" ? "active" : ""} onClick={() => setActiveTab("specs")}>
-              Diferenciais
-            </button>
           </div>
 
           <div className="vg-product-tab-content">
@@ -155,20 +152,12 @@ export default function ProductPage() {
             {activeTab === "shipping" && (
               <>
                 <p className="text-muted">
-                  Finalize pelo WhatsApp. A loja confirma disponibilidade, entrega ou retirada e conclui o pedido com você.
+                  Finalize pelo WhatsApp. A loja confirma disponibilidade e conclui o pedido com você.
                 </p>
                 <ul className="vg-product-features">
                   <li>Confirmação de disponibilidade antes do fechamento</li>
                   <li>Suporte para dúvidas pelo WhatsApp</li>
                   <li>Atendimento rápido para reserva e finalização</li>
-                </ul>
-              </>
-            )}
-            {activeTab === "specs" && (
-              <>
-                <p className="text-muted">Principais destaques do produto:</p>
-                <ul className="vg-product-features">
-                  {product.highlights?.map((item) => <li key={item}>{item}</li>)}
                 </ul>
               </>
             )}
