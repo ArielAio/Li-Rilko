@@ -4898,6 +4898,23 @@ body.modal-open {
   margin-top: 5rem;
 }
 
+.vg-product-back-row {
+  display: none;
+}
+
+.vg-product-back-btn {
+  border: 1px solid rgba(20, 22, 31, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 0.52rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 .vg-product-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -6944,6 +6961,11 @@ body.modal-open {
 
   .vg-product-main-img {
     max-height: 360px;
+  }
+
+  .vg-product-back-row {
+    display: flex;
+    margin-bottom: 0.9rem;
   }
 
   .vg-action-row {
