@@ -63,7 +63,9 @@ export default function ProductPage() {
       <div className="shell-container vg-product-grid">
         <div className="vg-product-gallery-col reveal">
           <div className="vg-product-main-img" style={{ position: "relative" }}>
-            <span className="vg-gallery-badge">{product.isAvailable === false ? "Produto indisponível" : product.badge}</span>
+            {(product.isAvailable === false || product.badge) && (
+              <span className="vg-gallery-badge">{product.isAvailable === false ? "Produto indisponível" : product.badge}</span>
+            )}
             {isAdmin && (
               <button
                 type="button"
