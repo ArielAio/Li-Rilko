@@ -98,7 +98,7 @@ function normalizeProduct(product, index, fallbackCategories, fallbackAdminCateg
     priceInstallment: normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0)),
     priceCash: normalizeMoney(product?.priceCash, normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0))),
     oldPrice: normalizeMoney(product?.oldPrice, normalizeMoney(product?.priceInstallment, normalizeMoney(product?.price, 0))),
-    badge: normalizeText(product?.badge, "Destaque"),
+    badge: normalizeText(product?.badge),
     shortDescription: normalizeText(product?.shortDescription, "Produto disponível na vitrine da loja."),
     highlights: Array.isArray(product?.highlights) && product.highlights.length > 0 ? product.highlights : ["Atendimento via WhatsApp"],
     image: resolvedImages[0] || "",
